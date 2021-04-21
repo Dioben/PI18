@@ -1,0 +1,9 @@
+datasources:
+- name: timescaleDB
+  type: postgres
+  url: timescaledb:5432
+  user: root
+  password: postgres
+  access: proxy
+  editable: true 
+  isDefault: true

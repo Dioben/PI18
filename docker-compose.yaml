@@ -1,0 +1,39 @@
+version: "3.8" 
+services:
+    db:
+        container_name: timescaledb
+        image: timescale/timescaledb:latest-pg13
+        ports: 
+         - "5432:5432"
+        environment:
+         - POSTGRES_PASSWORD=postgres
+         - POSTGRES_USER=root
+    graphing:
+        container_name: grafana
+        image: grafana/grafana
+        ports: 
+         - "3000:3000"
+         environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=grafana
+        depends_on:
+         - db
+        volumes:
+            - ./grafana:/etc/grafana/provisioning/datasources
+    server:
+        container_name: tracker-server
+        image: dioben/nntrackerua-server:latest
+        ports: 
+         - "8000:8000"
+        depends_on:
+         - db
+    deployer:
+        container_name: tracker-deployer
+        image: dioben/nntrackerua-deployer:latest
+         ports: 
+         - "7000:7000"
+    parser:
+        container_name: tracker-parser
+        image: dioben/nntrackerua-parser:latest
+         ports: 
+         - "6000:6000"
