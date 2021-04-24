@@ -56,15 +56,37 @@ def load_database(path_given):
 dataset = load_database(path_given)
 
 class DataAggregateCallback(keras.callbacks.Callback):
-    def on_epoch_end(self, epoch, logs=None):
         if epoch % EPOCH_PERIOD == 0:
             data = {}
+
+            keys = list(logs.keys())
+            logs = {key : logs[i] for key in logs.keys()}
+
+            print(f"Logs for epoch {epoch} are: {logs}")
+
+
+            #Model made to extract middle layer outputs
+            feature_extractor = keras.Model(inputs=model.inputs,
+                                    outputs=[layer.output for layer in model.layers])
+            feature_extractor.compile()
+            middle_layers_outputs = feature_extractor(x_train)
+            #Fairly huge to print
+            #print(f"Middle layers output for layer 1 {middle_layers_outputs[0]}")
+
+            #get_weights already gives youu two arrays, first is actual weights, second,if it exists, are bias(non-treinable weights)
+            weights = [layer.get_weights() for layer in model.layers]
+            # for i in range(len(model.layers)):
+            #         print(f'For Layer {i} got weights {model.layers[i].get_weights()}')
+
+            #Could be posted once
+            json_model = self.model.to_json()
+
             print('Post to aggregator')
+            #TODO:Require all of this data in a single JSON file, accompany ID and epoch
             #res = requests.post(url, json = data)
             #print('Post status:',res)
-        keys = list(logs.keys())
-        
-        print("End epoch {} of training; got log keys: {}".format(epoch, keys))
+        print("End epoch {} of training;".format(epoch))
+
 
 
 model.fit(dataset, batch_size=BATCH_SIZE, epochs=EPOCHS
