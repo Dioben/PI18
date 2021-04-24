@@ -3,6 +3,6 @@ WORKDIR /app
 COPY requirements.txt /app
 RUN pip3 install -r requirements.txt --no-cache-dir
 COPY . /app 
-ADD $datasrc /app
+ADD $datasrc dataset
 ENTRYPOINT ["python3"]
 CMD ["app.py"] 
