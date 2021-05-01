@@ -15,7 +15,7 @@ services:
         image: grafana/grafana
         ports: 
          - "3000:3000"
-         environment:
+        environment:
             - GF_SECURITY_ADMIN_USER=admin
             - GF_SECURITY_ADMIN_PASSWORD=grafana
         depends_on:
@@ -32,12 +32,17 @@ services:
     deployer:
         container_name: tracker-deployer
         image: dioben/nntrackerua-deployer:latest
-         ports: 
+        ports: 
          - "7000:7000"
-         volumes:
+        volumes:
             - /var/run/docker.sock:/var/run/docker.sock
     parser:
         container_name: tracker-parser
         image: dioben/nntrackerua-parser:latest
-         ports: 
+        ports: 
          - "6000:6000"
+    celery_broker:
+        container_name: redis
+        image: redis:latest
+        ports:
+         - "6379:6379"
