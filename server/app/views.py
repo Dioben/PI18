@@ -4,12 +4,15 @@ from django.shortcuts import render, redirect
 
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+
 from .forms import  UploadModelFileForm, UploadDataSetFileForm
 
 
 # Imaginary function to handle model file.
 # from somewhere import handle_uploaded_file
 
+@csrf_exempt
 def simulation_view(request, id=None):
     message = 'Upload Json!'
     if request.method == 'POST':
@@ -40,13 +43,13 @@ def simulation_view(request, id=None):
         form2 = UploadDataSetFileForm()
     return render(request, 'simulations.html', {'form_model': form1, 'form_data':form2, 'message': message})
 
-
+@csrf_exempt
 def get_simulation(request, id):
     #Render da simulation_details
     #return render(request, 'simulation_details.html', {'id': id}) test
     return None
 
-
+@csrf_exempt
 def command_simulation(request, command, id):
     if request.method == 'POST':
         if command == "START":
