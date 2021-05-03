@@ -3,12 +3,16 @@ from celery import Celery
 
 app = Flask(__name__)
 
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
+
 @app.route('/update', methods=['POST'])
 def update_simulation():
-    #simulation_data = request.get_json()
-
-    result = update_data_sent.delay(simulation_data)
-    result.wait() 
+    simulation_data = request.get_json()
+    process_data(simulation_data)
+    #result = update_data_sent.delay(simulation_data)
+    #result.wait()
     return 'All good'
 
 @app.route('/finish', methods=['POST'])
@@ -16,7 +20,7 @@ def finish_simulation():
     #simulation_data = request.get_json()
 
     result = finish_data_sent.delay(simulation_data)
-    result.wait() 
+    result.wait()
     return 'All good'
 
 def make_celery(app):
@@ -42,9 +46,23 @@ app.config.update(
 celery = make_celery(app)
 
 @celery.task()
-def update_data_sent(json):
-    #Placeholder
+def update_data_sent(json_file):
+    logger.info('hello')
+    logger.info(len(json_file))
+    logger.info(json_file.keys())
+    process_data(json_file)
     return None
+
+def process_data(data_dict):
+    #print(data_dict['weights'])
+    for i in range(len(data_dict['weights'])):
+        layer_data = data_dict['weights'][i]
+        print('layer ',i,':',len(layer_data))
+    weights = {str(i) : data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
+    #print(weights)
+    print(len(weights))
+    return None
+
 
 @celery.task()
 def finish_data_sent(json):
