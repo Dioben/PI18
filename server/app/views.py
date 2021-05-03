@@ -65,3 +65,6 @@ def command_simulation(request, command, id):
         # Do Something
         return None
 
+
+def signup(request):
+    return None
