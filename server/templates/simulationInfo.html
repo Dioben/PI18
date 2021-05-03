@@ -11,7 +11,10 @@
                 </div>
                 <div style="border-top: 1px solid #DCDCDE; margin-bottom: 5px"></div>
                 <div class="d-flex">
-                    <img style="height: 150px; background-color: darkgrey; width: 250px">
+                    <img id="img" style="height: 150px; background-color: darkgrey; width: 250px">
+                    <script>
+                        document.getElementById("img").style.backgroundColor = string2color("Simulation");
+                    </script>
                     <div class="flex-grow-1 d-flex flex-column justify-content-between" style="margin: 5px 5px 5px 10px">
                         <div class="d-flex justify-content-between">
                             <div class="d-flex flex-column">

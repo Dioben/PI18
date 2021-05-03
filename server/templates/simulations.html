@@ -9,7 +9,10 @@
             <small style="color: grey">Manage and analyse all your simulations.</small>
             <div style="border: 1px solid #DCDCDE; min-height: 50vh; margin-top: 5px; background-color: white; padding: 8px">
                 <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 p-0 card" style="height: 198px">
-                    <img class="card-img-top" style="height: 100px; background-color: darkgrey">
+                    <img id="img1" class="card-img-top" style="height: 100px;">
+                    <script>
+                        document.getElementById("img1").style.backgroundColor = string2color("Simulation");
+                    </script>
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <a href="/simulations/1/" style="font-weight: bold; color: black; text-decoration: none">Simulation</a>

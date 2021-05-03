@@ -1,3 +1,5 @@
+{% load static %}
+
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -7,6 +9,7 @@
         <title>{% block title %}Neural Net Tracker{% endblock %}</title>
     </head>
     <body>
+        <script src="{% static 'script.js' %}"></script>
         <nav class="navbar py-0" style="background-color: #0078d4; color: white">
             <div class="container-fluid">
                 <a class="navbar-brand" style="color: white" href="/simulations/">Neural Net Tracker</a>
