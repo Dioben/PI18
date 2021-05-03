@@ -26,6 +26,8 @@ json_config = []
 path_given = ''
 #Get Model
 model = keras.models.model_from_json(json_config)
+json_model = model.to_json()
+
 
 def load_database(path_given):
     #File path given to file in VFS
@@ -57,35 +59,48 @@ dataset = load_database(path_given)
 
 class DataAggregateCallback(keras.callbacks.Callback):
         if epoch % EPOCH_PERIOD == 0:
-            data = {}
 
-            keys = list(logs.keys())
-            logs = {key : logs[i] for key in logs.keys()}
+            print('Post to aggregator')
+
+            logs = {i : logs[i] for i in logs.keys()}
 
             print(f"Logs for epoch {epoch} are: {logs}")
 
-
-            #Model made to extract middle layer outputs
             feature_extractor = keras.Model(inputs=model.inputs,
                                     outputs=[layer.output for layer in model.layers])
             feature_extractor.compile()
-            middle_layers_outputs = feature_extractor(x_train)
-            #Fairly huge to print
-            #print(f"Middle layers output for layer 1 {middle_layers_outputs[0]}")
+            features = feature_extractor(x_train)
+            print(f"features:{features}")
 
-            #get_weights already gives youu two arrays, first is actual weights, second,if it exists, are bias(non-treinable weights)
-            weights = [layer.get_weights() for layer in model.layers]
-            # for i in range(len(model.layers)):
-            #         print(f'For Layer {i} got weights {model.layers[i].get_weights()}')
+            middle_layers_outputs = [layer_out.numpy()  for layer_out in features]
 
-            #Could be posted once
-            json_model = self.model.to_json()
+            weigths = []
+            #get_weights already gives you two arrays, first is actual weights, the rest are bias(non-treinable weights)
+            for i in range(len(model.layers)):
+            if model.layers[i].weights != None:
+                out = model.layers[i].get_weights()
+                #print(f'For Layer {i} got weights {out}')
+                weigths.append(out)
 
-            print('Post to aggregator')
-            #TODO:Require all of this data in a single JSON file, accompany ID and epoch
-            #res = requests.post(url, json = data)
-            #print('Post status:',res)
-        print("End epoch {} of training;".format(epoch))
+            #print(f'For Layer {i} got output {np.array(features[i]).shape}')
+
+            #weigths = [model.layers[i].get_weigths() for i in range(len(model.layers)) if model.layers[i].weights != []] 
+
+            #print(f"middle_layer_for_real:{middle_layers_outputs}")
+
+            res_dic = {}
+            
+            res_dic["model"] = json_model
+
+            res_dic["middle_layers"] = middle_layers_outputs
+
+            res_dic["logs"] = logs
+
+            res_dic["weights"] = weigths
+
+            data = pickle.dumps(res_dic)
+            res = requests.post(url, data = data)
+            print('Post status:',res)
 
 
 
