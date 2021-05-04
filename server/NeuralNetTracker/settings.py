@@ -128,3 +128,5 @@ STATIC_URL = '/static/'
 FILE_UPLOAD_HANDLERS = [
     'django.core.files.uploadhandler.TemporaryFileUploadHandler',
 ]
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
