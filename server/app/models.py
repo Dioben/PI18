@@ -5,7 +5,7 @@ from django.db import models
 from timescale.db.models.models import TimescaleModel
 from django.contrib.auth.models import User
 # Create your models here.
-#TODO: INIT DB ON DOCKER SIDE
+
 class Simulation(TimescaleModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
