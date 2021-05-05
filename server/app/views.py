@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 from .forms import  UploadModelFileForm, UploadDataSetFileForm
-from models import *
+from app.models import *
 
 # Imaginary function to handle model file.
 # from somewhere import handle_uploaded_file

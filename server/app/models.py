@@ -17,13 +17,30 @@ class Simulation(TimescaleModel):
     epoch_interval = models.IntegerField(validators=[MinValueValidator(0)])
     goal_epochs = models.IntegerField()
     #insert more stats/goals here
+    class Meta:
+        db_table = "Simulations"
+
 
 class Update(TimescaleModel):
     sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
+    epoch = models.IntegerField()
     loss = models.FloatField()
     accuracy = models.FloatField()
-    weights = models.BinaryField()
+    class Meta:
+        db_table = "Updates"
+
+class Weights(TimescaleModel):
+    epoch = models.IntegerField()
+    sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
+    layer = models.IntegerField() #maybe a string, i dont know what i'm doing
+    weight = models.BinaryField()
+
+    class Meta:
+        db_table = "Weights"
 
 class Tagged(models.Model):
     tag = models.CharField(max_length=200)
     sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
+    class Meta:
+        unique_together = (('tag','sim'),)
+        db_table = "Tags"
