@@ -7,14 +7,21 @@
 
     <body>
         <!-- Upload form. Note enctype attribute! -->
-        <form method="post" enctype="multipart/form-data">
+        <form class="row" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ message }}
-            <p>{{ form.non_field_errors }}</p>
-            <p>{{ form.file.label_tag }} {{ form.file.help_text }}</p>
+            <p>{{ form_model.non_field_errors }}</p>
+            <p>{{ form_model.model.label_tag }} {{ form_model.model.help_text }}</p>
             <p>
-                {{ form.file.errors }}
-                {{ form.file }}
+                {{ form_model.model.errors }}
+                {{ form_model.model }}
+            </p>
+
+            <p>{{ form_data.non_field_errors }}</p>
+            <p>{{ form_data.dataset.label_tag }} {{ form_data.dataset.help_text }}</p>
+            <p>
+                {{ form_data.dataset.errors }}
+                {{ form_data.dataset }}
             </p>
             <p><input type="submit" value="Upload"/></p>
         </form>

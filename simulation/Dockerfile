@@ -1,8 +1,7 @@
-FROM python:3.9-alpine
+FROM tensorflow/tensorflow:nightly
 WORKDIR /app 
-COPY requirements.txt /app
+COPY /simulation /app
 RUN pip3 install -r requirements.txt --no-cache-dir
-COPY . /app 
 ADD $datasrc dataset/
 ENTRYPOINT ["python3"]
 CMD ["app.py"] 

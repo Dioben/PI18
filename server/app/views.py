@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect
 
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
-from .forms import UploadFileForm
+# Create your views here.
 
+from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+
+from .forms import  UploadModelFileForm, UploadDataSetFileForm
+from models import *
 
 def index(request):
     return render(request, 'index.html')
@@ -17,7 +21,7 @@ def signup(request):
     return render(request, 'signup.html')
 
 
-def simulations(request):
+def simulation_list(request):
     return render(request, 'simulations.html')
 
 
@@ -31,42 +35,74 @@ def simulation_info(request, id):
 
 # Imaginary function to handle model file.
 # from somewhere import handle_uploaded_file
-def simulation_view(request, id=None):
-    message = 'Upload Json!'
+
+
+
+
+def post_sim(request): #probably add a 3rd form to this thing
+    form1 = UploadModelFileForm(request.POST, request.FILES)
+    form2 = UploadDataSetFileForm(request.POST, request.FILES)
+    if form1.is_valid() and form2.is_valid():
+        print("Got Model")
+        # handle_uploaded_file(request.FILES['model'])
+        model = request.FILES['model']
+        path_model = model.temporary_file_path()
+        print(path_model)
+
+        print("Got Dataset")
+        # handle_uploaded_file(request.FILES['dataset'])
+        dataset = request.FILES['dataset']
+        path_dataset = dataset.temporary_file_path()
+        print(str(path_dataset))
+        # do something
+        print("Simulation Created and Started")
+        # return HttpResponseRedirect('/success/url/')
+        return redirect('Simulations') #TODO: REPLACE THIS WITH CREATED SIMULATION
+
+
+@csrf_exempt
+def simulations(request):
+    if not request.user.is_authenticated: #you could use is_active here for email verification i think
+        return HttpResponse("Please Log In", 403)
     if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            # handle_uploaded_file(request.FILES['file'])
-            print("Simulation Created and Started")
-            # return HttpResponseRedirect('/success/url/')
-            return redirect('Simulations')
-        else:
-            message = 'Error'
-    elif request.method == 'DELETE':  # É passado o Argumento id para realizar delete
-        return None
+        return post_sim(request)
     else:
-        form = UploadFileForm()
-    return render(request, 'simulation_create_api.html', {'form': form, 'message': message})
+        return Simulation.objects.filter(owner=request.user)
 
-
+@csrf_exempt
 def get_simulation(request, id):
-    #Render da simulation_details
-    #return render(request, 'simulation_details_api.html', {'id': id}) test
-    return None
+    if not request.user.is_authenticated:  # you could use is_active here for email verification i think
+        return HttpResponse("Please Log In", 403)
+
+    sim = Simulation.objects.get(pk=id)
+
+    if sim.owner == request.user:
+        if request.method == "DELETE":
+            sim.delete()
+            return HttpResponse(sim,200)
+        return sim
+    else:
+        return HttpResponse("Forbidden", 403)
 
 
+def command_start(request, id): #return the objects you're acting on in these
+    pass
+
+
+def command_stop(request, id):
+    pass
+
+
+@csrf_exempt
 def command_simulation(request, command, id):
     if request.method == 'POST':
         if command == "START":
-            # Do something
-            return None
+            return command_start(request,id)
         elif command == "STOP":
-            # Do Something
-            return None
+            return command_stop(request,id)
         else:
             # Do Something
             return None
     else:
         # Do Something
         return None
-
