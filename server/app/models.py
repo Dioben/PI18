@@ -1,9 +1,11 @@
 import uuid
 
+from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.db import models
 from timescale.db.models.models import TimescaleModel
-from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
+
 # Create your models here.
 
 class Simulation(TimescaleModel):
@@ -14,7 +16,8 @@ class Simulation(TimescaleModel):
     isdone = models.BooleanField()
     isrunning = models.BooleanField()
     biases = models.BinaryField()
-    epoch_interval = models.IntegerField(validators=[MinValueValidator(0)])
+    layers = models.IntegerField()
+    epoch_interval = models.IntegerField(validators=[MinValueValidator(1)])
     goal_epochs = models.IntegerField()
     #insert more stats/goals here
     class Meta:
@@ -27,20 +30,20 @@ class Update(TimescaleModel):
     loss = models.FloatField()
     accuracy = models.FloatField()
     class Meta:
-        db_table = "Updates"
+        db_table = "Epoch_values"
 
 class Weights(TimescaleModel):
     epoch = models.IntegerField()
     sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
-    layer = models.IntegerField() #maybe a string, i dont know what i'm doing
-    weight = models.BinaryField()
-
+    layer_index = models.IntegerField() #maybe a string, i dont know what i'm doing
+    weight = ArrayField(models.IntegerField())
     class Meta:
         db_table = "Weights"
 
 class Tagged(models.Model):
     tag = models.CharField(max_length=200)
     sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
+    tagger = models.ForeignKey(User,on_delete=models.CASCADE)
     class Meta:
         unique_together = (('tag','sim'),)
         db_table = "Tags"

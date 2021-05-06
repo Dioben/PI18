@@ -4,4 +4,6 @@ WORKDIR /app
 COPY /server /app
 RUN pip3 install -r requirements.txt --no-cache-dir 
 ENTRYPOINT ["python3"] 
+CMD ["manage.py", "makemigrations" "app"]
+CMD["manage.py","migrate"]
 CMD ["manage.py", "runserver", "0.0.0.0:8000"]

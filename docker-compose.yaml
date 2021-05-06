@@ -12,7 +12,7 @@ services:
         volumes:
             - ./timescaledbdocker/data:/var/lib/postgresql/data
             # copy the sql script to create tables
-            - ./DB_CONF/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+            - ./DB_CONF/:/docker-entrypoint-initdb.d/
     graphing:
         container_name: grafana
         image: grafana/grafana
