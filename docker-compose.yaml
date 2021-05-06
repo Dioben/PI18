@@ -32,6 +32,10 @@ services:
          - "8000:8000"
         depends_on:
          - db
+    migrator:
+        container_name: migrator
+        image: dioben/nntrackerua-server:latest
+        command: "manage.py migrate"
     deployer:
         container_name: tracker-deployer
         image: dioben/nntrackerua-deployer:latest
