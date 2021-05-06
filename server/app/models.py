@@ -22,6 +22,7 @@ class Simulation(TimescaleModel):
     #insert more stats/goals here
     class Meta:
         db_table = "Simulations"
+        indexes = [models.Index(["owner"])]
 
 
 class Update(TimescaleModel):
@@ -31,6 +32,7 @@ class Update(TimescaleModel):
     accuracy = models.FloatField()
     class Meta:
         db_table = "Epoch_values"
+        indexes = [models.Index(["sim","epoch"])]
 
 class Weights(TimescaleModel):
     epoch = models.IntegerField()
@@ -39,6 +41,7 @@ class Weights(TimescaleModel):
     weight = ArrayField(models.IntegerField())
     class Meta:
         db_table = "Weights"
+        indexes =[ models.Index(['sim','epoch']),models.Index(['sim','layer_index'])]
 
 class Tagged(models.Model):
     tag = models.CharField(max_length=200)
@@ -47,3 +50,4 @@ class Tagged(models.Model):
     class Meta:
         unique_together = (('tag','sim'),)
         db_table = "Tags"
+        indexes = [models.Index(['tag']),models.Index(['tagger']),models.Index(["sim"])]
