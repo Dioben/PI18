@@ -31,11 +31,16 @@ services:
          - db
     deployer:
         container_name: tracker-deployer
-        image: dioben/nntrackerua-deployer:latest
+        build: ./deployer
         ports: 
          - "7000:7000"
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
+    celery_deployer:
+        container_name: redis_deployer
+        image: redis:latest
+        expose:
+            - "6380"
     parser:
         container_name: tracker-parser
         image: dioben/nntrackerua-parser:latest
