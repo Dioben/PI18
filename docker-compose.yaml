@@ -13,6 +13,11 @@ services:
             - ./timescaledbdocker/data:/var/lib/postgresql/data
             # copy the sql script to create tables
             - ./DB_CONF/:/docker-entrypoint-initdb.d/
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U root -h localhost -d nntracker"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
     graphing:
         container_name: grafana
         image: grafana/grafana
@@ -22,7 +27,8 @@ services:
             - GF_SECURITY_ADMIN_USER=admin
             - GF_SECURITY_ADMIN_PASSWORD=grafana
         depends_on:
-         - db
+           db:
+            condition: service_healthy
         volumes:
             - ./grafana:/etc/grafana/provisioning/datasources
     server:
@@ -31,11 +37,8 @@ services:
         ports: 
          - "8000:8000"
         depends_on:
-         - db
-    migrator:
-        container_name: migrator
-        image: dioben/nntrackerua-server:latest
-        command: "manage.py migrate"
+            db:
+                condition: service_healthy
     deployer:
         container_name: tracker-deployer
         image: dioben/nntrackerua-deployer:latest
@@ -43,11 +46,15 @@ services:
          - "7000:7000"
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
+        
     parser:
         container_name: tracker-parser
         image: dioben/nntrackerua-parser:latest
         ports: 
          - "6000:6000"
+        depends_on:
+            db:
+                condition: service_healthy
     celery_broker:
         container_name: redis
         image: redis:latest

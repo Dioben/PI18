@@ -8,7 +8,7 @@ from django.contrib.postgres.fields import ArrayField
 
 # Create your models here.
 
-class Simulation(TimescaleModel):
+class Simulation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
@@ -21,8 +21,7 @@ class Simulation(TimescaleModel):
     goal_epochs = models.IntegerField()
     #insert more stats/goals here
     class Meta:
-        db_table = "Simulations"
-        indexes = [models.Index(fields=["owner"])]
+        db_table = "simulations"
 
 
 class Update(TimescaleModel):
@@ -31,16 +30,17 @@ class Update(TimescaleModel):
     loss = models.FloatField()
     accuracy = models.FloatField()
     class Meta:
-        db_table = "Epoch_values"
+        db_table = "epoch_values"
         indexes = [models.Index(fields=["sim","epoch"])]
 
 class Weights(TimescaleModel):
     epoch = models.IntegerField()
     sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
-    layer_index = models.IntegerField() #maybe a string, i dont know what i'm doing
+    layer_index = models.IntegerField()
+    layer_name = models.CharField(max_length=150)
     weight = ArrayField(models.IntegerField())
     class Meta:
-        db_table = "Weights"
+        db_table = "weights"
         indexes =[ models.Index(fields=['sim','epoch']),models.Index(fields=['sim','layer_index'])]
 
 class Tagged(models.Model):
