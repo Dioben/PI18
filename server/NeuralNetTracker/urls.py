@@ -16,10 +16,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from app import views
-
+from django.contrib.auth import  views as auth_views
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/simulations/', views.simulation_view, name="Simulations"),
-    path('api/simulations/<int:id>', views.get_simulation, name="Get_Simulation"),
-    path('api/simulations/<int:id>/<str:command>', views.command_simulation, name="Command_Simulation"),
+    path('', views.index, name="Frontpage"),
+    path('simulations/', views.simulation_list, name="SimulationList"),
+    path('simulations/create/', views.simulation_create, name="SimulationCreate"),
+    path('simulations/<int:id>/', views.simulation_info, name="SimulationInfo"),
+    path('api/simulations/', views.simulations, name="Simulations"),
+    path('api/simulations/<str:id>/', views.get_simulation, name="GetSimulation"),
+    path('api/simulations/<str:id>/<str:command>/', views.command_simulation, name="CommandSimulation"),
+    path('accounts/register/',views.signup, name="Register"),
+    path('accounts/login/', auth_views.LoginView.as_view(template_name='login.html'), name="Login"),
+    path("accounts/logout/", auth_views.LogoutView.as_view(next_page="/"), name="Logout"),
+
 ]
