@@ -31,7 +31,7 @@ services:
          - db
     deployer:
         container_name: tracker-deployer
-        build: ./deployer
+        image: dioben/nntrackerua-deployer:latest
         ports: 
          - "7000:7000"
         volumes:
