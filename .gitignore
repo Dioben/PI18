@@ -8,3 +8,6 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 README.md.backup
+*/venv/
+*/__pycache__/
+/timescaledbdocker/data/*
