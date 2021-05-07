@@ -32,15 +32,33 @@ services:
     deployer:
         container_name: tracker-deployer
         image: dioben/nntrackerua-deployer:latest
+        #build: ./deployer
         ports: 
          - "7000:7000"
+        expose:
+            - "6380"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - FLASK_ENV=development
+        command: flask run -p 7000 --host 0.0.0.0
+    deployer_worker:
+        container_name: tracker-deployer-worker
+        image: dioben/nntrackerua-deployer:latest
+        #build: ./deployer
+        command: celery -A app:celery worker --loglevel=info
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
     celery_deployer:
         container_name: redis_deployer
         image: redis:latest
+        ports: 
+            - "6380:6380"
         expose:
             - "6380"
+        command: ["--port", "6380"]
+        volumes:
+            - ./deployer/redis.conf:/tmp/redis.conf
     parser:
         container_name: tracker-parser
         image: dioben/nntrackerua-parser:latest

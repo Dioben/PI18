@@ -1,5 +1,7 @@
 from flask import Flask, request
+from flask import jsonify
 from celery import Celery
+import sys
 import docker
 import uuid
 
@@ -8,18 +10,17 @@ client = docker.from_env()
 
 @app.route('/simulations', methods=['POST'])
 def make_simulation():
-    try:
-        data = request.get_json()
-        print('data')
-        id_gen = uuid.uuid4()
-        sim_id = id_gen.int
-        result = make_simualtion.delay(sim_id)
-        result.wait()
-        #Should return the simulation ID
-        return sim_id
-    except Exception as e:
-        print('ERROR:',e)
-    return None
+    print_flask('here')
+    print_flask(request.data)
+    data = request.get_json(force=True)
+    print_flask('data'+str(len(data)))
+    #Replace this for simulation id given to us
+    id_gen = uuid.uuid4()
+    sim_id = id_gen.int
+    result = make_simualtion.delay(sim_id)
+    result.wait()
+    resp = jsonify(success=True)
+    return resp
 
 @app.route('/simulations/<simulation_id>', methods=['DELETE'])
 def delete_simulation(simulation_id):
@@ -33,6 +34,8 @@ def change_simulation(simulation_id,command):
     result.wait() 
     return 'All good'
 
+def print_flask(input):
+    print(input, file=sys.stderr)
 
 def make_celery(app):
     celery = Celery(
@@ -45,8 +48,8 @@ def make_celery(app):
     return celery
 
 app.config.update(
-    broker_url = 'redis://localhost:6380',
-    result_backend = 'redis://localhost:6380',
+    broker_url = 'redis://celery_deployer:6380',
+    result_backend = 'redis://celery_deployer:6380',
 
     task_serializer = 'json',
     result_serializer = 'json',
@@ -58,11 +61,9 @@ celery = make_celery(app)
 
 @celery.task()
 def make_simualtion(sim_id):
-    try:
-        container_made = client.containers.run("dioben/nntrackerua-simulation",name=str(sim_id),detach=True)
-        print('Containner with id:'+container_made.id + " was made")
-    except Exception as e:
-        print('ERROR:',e)
+    print_flask('Making new sim of id:'+str(sim_id))
+    container_made = client.containers.run("dioben/nntrackerua-simulation",name=str(sim_id),detach=True)
+    print_flask('Containner with id:'+container_made.id + " was made")
     return None
 
 @celery.task()
@@ -71,7 +72,7 @@ def delete_simulation(simulation_id):
         containner_kill = client.containers.get(simulation_id)
         containner_kill.kill()
     except Exception as e:
-        print('ERROR:',e)
+        print_flask('ERROR:'+str(e))
     return None
 
 @celery.task()
@@ -85,7 +86,7 @@ def change_simulation(simulation_id,command):
         elif 'STOP' in command:
             containner.stop()
         else:
-            print('ERROR:','Given invalid command ',command)
+            print_flask('ERROR:','Given invalid command ',command)
     except Exception as e:
-        print('ERROR:',e)
+        print_flask('ERROR:'+str(e))
     return None
