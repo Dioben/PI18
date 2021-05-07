@@ -9,6 +9,30 @@ from django.views.decorators.csrf import csrf_exempt
 from .forms import  UploadModelFileForm, UploadDataSetFileForm
 from app.models import *
 
+def index(request):
+    return render(request, 'index.html')
+
+
+def login(request):
+    return render(request, 'login.html')
+
+
+def signup(request):
+    return render(request, 'signup.html')
+
+
+def simulation_list(request):
+    return render(request, 'simulations.html')
+
+
+def simulation_create(request):
+    return render(request, 'simulationCreate.html')
+
+
+def simulation_info(request, id):
+    return render(request, 'simulationInfo.html')
+
+
 # Imaginary function to handle model file.
 # from somewhere import handle_uploaded_file
 
@@ -82,7 +106,3 @@ def command_simulation(request, command, id):
     else:
         # Do Something
         return None
-
-
-def signup(request):
-    return None
