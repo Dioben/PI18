@@ -9,4 +9,5 @@
 /httpRequests/
 README.md.backup
 */venv/
+*/__pycache__/
 /timescaledbdocker/data/*
