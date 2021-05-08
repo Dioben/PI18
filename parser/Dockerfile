@@ -3,6 +3,5 @@ EXPOSE 6000
 WORKDIR /app 
 COPY /parser /app
 RUN pip3 install -r requirements.txt --no-cache-dir
-COPY . /app 
 ENTRYPOINT ["python3"] 
 CMD ["app.py", "6000"] 
