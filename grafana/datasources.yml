@@ -3,6 +3,7 @@ datasources:
   type: postgres
   url: timescaledb:5432
   user: root
+  database: nntracker
   password: postgres
   access: proxy
   editable: true 
