@@ -1,5 +1,14 @@
 from flask import Flask, request
 from celery import Celery
+import psycopg2
+
+
+conn = psycopg2.connect(
+    host="localhost",
+    database="nntracker",
+    user="root",
+    password="postgres")
+
 
 app = Flask(__name__)
 
@@ -11,13 +20,13 @@ logger = get_task_logger(__name__)
 def update_simulation():
     simulation_data = request.get_json()
     process_data(simulation_data)
-    #result = update_data_sent.delay(simulation_data)
-    #result.wait()
+    result = update_data_sent.delay(simulation_data)
+    result.wait()
     return 'All good'
 
 @app.route('/finish', methods=['POST'])
 def finish_simulation():
-    #simulation_data = request.get_json()
+    simulation_data = request.get_json()
 
     result = finish_data_sent.delay(simulation_data)
     result.wait()
@@ -59,6 +68,10 @@ def process_data(data_dict):
         layer_data = data_dict['weights'][i]
         print('layer ',i,':',len(layer_data))
     weights = {str(i) : data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
+    loss = data_dict['logs']['loss']
+    accuracy = data_dict['logs']['accuracy']
+    print(loss)
+    print(accuracy)
     #print(weights)
     print(len(weights))
     return None
