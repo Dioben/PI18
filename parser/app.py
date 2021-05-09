@@ -1,13 +1,16 @@
 from flask import Flask, request
 from celery import Celery
 import psycopg2
+import sys
 
-
-conn = psycopg2.connect(
-    host="localhost",
-    database="nntracker",
-    user="root",
-    password="postgres")
+conn = None
+if "celery" in sys.argv[0]:
+    conn = psycopg2.connect(
+        host="localhost",
+        database="nntracker",
+        user="root",
+        password="postgres",
+        port="5432")
 
 
 app = Flask(__name__)
@@ -56,10 +59,20 @@ celery = make_celery(app)
 
 @celery.task()
 def update_data_sent(json_file):
+    curr = conn.cursor()
     logger.info('hello')
     logger.info(len(json_file))
     logger.info(json_file.keys())
-    process_data(json_file)
+    simid, epoch, weights, loss, accuracy = process_data(json_file)
+    sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim,weights) VALUES(%s,%s,%s,%s,%s)"
+    sqlEpoch = "INSERT INTO Epoch_values(epoch,sim,loss,accuracy) VALUES(%s,%s,%s,%s)"
+
+    for w in weights.keys():
+        index = w.split("layer ")[1]
+        curr.execute(sqlWeights, (epoch, index, 0, simid, weights[w]))
+    curr.execute(sqlEpoch, (epoch, simid, loss, accuracy))
+    conn.commit()
+    curr.close()
     return None
 
 def process_data(data_dict):
@@ -70,11 +83,13 @@ def process_data(data_dict):
     weights = {str(i) : data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
     loss = data_dict['logs']['loss']
     accuracy = data_dict['logs']['accuracy']
+    epoch = 1
+    simid = 1
     print(loss)
     print(accuracy)
     #print(weights)
     print(len(weights))
-    return None
+    return simid, epoch, weights, loss, accuracy
 
 
 @celery.task()
