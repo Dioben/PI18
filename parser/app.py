@@ -2,11 +2,18 @@ from flask import Flask, request
 from celery import Celery
 import psycopg2
 import sys
+import uuid
+import psycopg2.extras
+import datetime
+
+# call it in any place of your program
+# before working with UUID objects in PostgreSQL
+psycopg2.extras.register_uuid()
 
 conn = None
 if "celery" in sys.argv[0]:
     conn = psycopg2.connect(
-        host="localhost",
+        host="127.0.0.1",
         database="nntracker",
         user="root",
         password="postgres",
@@ -22,7 +29,7 @@ logger = get_task_logger(__name__)
 @app.route('/update', methods=['POST'])
 def update_simulation():
     simulation_data = request.get_json()
-    process_data(simulation_data)
+
     result = update_data_sent.delay(simulation_data)
     result.wait()
     return 'All good'
@@ -64,13 +71,14 @@ def update_data_sent(json_file):
     logger.info(len(json_file))
     logger.info(json_file.keys())
     simid, epoch, weights, loss, accuracy = process_data(json_file)
-    sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim,weights) VALUES(%s,%s,%s,%s,%s)"
-    sqlEpoch = "INSERT INTO Epoch_values(epoch,sim,loss,accuracy) VALUES(%s,%s,%s,%s)"
+    sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
+    sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time) VALUES(%s,%s,%s,%s,%s)"
 
+    #TODO adicionar sim_id pois falhou por não ter UUID
     for w in weights.keys():
-        index = w.split("layer ")[1]
-        curr.execute(sqlWeights, (epoch, index, 0, simid, weights[w]))
-    curr.execute(sqlEpoch, (epoch, simid, loss, accuracy))
+        index = w
+        curr.execute(sqlWeights, (str(epoch), index, "0", uuid.uuid4(), weights[w], datetime.datetime.now()))
+    curr.execute(sqlEpoch, (epoch, uuid.uuid4(), loss, accuracy, datetime.datetime.now()))
     conn.commit()
     curr.close()
     return None
