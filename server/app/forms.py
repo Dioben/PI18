@@ -1,6 +1,10 @@
 from django import forms
 
 
-class UploadFileForm(forms.Form):
+class UploadModelFileForm(forms.Form):
     #title = forms.CharField(max_length=50)
-    file = forms.FileField(label='Select a file')
+    model = forms.FileField(label='Select a Model')
+
+class UploadDataSetFileForm(forms.Form):
+    #title = forms.CharField(max_length=50)
+    dataset = forms.FileField(label='Select a DataSet')
