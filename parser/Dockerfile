@@ -1,4 +1,4 @@
-FROM python:3.9-alpine
+FROM python:3.9
 EXPOSE 6000
 WORKDIR /app 
 COPY /parser /app
