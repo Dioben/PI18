@@ -72,9 +72,23 @@ services:
             - ./deployer/redis.conf:/tmp/redis.conf
     parser:
         container_name: tracker-parser
-        image: dioben/nntrackerua-parser:latest
-        ports: 
-         - "6000:6000"
+        #image: dioben/nntrackerua-parser:latest
+        build: ./parser
+        ports:
+            - "6000:6000"
+        expose:
+            - "6379"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+
+        environment:
+            - FLASK_ENV=development
+        command: flask run -p 6000 --host 0.0.0.0
+    parser_worker:
+        container_name: tracker-parser-worker
+        #image: dioben/nntrackerua-parser:latest
+        build: ./parser
+        command: celery -A app:celery worker --loglevel=info
         depends_on:
             db:
                 condition: service_healthy

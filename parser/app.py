@@ -13,7 +13,7 @@ psycopg2.extras.register_uuid()
 conn = None
 if "celery" in sys.argv[0]:
     conn = psycopg2.connect(
-        host="127.0.0.1",
+        host="timescaledb",
         database="nntracker",
         user="root",
         password="postgres",
@@ -28,6 +28,7 @@ logger = get_task_logger(__name__)
 
 @app.route('/update', methods=['POST'])
 def update_simulation():
+    logger.info("/update called")
     simulation_data = request.get_json()
 
     result = update_data_sent.delay(simulation_data)
@@ -74,17 +75,17 @@ def update_data_sent(json_file):
     sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
     sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time) VALUES(%s,%s,%s,%s,%s)"
 
-    #TODO adicionar sim_id pois falhou por não ter UUID
     for w in weights.keys():
         index = w
-        curr.execute(sqlWeights, (str(epoch), index, "0", uuid.uuid4(), weights[w], datetime.datetime.now()))
-    curr.execute(sqlEpoch, (epoch, uuid.uuid4(), loss, accuracy, datetime.datetime.now()))
+        curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
+    curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now()))
     conn.commit()
     curr.close()
     return None
 
 def process_data(data_dict):
     #print(data_dict['weights'])
+    #TODO ir buscar sim_id e epoch ao json do Pedro
     for i in range(len(data_dict['weights'])):
         layer_data = data_dict['weights'][i]
         print('layer ',i,':',len(layer_data))
@@ -92,7 +93,7 @@ def process_data(data_dict):
     loss = data_dict['logs']['loss']
     accuracy = data_dict['logs']['accuracy']
     epoch = 1
-    simid = 1
+    simid = uuid.uuid4()
     print(loss)
     print(accuracy)
     #print(weights)
@@ -101,6 +102,17 @@ def process_data(data_dict):
 
 
 @celery.task()
-def finish_data_sent(json):
-    #Placeholder
+def finish_data_sent(json_file):
+    curr = conn.cursor()
+    simid, epoch, weights, loss, accuracy = process_data(json_file)
+    sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
+    sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time) VALUES(%s,%s,%s,%s,%s)"
+    sqlUpdate = "UPDATE simulations SET isdone=TRUE, isrunning=FALSE WHERE id=%s"
+    for w in weights.keys():
+        index = w
+        curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
+    curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now()))
+    curr.execute(sqlUpdate,(simid,))
+    conn.commit()
+    curr.close()
     return None
