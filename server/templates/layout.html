@@ -10,28 +10,40 @@
         <script src="{% static 'script.js' %}"></script>
         <!-- Font Awesome  -->
         <link rel="stylesheet" href="{% static 'fa/css/all.min.css' %}">
-        <title>{% block title %}Neural Net Tracker{% endblock %}</title>
+        <title >{% block title %}Neural Net Tracker{% endblock %}</title>
     </head>
     <body>
-        <nav class="navbar py-0" style="background-color: #0078d4; color: white">
-            <div class="container-fluid">
-                <a class="navbar-brand" style="color: white" href="/simulations/">Neural Net Tracker</a>
-                {% comment %}<div class="d-flex">
-                    <a href="#" style="color: white; text-decoration: none">user <i class="fa fa-user fa-sm"></i></a>
-                </div>{% endcomment %}
-            </div>
-        </nav>
-        <div class="d-flex h-100" style="background-color: #F6F7F7">
-            {% comment %}<nav class="nav flex-column border-end w-25">
-                <a href="#" class="d-flex flex-nowrap"><i class="fa fa-project-diagram"></i> Simulations</a>
-                <a href="#">Settings</a>
-            </nav>{% endcomment %}
-            <div class="container">
-                {% block content %}
+     <nav class="navbar py-0" style="background-color: #0078d4; color: white">
+      <div class="container-fluid">
+       <a class="navbar-brand" style="color: white; font-weight: bolder;" href="/simulations/">Neural Net Tracker</a>
+       {% comment %}<div class="d-flex">
+        <a href="#" style="color: white; text-decoration: none">user <i class="fa fa-user fa-sm"></i></a>
+      </div>{% endcomment %}
+     </div>
+     </nav>
+    <div class="container-fluid">
+    <div class="row min-vh-100 flex-column flex-md-row">
+        <aside class="col-12 col-md-2 p-0 bg-light flex-shrink-1">
+            <nav class="navbar navbar-expand navbar-light bg-light flex-md-column flex-row align-items-start py-2">
+                <div class="collapse navbar-collapse ">
+                    <ul class="flex-md-column flex-row navbar-nav w-100 justify-content-between">
+                        <li class="nav-item">
+                            <a class="nav-link pl-0" href="{% url 'SimulationList' %}"><i class="fas fa-code-branch"></i><span class="d-none d-md-inline"> Simulations</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link pl-0" href="#"><i class="fas fa-sliders-h"></i><span class="d-none d-md-inline"> Settings</span></a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+        <main class="col bg-faded py-3 flex-grow-1">
+            {% block content %}
 
-                {% endblock %}
-            </div>
-        </div>
+            {% endblock %}
+        </main>
+    </div>
+</div>
     <!-- JQuery and Bootstrap core
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
