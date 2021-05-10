@@ -29,6 +29,7 @@ logger = get_task_logger(__name__)
 @app.route('/update', methods=['POST'])
 def update_simulation():
     logger.info("/update called")
+    print("/update called", file=sys.stderr)
     simulation_data = request.get_json()
 
     result = update_data_sent.delay(simulation_data)
@@ -54,8 +55,8 @@ def make_celery(app):
     return celery
 
 app.config.update(
-    broker_url = 'redis://localhost:6379',
-    result_backend = 'redis://localhost:6379',
+    broker_url = 'redis://redis:6379',
+    result_backend = 'redis://redis:6379',
 
     task_serializer = 'json',
     result_serializer = 'json',
@@ -92,8 +93,9 @@ def process_data(data_dict):
     weights = {str(i) : data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
     loss = data_dict['logs']['loss']
     accuracy = data_dict['logs']['accuracy']
-    epoch = 1
-    simid = uuid.uuid4()
+    epoch = data_dict['epoch']
+    simid = uuid.UUID(str(data_dict['sim_id']))
+    print(simid, file=sys.stderr)
     print(loss)
     print(accuracy)
     #print(weights)
