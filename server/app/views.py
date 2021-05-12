@@ -64,7 +64,7 @@ def post_sim(request):  # probably add a 3rd form to this thing
                              "interval": sim.epoch_interval},
                     "model": {sim.model}
                     }
-        resp = requests.post("tracker-deployer:7000/simulations", postdata)
+        resp = requests.post("http://tracker-deployer:7000/simulations", postdata)
         if resp.ok:
             return sim
         sim.delete()
@@ -99,20 +99,20 @@ def get_simulation(request, id):
 
 def command_start(request, id):  # return the objects you're acting on in these
     sim = Simulation.objects.get(id)
-    requests.post(f'tracker-deployer:7000/simulations/{id}/START')
+    requests.post(f'http://tracker-deployer:7000/simulations/{id}/START')
     sim.isrunning = True
     return HttpResponse(sim,200)
 
 def command_stop(request, id):
     sim = Simulation.objects.get(id)
-    requests.delete(f'tracker-deployer:7000/simulations/{id}')
+    requests.delete(f'http://tracker-deployer:7000/simulations/{id}')
     sim.delete()
     return HttpResponse(sim, 200)
 
 
 def command_pause(request, id):
     sim = Simulation.objects.get(id)
-    requests.post(f'tracker-deployer:7000/simulations/{id}/PAUSE')
+    requests.post(f'http://tracker-deployer:7000/simulations/{id}/PAUSE')
     sim.isrunning = False
     sim.save()
     return HttpResponse(sim, 200)
