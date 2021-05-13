@@ -36,26 +36,15 @@ def simulation_info(request, id):
     return render(request, 'simulationInfo.html')
 
 
-# Imaginary function to handle model file.
-# from somewhere import handle_uploaded_file
-
-
-def post_sim(request):  # probably add a 3rd form to this thing
-    #TODO: ENABLE SENDING URLS INSTEAD OF FILES AS WELL - maybe that's a separate view idk
-    form1 = UploadModelFileForm(request.POST, request.FILES)
-    form2 = UploadDataSetFileForm(request.POST, request.FILES)
-    form3 = ConfSimForm(request.POST)
-    if form1.is_valid() and form2.is_valid() and form3.is_valid():
-        # handle_uploaded_file(request.FILES['model'])
+def post_sim(request):  #TODO: add a version that allows file upload for Dataset
+    modelForm = UploadModelFileForm(request.POST, request.FILES)
+    confForm = ConfSimForm(request.POST)
+    if modelForm.is_valid() and confForm.is_valid():
         model = request.FILES['model']
-        # handle_uploaded_file(request.FILES['dataset'])
-        dataset = request.FILES['dataset']
-        path_dataset = dataset.temporary_file_path()
         modeltext = ''
         for chunk in model.chunks():
             modeltext+=chunk
         modeljson = json.loads(modeltext)
-
         #TODO: This is probably not what Silva wants
         biastext = "["
         for layer in modeljson['config']:
@@ -66,14 +55,20 @@ def post_sim(request):  # probably add a 3rd form to this thing
         biastext+= "]"
 
         sim = Simulation(owner=request.user, isdone=False, isrunning=False, model=modeltext,
-                         name=form3.cleaned_data["name"],layers=len(modeljson['config']['layers']),
-                         biases=biastext, epoch_interval=form3.cleaned_data["logging_interval"],
-                         goal_epochs=form3.cleaned_data["max_epochs"])
+                         name=confForm.cleaned_data["name"],layers=len(modeljson['config']['layers']),
+                         biases=biastext, epoch_interval=confForm.cleaned_data["logging_interval"],
+                         goal_epochs=confForm.cleaned_data["max_epochs"])
         sim.save()
-        #TODO: DISTINCT TRAIN AND TEST DATASETS MAYBE
+
+        trainset = confForm.cleaned_data['train_dataset_url']
+        if "test_dataset_url" in confForm.cleaned_data.keys():
+            testset = confForm.cleaned_data['test_dataset_url']
+        else:
+            testset = trainset
+
         postdata = {"conf": {"id": sim.id,
-                             "dataset_train": path_dataset,
-                             "dataset_test": path_dataset,
+                             "dataset_train": trainset,
+                             "dataset_test": testset,
                              "dataset_url": True,
                              "epochs": sim.goal_epochs,
                              "interval": sim.epoch_interval},

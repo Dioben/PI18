@@ -15,7 +15,8 @@ class ConfSimForm(forms.Form):
     name = forms.CharField(max_length=100)
     max_epochs = forms.IntegerField(validators=[MinValueValidator(1)])
     logging_interval = forms.IntegerField(validators=[MinValueValidator(1)])
-
+    train_dataset_url = forms.URLField()
+    test_dataset_url = forms.URLField(required=False, help_text="If absent we will use the training dataset")
     def clean_logging_interval(self):
         if self.logging_interval> self.max_epochs:
             raise ValidationError("Logging interval is larger than total runtime")
