@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render, redirect
 
 # Create your views here.
@@ -6,7 +8,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import requests
-from .forms import UploadModelFileForm, UploadDataSetFileForm
+from .forms import UploadModelFileForm, UploadDataSetFileForm, ConfSimForm
 from app.models import *
 
 
@@ -39,21 +41,34 @@ def simulation_info(request, id):
 
 
 def post_sim(request):  # probably add a 3rd form to this thing
-    #TODO: ENABLE SENDING URLS INSTEAD OF FILES AS WELL
+    #TODO: ENABLE SENDING URLS INSTEAD OF FILES AS WELL - maybe that's a separate view idk
     form1 = UploadModelFileForm(request.POST, request.FILES)
     form2 = UploadDataSetFileForm(request.POST, request.FILES)
-    if form1.is_valid() and form2.is_valid():
+    form3 = ConfSimForm(request.POST)
+    if form1.is_valid() and form2.is_valid() and form3.is_valid():
         # handle_uploaded_file(request.FILES['model'])
         model = request.FILES['model']
-        path_model = model.temporary_file_path()
-        print(path_model)
         # handle_uploaded_file(request.FILES['dataset'])
         dataset = request.FILES['dataset']
         path_dataset = dataset.temporary_file_path()
-        print(str(path_dataset))
-        # TODO: read model into db, count layers into db, copy raw bias bytes, epoch interval, name, goal epochs
-        sim = Simulation(owner=request.user, isdone=False, isrunning=False, model="read model file onto this i guess?", name="sample text",
-                         biases=b'sample text', epoch_interval=10, goal_epochs=100)
+        modeltext = ''
+        for chunk in model.chunks():
+            modeltext+=chunk
+        modeljson = json.loads(modeltext)
+
+        #TODO: This is probably not what Silva wants
+        biastext = "["
+        for layer in modeljson['config']:
+            if 'bias_initializer' in layer:
+                biastext+=f"{{{layer['bias_initializer']}}},"
+            else:
+                biastext+=f"{{ }},"
+        biastext+= "]"
+
+        sim = Simulation(owner=request.user, isdone=False, isrunning=False, model=modeltext,
+                         name=form3.cleaned_data["name"],layers=len(modeljson['config']['layers']),
+                         biases=biastext, epoch_interval=form3.cleaned_data["logging_interval"],
+                         goal_epochs=form3.cleaned_data["max_epochs"])
         sim.save()
         #TODO: DISTINCT TRAIN AND TEST DATASETS MAYBE
         postdata = {"conf": {"id": sim.id,
