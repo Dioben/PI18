@@ -1,0 +1,9 @@
+{
+    "id" : "112312225459766",
+    "dataset_train" : "./dataset/mnist_train.csv",
+    "dataset_test" : "./dataset/mnist_test.csv",
+    "dataset_url" : false,
+    "batch_size" : 32,
+    "epochs" : 1,
+    "label_collumn" : "smt"   
+}
