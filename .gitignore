@@ -11,3 +11,5 @@ README.md.backup
 */venv/
 */__pycache__/
 /timescaledbdocker/data/*
+/server/app/__pycache__
+/server/NeuralNetTracker/__pycache__
