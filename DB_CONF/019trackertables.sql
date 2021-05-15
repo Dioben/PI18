@@ -6,7 +6,7 @@ CREATE TABLE "simulations" ("id" uuid NOT NULL PRIMARY KEY, "name" varchar(100) 
 --
 -- Create model Weights
 --
-CREATE TABLE "weights" ("id" bigserial NOT NULL PRIMARY KEY, "time" timestamp with time zone NOT NULL, "epoch" integer NOT NULL, "layer_index" integer NOT NULL, "layer_name" varchar(150) NOT NULL, "weight" integer[] NOT NULL, "sim_id" uuid NOT NULL);
+CREATE TABLE "weights" ("id" bigserial NOT NULL PRIMARY KEY, "time" timestamp with time zone NOT NULL, "epoch" integer NOT NULL, "layer_index" integer NOT NULL, "layer_name" varchar(150) NOT NULL, "weight" double precision[] NOT NULL, "sim_id" uuid NOT NULL);
 DO $do$ BEGIN IF EXISTS ( SELECT * FROM timescaledb_information.hypertables WHERE hypertable_name = 'weights') THEN RAISE EXCEPTION 'assert failed - ''weights'' should not be a hyper table'; ELSE NULL; END IF;END; $do$;
 ALTER TABLE "weights" DROP CONSTRAINT "weights_pkey";
 SELECT create_hypertable('weights', 'time', chunk_time_interval => interval '1 day', migrate_data => false);

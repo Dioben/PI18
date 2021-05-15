@@ -38,7 +38,7 @@ class Weights(TimescaleModel):
     sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
     layer_index = models.IntegerField()
     layer_name = models.CharField(max_length=150)
-    weight = ArrayField(models.IntegerField())
+    weight = ArrayField(models.FloatField())
     class Meta:
         db_table = "weights"
         indexes =[ models.Index(fields=['sim','epoch']),models.Index(fields=['sim','layer_index'])]
