@@ -1,10 +1,6 @@
 import json
 
-from django.contrib.auth.models import User
-import logging
-
-# Get an instance of a logger
-logger = logging.getLogger(__name__)
+from django.contrib import auth
 from django.shortcuts import render, redirect
 
 # Create your views here.
@@ -13,11 +9,13 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import requests
-from .forms import UploadModelFileForm, UploadDataSetFileForm, ConfSimForm
+from app.forms import UploadModelFileForm, UploadDataSetFileForm, ConfSimForm, CustomUserCreationForm
 from app.models import *
 
 
 def index(request):
+    if request.user.is_authenticated:
+        return redirect('/simulations/')
     return render(request, 'index.html')
 
 
@@ -26,18 +24,40 @@ def login(request):
 
 
 def signup(request):
-    return render(request, 'signup.html')
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = auth.authenticate(username=username, password=raw_password)
+            auth.login(request, user)
+            return redirect('/simulations/')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'signup.html', {'form': form})
 
 
 def simulation_list(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
     return render(request, 'simulations.html')
 
 
 def simulation_create(request):
-    return render(request, 'simulationCreate.html')
+    if not request.user.is_authenticated:  # you could use is_active here for email verification i think
+        return HttpResponse("Please Log In", 403)
+    if request.method == 'POST':
+        response = simulations(request)
+        if type(response) is HttpResponse:
+            return response
+        redirect('/simulations/'+response.id)
+    return render(request, 'simulationCreate.html', {'fileForm': UploadModelFileForm(), 'configForm': ConfSimForm()})
 
 
 def simulation_info(request, id):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
     return render(request, 'simulationInfo.html')
 """
 def simulation_createTest(request):
@@ -54,9 +74,9 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
     confForm = ConfSimForm(request.POST)
     if modelForm.is_valid() and confForm.is_valid():
         model = request.FILES['model']
-        modeltext = ''
+        modeltext = b''
         for chunk in model.chunks():
-            modeltext+=chunk
+            modeltext += chunk
         modeljson = json.loads(modeltext)
         #TODO: This is probably not what Silva wants
         biastext = "["
@@ -67,9 +87,14 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
                 biastext+=f"{{ }},"
         biastext+= "]"
 
-        sim = Simulation(owner=request.user, isdone=False, isrunning=False, model=modeltext,
-                         name=confForm.cleaned_data["name"],layers=len(modeljson['config']['layers']),
-                         biases=biastext, epoch_interval=confForm.cleaned_data["logging_interval"],
+        sim = Simulation(owner=request.user,
+                         isdone=False,
+                         isrunning=False,
+                         model=modeltext,
+                         name=confForm.cleaned_data["name"],
+                         layers=len(modeljson['config']['layers']),
+                         biases=bytes(biastext, 'utf-8'),
+                         epoch_interval=confForm.cleaned_data["logging_interval"],
                          goal_epochs=confForm.cleaned_data["max_epochs"])
         sim.save()
 
@@ -79,19 +104,27 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
         else:
             testset = trainset
 
-        postdata = {"conf": {"id": sim.id,
-                             "dataset_train": trainset,
-                             "dataset_test": testset,
-                             "dataset_url": True,
-                             "epochs": sim.goal_epochs,
-                             "interval": sim.epoch_interval},
-                    "model": {sim.model}
-                    }
-        resp = requests.post("http://tracker-deployer:7000/simulations", postdata)
+        postdata = {
+            "conf": {
+                "id": str(sim.id.int),
+                "dataset_train": trainset,
+                "dataset_test": testset,
+                "dataset_url": True,
+                "epochs": sim.goal_epochs,
+                "interval": sim.epoch_interval
+            },
+            "model": json.loads(sim.model)
+        }
+        # print(postdata)
+        # resp = requests.post("http://127.0.0.1:7000/simulations", json=postdata)
+        resp = requests.post("http://tracker-deployer:7000/simulations", json=postdata)
         if resp.ok:
             return sim
         sim.delete()
         return HttpResponse("Failed to reach deployer", 500)
+    else:
+        return HttpResponse("Bad request", 400)
+
 
 
 @csrf_exempt
@@ -100,8 +133,9 @@ def simulations(request):
         return HttpResponse("Please Log In", 403)
     if request.method == 'POST':
         return post_sim(request)
-    else:
+    elif request.method == 'GET':
         return Simulation.objects.filter(owner=request.user)
+    return HttpResponse("Bad request", 400)
 
 
 @csrf_exempt

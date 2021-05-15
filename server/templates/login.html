@@ -3,8 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{% static 'fa/css/all.min.css' %}">
-        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
         <!-- Font Awesome  -->
         <link rel="stylesheet" href="{% static 'fa/css/all.min.css' %}">
         <title>NNT - Login</title>
@@ -16,15 +15,15 @@
                     <div class="p-4" style="background-color: #0078d4; color: white">
                         <h3 class="m-0">Login</h3>
                     </div>
-                    <form action="/simulations/" method="post" class="m-0 p-4 border border-top-0 rounded-bottom">
+                    <form action="." method="post" class="m-0 p-4 border border-top-0 rounded-bottom">
                         {% csrf_token %}
                         <div class="form-floating mb-3">
-                            <input type="email" class="form-control" id="email">
-                            <label for="email">Email</label>
+                            {{ form.username }}
+                            {{ form.username.label_tag }}
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="password" class="form-control" id="password">
-                            <label for="password">Password</label>
+                            {{ form.password }}
+                            {{ form.password.label_tag }}
                         </div>
                         <div class="d-flex mt-4 justify-content-center">
                             <button type="submit" class="btn btn-primary px-4">Login</button>
@@ -32,6 +31,7 @@
                         <div class="d-flex mt-4 justify-content-center">
                             <a href="{% url 'Register' %}" class="link-secondary"><small>Don't have an account? Sign up.</small></a>
                         </div>
+                        <input type="hidden" name="next" value="/simulations/">
                     </form>
                 </div>
             </div>
@@ -40,7 +40,7 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="{% static 'scripts/jquery-3.4.1.min.js' %}"></script>
-    <script src="{% static 'scripts/popper.min.js' %}"></script>
-    <script src="{% static 'scripts/bootstrap.min.js' %}"></script>
+    <script src="{% static 'scripts/popper.js' %}"></script>
+    <script src="{% static 'scripts/bootstrap.js' %}"></script>
     </body>
 </html>
