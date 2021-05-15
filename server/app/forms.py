@@ -10,11 +10,11 @@ class UploadModelFileForm(forms.Form):
     # title = forms.CharField(max_length=50)
     model = forms.FileField(
         label='Select a Model',
-        # widget=forms.FileInput(
-        #     attrs={
-        #         'class': 'form-control'
-        #     }
-        # )
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
     )
 
 
@@ -26,44 +26,44 @@ class UploadDataSetFileForm(forms.Form):
 class ConfSimForm(forms.Form):
     name = forms.CharField(
         max_length=100,
-        # widget=forms.TextInput(
-        #     attrs={
-        #         'autofocus': True,
-        #         'class': 'form-control py-4'
-        #     }
-        # )
+        widget=forms.TextInput(
+            attrs={
+                'autofocus': True,
+                'class': 'form-control'
+            }
+        )
     )
     max_epochs = forms.IntegerField(
         validators=[MinValueValidator(1)],
-        # widget=forms.NumberInput(
-        #     attrs={
-        #         'class': 'form-control'
-        #     }
-        # )
+        widget=forms.NumberInput(
+            attrs={
+                'class': 'form-control',
+            }
+        )
     )
     logging_interval = forms.IntegerField(
         validators=[MinValueValidator(1)],
-        # widget=forms.NumberInput(
-        #     attrs={
-        #         'class': 'form-control'
-        #     }
-        # )
+        widget=forms.NumberInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
     )
     train_dataset_url = forms.URLField(
-        # widget=forms.TextInput(
-        #     attrs={
-        #         'class': 'form-control py-4'
-        #     }
-        # )
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
     )
     test_dataset_url = forms.URLField(
         required=False,
         help_text="If absent we will use the training dataset",
-        # widget=forms.TextInput(
-        #     attrs={
-        #         'class': 'form-control py-4'
-        #     }
-        # )
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
     )
 
     def clean_logging_interval(self):

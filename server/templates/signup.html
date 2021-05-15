@@ -45,9 +45,7 @@
                                     {{ field.label_tag }}
                                 </div>
                                 {% if field.help_text %}
-                                    <div class="ms-1 mb-3 d-flex flex-column justify-content-center">
-                                        <a data-toggle="tooltip" title="{{ field.help_text }}"><i class="fa fa-question-circle"></i></a>
-                                    </div>
+                                    <a data-toggle="tooltip" title="{{ field.help_text }}" style="margin: 5px 0 0 3px"><i class="fa fa-question-circle"></i></a>
                                 {% endif %}
                             </div>
                             {% for error in field.errors %}
