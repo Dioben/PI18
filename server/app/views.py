@@ -27,7 +27,7 @@ def signup(request):
 def simulation_list(request):
 
     t_parms = {
-        'simulations': Simulation.objects.filter(owner=User.objects.get(username="admin")),
+        'simulations': Simulation.objects.filter(owner=request.user) #Simulation.objects.filter(owner=User.objects.get(username="admin")),
     }
     return render(request, 'simulations.html' , t_parms)
 
