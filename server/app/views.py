@@ -29,7 +29,14 @@ def simulation_list(request):
 
 
 def simulation_create(request):
-    return render(request, 'simulationCreate.html')
+    if not request.user.is_authenticated:  # you could use is_active here for email verification i think
+        return HttpResponse("Please Log In", 403)
+    if request.method == 'POST':
+        response = simulations(request)
+        if type(response) is HttpResponse:
+            return response
+        redirect('/simulations/'+response.id)
+    return render(request, 'simulationCreate.html', {'fileForm': UploadModelFileForm(), 'configForm': ConfSimForm()})
 
 
 def simulation_info(request, id):
@@ -41,9 +48,9 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
     confForm = ConfSimForm(request.POST)
     if modelForm.is_valid() and confForm.is_valid():
         model = request.FILES['model']
-        modeltext = ''
+        modeltext = b''
         for chunk in model.chunks():
-            modeltext+=chunk
+            modeltext += chunk
         modeljson = json.loads(modeltext)
         #TODO: This is probably not what Silva wants
         biastext = "["
@@ -54,9 +61,14 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
                 biastext+=f"{{ }},"
         biastext+= "]"
 
-        sim = Simulation(owner=request.user, isdone=False, isrunning=False, model=modeltext,
-                         name=confForm.cleaned_data["name"],layers=len(modeljson['config']['layers']),
-                         biases=biastext, epoch_interval=confForm.cleaned_data["logging_interval"],
+        sim = Simulation(owner=request.user,
+                         isdone=False,
+                         isrunning=False,
+                         model=modeltext,
+                         name=confForm.cleaned_data["name"],
+                         layers=len(modeljson['config']['layers']),
+                         biases=bytes(biastext, 'utf-8'),
+                         epoch_interval=confForm.cleaned_data["logging_interval"],
                          goal_epochs=confForm.cleaned_data["max_epochs"])
         sim.save()
 
@@ -74,11 +86,15 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
                              "interval": sim.epoch_interval},
                     "model": {sim.model}
                     }
+        # resp = requests.post("http://127.0.0.1:7000/simulations", postdata)
         resp = requests.post("http://tracker-deployer:7000/simulations", postdata)
         if resp.ok:
             return sim
         sim.delete()
         return HttpResponse("Failed to reach deployer", 500)
+    else:
+        return HttpResponse("Bad request", 400)
+
 
 
 @csrf_exempt
@@ -87,8 +103,9 @@ def simulations(request):
         return HttpResponse("Please Log In", 403)
     if request.method == 'POST':
         return post_sim(request)
-    else:
+    elif request.method == 'GET':
         return Simulation.objects.filter(owner=request.user)
+    return HttpResponse("Bad request", 400)
 
 
 @csrf_exempt

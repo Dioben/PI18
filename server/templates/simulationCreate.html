@@ -12,9 +12,33 @@
                 <div style="border-top: 1px solid #DCDCDE"></div>
                 <div style="padding: 24px 16px">
                     <h5>Create simulation:</h5>
-                    <form action="/simulations/1/" method="post" style="margin-bottom: 0">
+                    <form action="/simulations/create/" method="post" style="margin-bottom: 0" enctype="multipart/form-data">
                         {% csrf_token %}
-                        <div class="form-floating mb-3 d-flex col-6">
+                        <div>
+                            {{ fileForm.model.label_tag }}
+                            {{ fileForm.model }}
+                        </div>
+                        <div>
+                            {{ configForm.name.label_tag }}
+                            {{ configForm.name }}
+                        </div>
+                        <div>
+                            {{ configForm.max_epochs.label_tag }}
+                            {{ configForm.max_epochs }}
+                        </div>
+                        <div>
+                            {{ configForm.logging_interval.label_tag }}
+                            {{ configForm.logging_interval }}
+                        </div>
+                        <div>
+                            {{ configForm.train_dataset_url.label_tag }}
+                            {{ configForm.train_dataset_url }}
+                        </div>
+                        <div>
+                            {{ configForm.test_dataset_url.label_tag }}
+                            {{ configForm.test_dataset_url }}
+                        </div>
+                        {% comment %}<div class="form-floating mb-3 d-flex col-6">
                             <input type="text" class="form-control" id="text">
                             <label for="text">Text input</label>
                             <a title="Help for text input" data-toggle="tooltip" style="margin: 5px 0 0 3px"><i class="fa fa-question-circle"></i></a>
@@ -46,7 +70,7 @@
                             <label for="file" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">File input</label>
                             <input class="form-control" type="file" id="file">
                             <a title="Help for text input" data-toggle="tooltip" style="margin: 5px 0 0 3px"><i class="fa fa-question-circle"></i></a>
-                        </div>
+                        </div>{% endcomment %}
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Create</button>
                         </div>

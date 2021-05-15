@@ -16,15 +16,21 @@
                     <div class="p-4" style="background-color: #0078d4; color: white">
                         <h3 class="m-0">Login</h3>
                     </div>
-                    <form action="/simulations/" method="post" class="m-0 p-4 border border-top-0 rounded-bottom">
+                    <form action="." method="post" class="m-0 p-4 border border-top-0 rounded-bottom">
                         {% csrf_token %}
-                        <div class="form-floating mb-3">
+                        {% comment %}<div class="form-floating mb-3">
                             <input type="email" class="form-control" id="email">
                             <label for="email">Email</label>
                         </div>
                         <div class="form-floating mb-3">
                             <input type="password" class="form-control" id="password">
                             <label for="password">Password</label>
+                        </div>{% endcomment %}
+                        <div class="mb-3">
+                            {{ form.username }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.password }}
                         </div>
                         <div class="d-flex mt-4 justify-content-center">
                             <button type="submit" class="btn btn-primary px-4">Login</button>
@@ -32,6 +38,7 @@
                         <div class="d-flex mt-4 justify-content-center">
                             <a href="{% url 'Register' %}" class="link-secondary"><small>Don't have an account? Sign up.</small></a>
                         </div>
+                        <input type="hidden" name="next" value="/simulations/">
                     </form>
                 </div>
             </div>
