@@ -82,8 +82,7 @@ class CustomAuthenticationForm(auth_forms.AuthenticationForm):
         widget=forms.TextInput(
             attrs={
                 'autofocus': True,
-                'class': 'form-control py-4',
-                'placeholder': 'Username'
+                'class': 'form-control'
             }
         )
     )
@@ -93,8 +92,7 @@ class CustomAuthenticationForm(auth_forms.AuthenticationForm):
         widget=forms.PasswordInput(
             attrs={
                 'autocomplete': 'current-password',
-                'class': 'form-control py-4',
-                'placeholder': 'Password'
+                'class': 'form-control'
             }
         ),
     )
@@ -110,8 +108,7 @@ class CustomUserCreationForm(auth_forms.UserCreationForm):
         widget=forms.PasswordInput(
             attrs={
                 'autocomplete': 'new-password',
-                'class': 'form-control py-4',
-                'placeholder': 'Password'
+                'class': 'form-control'
             }
         ),
         help_text="\n".join(password_validation.password_validators_help_texts()),
@@ -121,8 +118,7 @@ class CustomUserCreationForm(auth_forms.UserCreationForm):
         widget=forms.PasswordInput(
             attrs={
                 'autocomplete': 'new-password',
-                'class': 'form-control py-4',
-                'placeholder': 'Password confirmation'
+                'class': 'form-control'
             }
         ),
         strip=False,
@@ -135,7 +131,6 @@ class CustomUserCreationForm(auth_forms.UserCreationForm):
         field_classes = {'username': auth_forms.UsernameField}
         widgets = {'username': forms.TextInput(
             attrs={
-                'class': 'form-control py-4',
-                'placeholder': 'Username'
+                'class': 'form-control'
             }
         )}

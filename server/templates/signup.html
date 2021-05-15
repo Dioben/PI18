@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
         <!-- Font Awesome  -->
         <link rel="stylesheet" href="{% static 'fa/css/all.min.css' %}">
         <title>NNT - Sign up</title>
@@ -40,9 +40,12 @@
                         {% for field in form %}
                             <div class="form-group">
                             <div class="d-flex">
-                                {{ field }}
+                                <div class="form-floating mb-3 flex-grow-1">
+                                    {{ field }}
+                                    {{ field.label_tag }}
+                                </div>
                                 {% if field.help_text %}
-                                    <div class="ml-2 d-flex flex-column justify-content-center">
+                                    <div class="ms-1 mb-3 d-flex flex-column justify-content-center">
                                         <a data-toggle="tooltip" title="{{ field.help_text }}"><i class="fa fa-question-circle"></i></a>
                                     </div>
                                 {% endif %}
@@ -67,7 +70,7 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="{% static 'scripts/jquery-3.4.1.min.js' %}"></script>
-    <script src="{% static 'scripts/popper.min.js' %}"></script>
-    <script src="{% static 'scripts/bootstrap.min.js' %}"></script>
+    <script src="{% static 'scripts/popper.js' %}"></script>
+    <script src="{% static 'scripts/bootstrap.js' %}"></script>
     </body>
 </html>
