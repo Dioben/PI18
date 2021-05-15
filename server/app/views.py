@@ -98,7 +98,7 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
 
         postdata = {
             "conf": {
-                "id": str(sim.id),
+                "id": str(sim.id.int),
                 "dataset_train": trainset,
                 "dataset_test": testset,
                 "dataset_url": True,
