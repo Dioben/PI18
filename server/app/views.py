@@ -1,5 +1,10 @@
 import json
 
+from django.contrib.auth.models import User
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 from django.shortcuts import render, redirect
 
 # Create your views here.
@@ -34,7 +39,15 @@ def simulation_create(request):
 
 def simulation_info(request, id):
     return render(request, 'simulationInfo.html')
-
+"""
+def simulation_createTest(request):
+    sim = Simulation(owner=User.objects.get(username="admin"), isdone=False, isrunning=False, model="modeltext",
+                     name="Sim 1", layers=4,
+                     biases=bytes("test_string", 'utf-8'), epoch_interval=2,
+                     goal_epochs=5)
+    sim.save()
+    return HttpResponse("Failed to reach deployer", 500)
+"""
 
 def post_sim(request):  #TODO: add a version that allows file upload for Dataset
     modelForm = UploadModelFileForm(request.POST, request.FILES)
