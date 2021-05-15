@@ -1,6 +1,10 @@
 from flask import Flask, request
 from flask import jsonify
 from celery import Celery
+from io import BytesIO
+import tarfile
+import time
+import json
 import sys
 import docker
 import uuid
@@ -14,10 +18,14 @@ def make_simulation():
     print_flask(request.data)
     data = request.get_json(force=True)
     print_flask('data'+str(len(data)))
-    #Replace this for simulation id given to us
-    id_gen = uuid.uuid4()
-    sim_id = id_gen.int
-    result = make_simualtion.delay(sim_id)
+    if data['conf']['id'] is not None:
+        sim_id = int(data['conf']['id'])
+        print_flask('Using id given by server')
+    else:
+        #TODO:remove this, ID always comes from server
+        id_gen = uuid.uuid4()
+        sim_id = id_gen.int
+    result = make_simualtion.delay(sim_id,data['model'],data['conf'])
     result.wait()
     resp = jsonify(success=True)
     return resp
@@ -59,11 +67,64 @@ app.config.update(
 )
 celery = make_celery(app)
 
+def get_tarstream(file_data,file_name):
+    pw_tarstream = BytesIO()
+
+    pw_tar = tarfile.TarFile(fileobj=pw_tarstream, mode='w')
+
+    tarinfo = tarfile.TarInfo(name=file_name)
+    tarinfo.size = len(file_data)
+    tarinfo.mtime = time.time()
+    #tarinfo.mode = 0600
+
+    pw_tar.addfile(tarinfo, BytesIO(file_data))
+    pw_tar.close()
+
+    pw_tarstream.seek(0)
+    return pw_tarstream
+
 @celery.task()
-def make_simualtion(sim_id):
+def make_simualtion(sim_id,model_data,conf_data):
     print_flask('Making new sim of id:'+str(sim_id))
-    container_made = client.containers.run("dioben/nntrackerua-simulation",name=str(sim_id),detach=True)
+    #Path where to put all data simlation needs
+    #TODO:Replace this with /files after updating image in docker hub
+    dest_path = '.'
+    #For all files needed tar them and put them in container
+    tar_model = get_tarstream(json.dumps(model_data).encode('utf8'),"model.json")
+    tar_conf = get_tarstream(json.dumps(conf_data).encode('utf8'),"conf.json")
+    print_flask('Conversion to tar for both jsons')
+
+    container_made = client.containers.create("dioben/nntrackerua-simulation",name=str(sim_id),detach=True)
     print_flask('Containner with id:'+container_made.id + " was made")
+
+    if conf_data['dataset_url'] is True:
+        #TODO:Replace this section, container is stoped at the moment
+        #Not sure where to put this, maybe in dockerfile
+        print_flask("Preparing to download dataset...")
+        helper_script = "curl smt.com"
+        container_made.exec_run(helper_script)
+    else:
+        #Copy dataset files from path given to containner
+        path_test = conf_data["dataset_test"]
+        file_test = open(path_test,'rb').read()
+        tar_test = get_tarstream(file_test,"dataset_test.csv")
+        success = container_made.put_archive(dest_path, tar_test)
+        print_flask('Put test tar:'+str(success))
+
+        path_train = conf_data["dataset_train"]
+        file_train = open(path_train,'rb').read()
+        tar_train = get_tarstream(file_train,"dataset_train.csv")
+        success = container_made.put_archive(dest_path, tar_test)
+        print_flask('Put train tar:'+str(success))
+
+    success = container_made.put_archive(dest_path, tar_model)
+    print_flask('Put model tar:'+str(success))
+    success = container_made.put_archive(dest_path, tar_conf)
+    print_flask('Put concif tar:'+str(success))
+
+    container_made.start()
+    print_flask('Started script')
+
     return None
 
 @celery.task()

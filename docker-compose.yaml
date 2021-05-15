@@ -34,6 +34,7 @@ services:
     server:
         container_name: tracker-server
         image: dioben/nntrackerua-server:latest
+        #build: ./server
         ports: 
          - "8000:8000"
         depends_on:
