@@ -1,5 +1,6 @@
 import json
 
+from django.contrib import auth
 from django.shortcuts import render, redirect
 
 # Create your views here.
@@ -8,11 +9,13 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import requests
-from .forms import UploadModelFileForm, UploadDataSetFileForm, ConfSimForm
+from app.forms import UploadModelFileForm, UploadDataSetFileForm, ConfSimForm, CustomUserCreationForm
 from app.models import *
 
 
 def index(request):
+    if request.user.is_authenticated:
+        return redirect('/simulations/')
     return render(request, 'index.html')
 
 
@@ -21,7 +24,18 @@ def login(request):
 
 
 def signup(request):
-    return render(request, 'signup.html')
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = auth.authenticate(username=username, password=raw_password)
+            auth.login(request, user)
+            return redirect('/simulations/')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'signup.html', {'form': form})
 
 
 def simulation_list(request):

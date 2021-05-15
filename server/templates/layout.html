@@ -13,37 +13,48 @@
         <title >{% block title %}Neural Net Tracker{% endblock %}</title>
     </head>
     <body>
-     <nav class="navbar py-0" style="background-color: #0078d4; color: white">
-      <div class="container-fluid">
-       <a class="navbar-brand" style="color: white; font-weight: bolder;" href="/simulations/">Neural Net Tracker</a>
-       {% comment %}<div class="d-flex">
-        <a href="#" style="color: white; text-decoration: none">user <i class="fa fa-user fa-sm"></i></a>
-      </div>{% endcomment %}
-     </div>
-     </nav>
-    <div class="container-fluid">
-    <div class="row min-vh-100 flex-column flex-md-row">
-        <aside class="col-12 col-md-2 p-0 bg-light flex-shrink-1">
-            <nav class="navbar navbar-expand navbar-light bg-light flex-md-column flex-row align-items-start py-2">
-                <div class="collapse navbar-collapse ">
-                    <ul class="flex-md-column flex-row navbar-nav w-100 justify-content-between">
-                        <li class="nav-item">
-                            <a class="nav-link pl-0" href="{% url 'SimulationList' %}"><i class="fas fa-code-branch"></i><span class="d-none d-md-inline"> Simulations</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link pl-0" href="#"><i class="fas fa-sliders-h"></i><span class="d-none d-md-inline"> Settings</span></a>
-                        </li>
-                    </ul>
+        <nav class="navbar py-0" style="background-color: #0078d4; color: white">
+            <div class="container-fluid">
+                <a class="navbar-brand" style="color: white; font-weight: bolder;" href="/simulations/">Neural Net Tracker</a>
+                {% comment %}<div class="d-flex">
+                    <a href="#" style="color: white; text-decoration: none">{{ user.username }} <i class="fa fa-user fa-sm"></i></a>
+                </div>{% endcomment %}
+                <div class="btn-group">
+                    <button type="button" style="color: white; text-decoration: none" class="btn btn-link dropdown-toggle btn-sm login mt-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{ user.username }} <i class="fa fa-user"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <form action="{% url 'Logout' %}" method="post" class="mb-0">
+                            {% csrf_token %}
+                            <button class="dropdown-item" type="submit">Logout</button>
+                        </form>
+                    </div>
                 </div>
-            </nav>
-        </aside>
-        <main class="col bg-faded py-3 flex-grow-1">
-            {% block content %}
+            </div>
+        </nav>
+        <div class="container-fluid">
+            <div class="row min-vh-100 flex-column flex-md-row">
+                <aside class="col-12 col-md-2 p-0 bg-light flex-shrink-1">
+                    <nav class="navbar navbar-expand navbar-light bg-light flex-md-column flex-row align-items-start py-2">
+                        <div class="collapse navbar-collapse ">
+                            <ul class="flex-md-column flex-row navbar-nav w-100 justify-content-between">
+                                <li class="nav-item">
+                                    <a class="nav-link pl-0" href="{% url 'SimulationList' %}"><i class="fas fa-code-branch"></i><span class="d-none d-md-inline"> Simulations</span></a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link pl-0" href="#"><i class="fas fa-sliders-h"></i><span class="d-none d-md-inline"> Settings</span></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                </aside>
+                <main class="col bg-faded py-3 flex-grow-1">
+                    {% block content %}
 
-            {% endblock %}
-        </main>
-    </div>
-</div>
+                    {% endblock %}
+                </main>
+            </div>
+        </div>
     <!-- JQuery and Bootstrap core
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
