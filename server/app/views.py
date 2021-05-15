@@ -41,10 +41,13 @@ def signup(request):
 def simulation_list(request):
     if not request.user.is_authenticated:
         return HttpResponse("Please Log In", 403)
+    response = simulations(request)
+    if type(response) == HttpResponse:
+        return response
     t_parms = {
-        'simulations': Simulation.objects.filter(owner=request.user) #Simulation.objects.filter(owner=User.objects.get(username="admin")),
+        'simulations': response
     }
-    return render(request, 'simulations.html' , t_parms)
+    return render(request, 'simulations.html', t_parms)
 
 
 def simulation_create(request):
@@ -67,7 +70,13 @@ def simulation_info(request, id):
             response = get_simulation(request, id)
             if type(response) == HttpResponse and response.status_code == 200:
                 return redirect('/simulations/')
-    return render(request, 'simulationInfo.html')
+    response = get_simulation(request, id)
+    if type(response) == HttpResponse:
+        return response
+    t_params = {
+        'simulation': response
+    }
+    return render(request, 'simulationInfo.html', t_params)
 """
 def simulation_createTest(request):
     sim = Simulation(owner=User.objects.get(username="admin"), isdone=False, isrunning=False, model="modeltext",

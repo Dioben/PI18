@@ -1,5 +1,6 @@
 {% extends 'layout.html' %}
 {% load mathfilters %}
+
 {% block title %}NNT - Simulations{% endblock %}
 
 {% block content %}
@@ -32,7 +33,7 @@
                                 {% endif %}
                             </div>
                             {% if simulation.isrunning %}
-                                <button class="btn p-0 ms-2" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fas fa-pause"></i></button>
+                                <button class="btn p-0 ms-2" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fas fa-pause fa-sm"></i></button>
                             {% else %}
                                 <button class="btn p-0 ms-2" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fa fa-play fa-sm"></i></button>
                             {% endif %}
