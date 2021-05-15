@@ -96,17 +96,20 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
         else:
             testset = trainset
 
-        postdata = {"conf": {"id": str(sim.id),
-                             "dataset_train": trainset,
-                             "dataset_test": testset,
-                             "dataset_url": True,
-                             "epochs": sim.goal_epochs,
-                             "interval": sim.epoch_interval},
-                    "model": {sim.model}
-                    }
-        print(postdata)
-        # resp = requests.post("http://127.0.0.1:7000/simulations", postdata)
-        resp = requests.post("http://tracker-deployer:7000/simulations", postdata)
+        postdata = {
+            "conf": {
+                "id": str(sim.id),
+                "dataset_train": trainset,
+                "dataset_test": testset,
+                "dataset_url": True,
+                "epochs": sim.goal_epochs,
+                "interval": sim.epoch_interval
+            },
+            "model": json.loads(sim.model)
+        }
+        # print(postdata)
+        # resp = requests.post("http://127.0.0.1:7000/simulations", json=postdata)
+        resp = requests.post("http://tracker-deployer:7000/simulations", json=postdata)
         if resp.ok:
             return sim
         sim.delete()
