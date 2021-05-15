@@ -39,7 +39,7 @@ def update_simulation():
 @app.route('/finish', methods=['POST'])
 def finish_simulation():
     simulation_data = request.get_json()
-
+    print("/finish called", file=sys.stderr)
     result = finish_data_sent.delay(simulation_data)
     result.wait()
     return 'All good'
@@ -69,9 +69,7 @@ celery = make_celery(app)
 @celery.task()
 def update_data_sent(json_file):
     curr = conn.cursor()
-    logger.info('hello')
-    logger.info(len(json_file))
-    logger.info(json_file.keys())
+    logger.info('update starting')
     simid, epoch, weights, loss, accuracy = process_data(json_file)
     sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
     sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time) VALUES(%s,%s,%s,%s,%s)"
@@ -85,8 +83,6 @@ def update_data_sent(json_file):
     return None
 
 def process_data(data_dict):
-    #print(data_dict['weights'])
-    #TODO ir buscar sim_id e epoch ao json do Pedro
     for i in range(len(data_dict['weights'])):
         layer_data = data_dict['weights'][i]
         print('layer ',i,':',len(layer_data))
@@ -95,11 +91,7 @@ def process_data(data_dict):
     accuracy = data_dict['logs']['accuracy']
     epoch = data_dict['epoch']
     simid = uuid.UUID(str(data_dict['sim_id']))
-    print(simid, file=sys.stderr)
-    print(loss)
-    print(accuracy)
-    #print(weights)
-    print(len(weights))
+    print(simid)
     return simid, epoch, weights, loss, accuracy
 
 
