@@ -3,7 +3,7 @@ import json
 from django.shortcuts import render, redirect
 
 # Create your views here.
-
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -25,7 +25,11 @@ def signup(request):
 
 
 def simulation_list(request):
-    return render(request, 'simulations.html')
+
+    t_parms = {
+        'simulations': Simulation.objects.filter(owner=User.objects.get(username="admin")),
+    }
+    return render(request, 'simulations.html' , t_parms)
 
 
 def simulation_create(request):
