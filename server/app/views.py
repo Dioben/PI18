@@ -39,6 +39,8 @@ def signup(request):
 
 
 def simulation_list(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
     return render(request, 'simulations.html')
 
 
@@ -54,6 +56,8 @@ def simulation_create(request):
 
 
 def simulation_info(request, id):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
     return render(request, 'simulationInfo.html')
 
 
@@ -92,7 +96,7 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
         else:
             testset = trainset
 
-        postdata = {"conf": {"id": sim.id,
+        postdata = {"conf": {"id": str(sim.id),
                              "dataset_train": trainset,
                              "dataset_test": testset,
                              "dataset_url": True,
@@ -100,6 +104,7 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
                              "interval": sim.epoch_interval},
                     "model": {sim.model}
                     }
+        print(postdata)
         # resp = requests.post("http://127.0.0.1:7000/simulations", postdata)
         resp = requests.post("http://tracker-deployer:7000/simulations", postdata)
         if resp.ok:
