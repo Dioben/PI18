@@ -59,7 +59,15 @@ def simulation_info(request, id):
     if not request.user.is_authenticated:
         return HttpResponse("Please Log In", 403)
     return render(request, 'simulationInfo.html')
-
+"""
+def simulation_createTest(request):
+    sim = Simulation(owner=User.objects.get(username="admin"), isdone=False, isrunning=False, model="modeltext",
+                     name="Sim 1", layers=4,
+                     biases=bytes("test_string", 'utf-8'), epoch_interval=2,
+                     goal_epochs=5)
+    sim.save()
+    return HttpResponse("Failed to reach deployer", 500)
+"""
 
 def post_sim(request):  #TODO: add a version that allows file upload for Dataset
     modelForm = UploadModelFileForm(request.POST, request.FILES)

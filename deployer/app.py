@@ -18,14 +18,14 @@ def make_simulation():
     print_flask(request.data)
     data = request.get_json(force=True)
     print_flask('data'+str(len(data)))
-    if data[1]['id'] is not None:
-        sim_id = int(data[1]['id'])
+    if data['conf']['id'] is not None:
+        sim_id = int(data['conf']['id'])
         print_flask('Using id given by server')
     else:
         #TODO:remove this, ID always comes from server
         id_gen = uuid.uuid4()
         sim_id = id_gen.int
-    result = make_simualtion.delay(sim_id,data[0],data[1])
+    result = make_simualtion.delay(sim_id,data['model'],data['conf'])
     result.wait()
     resp = jsonify(success=True)
     return resp
