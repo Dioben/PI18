@@ -61,6 +61,12 @@ def simulation_create(request):
 def simulation_info(request, id):
     if not request.user.is_authenticated:
         return HttpResponse("Please Log In", 403)
+    if request.method == 'POST':
+        if request.POST['method'] == 'delete':
+            request.method = 'DELETE'
+            response = get_simulation(request, id)
+            if type(response) == HttpResponse and response.status_code == 200:
+                return redirect('/simulations/')
     return render(request, 'simulationInfo.html')
 """
 def simulation_createTest(request):
