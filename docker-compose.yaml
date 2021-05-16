@@ -37,6 +37,8 @@ services:
         #build: ./server
         ports: 
          - "8000:8000"
+        volumes:
+            - ./datasetstore:/all_datasets
         depends_on:
             db:
                 condition: service_healthy
@@ -50,7 +52,7 @@ services:
             - "6380"
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-
+            - ./datasetstore:/all_datasets
         environment:
             - FLASK_ENV=development
         command: flask run -p 7000 --host 0.0.0.0
@@ -61,6 +63,7 @@ services:
         command: celery -A app:celery worker --loglevel=info
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
+            - ./datasetstore:/all_datasets
     celery_deployer:
         container_name: redis_deployer
         image: redis:latest
