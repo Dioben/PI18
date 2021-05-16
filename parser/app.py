@@ -30,10 +30,10 @@ logger = get_task_logger(__name__)
 def update_simulation():
     logger.info("/update called")
     print("/update called", file=sys.stderr)
-    simulation_data = request.get_json()
+    simulation_data = request.get_json(force=True)
+    print(type(simulation_data), file=sys.stderr)
 
     result = update_data_sent.delay(simulation_data)
-    result.wait()
     return 'All good'
 
 @app.route('/finish', methods=['POST'])
@@ -41,7 +41,6 @@ def finish_simulation():
     simulation_data = request.get_json()
     print("/finish called", file=sys.stderr)
     result = finish_data_sent.delay(simulation_data)
-    result.wait()
     return 'All good'
 
 def make_celery(app):
@@ -83,6 +82,7 @@ def update_data_sent(json_file):
     return None
 
 def process_data(data_dict):
+    logger.info(type(data_dict['weights']))
     for i in range(len(data_dict['weights'])):
         layer_data = data_dict['weights'][i]
         print('layer ',i,':',len(layer_data))
@@ -90,7 +90,7 @@ def process_data(data_dict):
     loss = data_dict['logs']['loss']
     accuracy = data_dict['logs']['accuracy']
     epoch = data_dict['epoch']
-    simid = uuid.UUID(str(data_dict['sim_id']))
+    simid = uuid.UUID(int=int(data_dict['sim_id']))
     print(simid)
     return simid, epoch, weights, loss, accuracy
 

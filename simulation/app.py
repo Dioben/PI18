@@ -80,7 +80,7 @@ print(type(dataset_test),file=sys.stderr)
 print(type(dataset_train))
 
 #Get URL to aggregator
-url = 'http://parser:6000'
+url = 'http://parser:6000/update'
 
 def get_optimizer_tensorflow(conf_json):
     if 'adadelta' in conf_json['optimizer'].lower():
@@ -143,7 +143,7 @@ class DataAggregateCallback(tf.keras.callbacks.Callback):
                     out = listify_numpy_arr(model.layers[i].get_weights())
                     #print(f'For Layer {i} got weights {out}')
                     weigths.append(out)
-
+            print('Here after wigths')
             #print(f'For Layer {i} got output {np.array(features[i]).shape}')
 
             #weigths = [model.layers[i].get_weigths() for i in range(len(model.layers)) if model.layers[i].weights != []] 
@@ -162,9 +162,16 @@ class DataAggregateCallback(tf.keras.callbacks.Callback):
 
             res_dic["weights"] = weigths
 
-            data = json.dumps(res_dic)
+            data = res_dic
+            print('Here after json')
             print(len(data),file=sys.stderr)
-            res = requests.post(url, json = data)
+            try:
+                headers = {'Content-type': 'application/json'}
+                res = requests.post(url, json = data,headers=headers,timeout=50)
+            except Exception as error:
+                print(error)
+                print("Exception")
+            print('Here after post')
             print('Post status:',res,file=sys.stderr)
 
 model.fit(dataset_train, batch_size=BATCH_SIZE, epochs=EPOCHS
