@@ -1,5 +1,5 @@
-from keras.layers import LayerNormalization
 import tensorflow as tf
+from tensorflow.keras.layers import LayerNormalization
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D, Input, BatchNormalization
 import time

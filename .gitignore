@@ -30,3 +30,5 @@ deployer/dataset/dataset_test.npz
 deployer/dataset/dataset_train.npz
 simulation/dataset_test.npz
 simulation/dataset_train.npz
+deployer/conf.json
+deployer/model.json
