@@ -78,7 +78,7 @@ print(type(dataset_test))
 print(type(dataset_train))
 
 #Get URL to aggregator
-url = '/localhost/aggregator'
+url = 'http://parser:6000'
 
 def get_optimizer_tensorflow(conf_json):
     if 'adadelta' in conf_json['optimizer'].lower():
@@ -154,12 +154,16 @@ class DataAggregateCallback(keras.callbacks.Callback):
 
             res_dic["logs"] = logs
 
+            res_dic["sim_id"] = conf_json["id"]
+
+            res_dic["epoch"] = epoch
+
             res_dic["weights"] = weigths
 
             data = json.dumps(res_dic)
             print(len(data))
-            #res = requests.post(url, json = data)
-            #print('Post status:',res)
+            res = requests.post(url, json = data)
+            print('Post status:',res)
 
 model.fit(dataset_train, batch_size=BATCH_SIZE, epochs=EPOCHS
           , callbacks= [DataAggregateCallback()])
