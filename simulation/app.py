@@ -12,7 +12,9 @@ import re
 import os
 import urllib.request
 import json
+import sys
 
+print("Simulation start",file=sys.stderr)
 #Read files from pre-defined directory
 DIR_FILES = "."
 with open(os.path.join(DIR_FILES,"model_npz.json"),"r") as model_file:
@@ -74,7 +76,7 @@ def load_database(path_given,conf_json,type_file='train'):
 
 dataset_train = load_database(train_path,conf_json)
 dataset_test = load_database(test_path,conf_json)
-print(type(dataset_test))
+print(type(dataset_test),file=sys.stderr)
 print(type(dataset_train))
 
 #Get URL to aggregator
@@ -128,7 +130,7 @@ def listify_numpy_arr(lst):
 class DataAggregateCallback(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         if epoch % EPOCH_PERIOD == 0:
-            print('Post to aggregator')
+            print('Post to aggregator',file=sys.stderr)
 
             logs = {i : logs[i] for i in logs.keys()}
 
@@ -161,9 +163,9 @@ class DataAggregateCallback(keras.callbacks.Callback):
             res_dic["weights"] = weigths
 
             data = json.dumps(res_dic)
-            print(len(data))
+            print(len(data),file=sys.stderr)
             res = requests.post(url, json = data)
-            print('Post status:',res)
+            print('Post status:',res,file=sys.stderr)
 
 model.fit(dataset_train, batch_size=BATCH_SIZE, epochs=EPOCHS
           , callbacks= [DataAggregateCallback()])
