@@ -36,9 +36,15 @@
                                 {% if simulation.isdone %}
                                     <button class="btn p-0 me-1 text-secondary" disabled><i class="fas fa-play"></i></button>
                                 {% elif simulation.isrunning %}
-                                    <button class="btn p-0 me-1" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fas fa-pause"></i></button>
+                                    <form method="post" action="/simulations/command/{{ simulation.id.int }}/PAUSE">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn p-0 me-1"><i class="fas fa-pause"></i></button>
+                                    </form>
                                 {% else %}
-                                    <button class="btn p-0 me-1" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fa fa-play"></i></button>
+                                    <form method="post" action="/simulations/command/{{ simulation.id.int }}/START">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn p-0 me-1"><i class="fa fa-play"></i></button>
+                                    </form>
                                 {% endif %}
                             </div>
                             <div class="progress flex-grow-1" style="height: 25px">
@@ -80,7 +86,7 @@
                     Are you sure you want to delete this simulation?
                 </div>
                 <div class="modal-footer d-flex justify-content-center">
-                    <form action="." method="POST">
+                    <form action="/simulations/command/{{ simulation.id.int }}/STOP" method="POST">
                         {% csrf_token %}
                         <input type="hidden" name="method" value="delete">
                         <button type="submit" class="btn btn-primary">Yes</button>
@@ -91,17 +97,19 @@
         </div>
     </div>
 
-    <div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body d-flex justify-content-center my-3">
-                    This simulation has been resumed/paused. / Server message
-                </div>
-                <div class="modal-footer d-flex justify-content-center">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Ok</button>
+    {% if notification != None %}
+        <div class="modal show" id="notificationModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body d-flex justify-content-center my-3">
+                        {{ notification }}
+                    </div>
+                    <div class="modal-footer d-flex justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Ok</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    {% endif %}
 {% endblock %}
 

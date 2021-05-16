@@ -1,4 +1,5 @@
 import json
+import sys
 
 from django.contrib import auth
 from django.shortcuts import render, redirect
@@ -20,10 +21,14 @@ def index(request):
 
 
 def login(request):
+    if request.user.is_authenticated:
+        return redirect('/simulations/')
     return render(request, 'login.html')
 
 
 def signup(request):
+    if request.user.is_authenticated:
+        return redirect('/simulations/')
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -46,6 +51,7 @@ def simulation_list(request):
         return response
     t_parms = {
         'simulations': response,
+        'notification': request.GET['notification'] if 'notification' in request.GET else None,
     }
     return render(request, 'simulations.html', t_parms)
 
@@ -57,53 +63,54 @@ def simulation_create(request):
         response = simulations(request)
         if type(response) is HttpResponse:
             return response
-        redirect('/simulations/'+response.id)
+        return redirect('/simulations/' + str(response.id.int))
     return render(request, 'simulationCreate.html', {'fileForm': UploadModelFileForm(), 'configForm': ConfSimForm()})
 
 
 def simulation_info(request, id):
     if not request.user.is_authenticated:
         return HttpResponse("Please Log In", 403)
-    if request.method == 'POST':
-        if request.POST['method'] == 'delete':
-            request.method = 'DELETE'
-            response = get_simulation(request, id)
-            if type(response) == HttpResponse and response.status_code == 200:
-                return redirect('/simulations/')
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
     t_params = {
-        'simulation': response
+        'simulation': response,
+        'notification': request.GET['notification'] if 'notification' in request.GET else None,
     }
     return render(request, 'simulationInfo.html', t_params)
-"""
-def simulation_createTest(request):
-    sim = Simulation(owner=User.objects.get(username="admin"), isdone=False, isrunning=False, model="modeltext",
-                     name="Sim 1", layers=4,
-                     biases=bytes("test_string", 'utf-8'), epoch_interval=2,
-                     goal_epochs=5)
-    sim.save()
-    return HttpResponse("Failed to reach deployer", 500)
-"""
 
-def post_sim(request):  #TODO: add a version that allows file upload for Dataset
+
+def simulation_command(request, id, command):
+    simName = Simulation.objects.get(id__exact=id).name
+    response = command_simulation(request, command, id)
+    if response.status_code == 200:
+        sim = Simulation.objects.filter(id__exact=id, owner=request.user)
+        if sim.exists():
+            sim = sim.get()
+            if sim.isrunning:
+                return redirect(request.path_info+"?notification=Simulation \""+simName+"\" has been resumed.")
+            return redirect(request.path_info+"?notification=Simulation \""+simName+"\" has been paused.")
+        return redirect('/simulations/'+"?notification=Simulation \""+simName+"\" has been deleted.")
+    return response
+
+
+def post_sim(request):  # TODO: add a version that allows file upload for Dataset
     modelForm = UploadModelFileForm(request.POST, request.FILES)
-    confForm = ConfSimForm(request.POST)
+    confForm = ConfSimForm(request.POST, request.FILES)
     if modelForm.is_valid() and confForm.is_valid():
         model = request.FILES['model']
         modeltext = b''
         for chunk in model.chunks():
             modeltext += chunk
         modeljson = json.loads(modeltext)
-        #TODO: This is probably not what Silva wants
+        # TODO: This is probably not what Silva wants
         biastext = "["
         for layer in modeljson['config']:
             if 'bias_initializer' in layer:
-                biastext+=f"{{{layer['bias_initializer']}}},"
+                biastext += f"{{{layer['bias_initializer']}}},"
             else:
-                biastext+=f"{{ }},"
-        biastext+= "]"
+                biastext += f"{{ }},"
+        biastext += "]"
 
         sim = Simulation(owner=request.user,
                          isdone=False,
@@ -116,20 +123,37 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
                          goal_epochs=confForm.cleaned_data["max_epochs"])
         sim.save()
 
-        trainset = confForm.cleaned_data['train_dataset_url']
-        if "test_dataset_url" in confForm.cleaned_data.keys():
-            testset = confForm.cleaned_data['test_dataset_url']
+        trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.npz'
+        if "test_dataset" in request.FILES:
+            testset = '/all_datasets/' + str(sim.id) + '-dataset_test.npz'
+            f = open(testset, 'wb+')
+            for chunk in request.FILES['test_dataset'].chunks():
+                f.write(chunk)
+            f.close()
         else:
             testset = trainset
+        f = open(trainset, 'wb+')
+        for chunk in request.FILES['train_dataset'].chunks():
+            f.write(chunk)
+        f.close()
 
         postdata = {
             "conf": {
                 "id": str(sim.id.int),
                 "dataset_train": trainset,
                 "dataset_test": testset,
-                "dataset_url": True,
+                "dataset_url": False,
+                "batch_size": confForm.cleaned_data['batch_size'],
                 "epochs": sim.goal_epochs,
-                "interval": sim.epoch_interval
+                "epoch_period": sim.epoch_interval,
+                "train_feature_name": "x_train",
+                "train_label_name": "y_train",
+                "test_feature_name": "x_test",
+                "test_label_name": "y_test",
+                "optimizer": "rmsprop",
+                "loss_function": "SparseCategoricalCrossentropy",
+                "from_logits": True,
+                "validation_split": 0.3
             },
             "model": json.loads(sim.model)
         }
@@ -142,7 +166,6 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
         return HttpResponse("Failed to reach deployer", 500)
     else:
         return HttpResponse("Bad request", 400)
-
 
 
 @csrf_exempt
@@ -173,20 +196,21 @@ def get_simulation(request, id):
 
 
 def command_start(request, id):  # return the objects you're acting on in these
-    sim = Simulation.objects.get(id)
+    sim = Simulation.objects.get(id=id)
     requests.post(f'http://tracker-deployer:7000/simulations/{id}/START')
     sim.isrunning = True
-    return HttpResponse(sim,200)
+    return HttpResponse(sim, 200)
+
 
 def command_stop(request, id):
-    sim = Simulation.objects.get(id)
+    sim = Simulation.objects.get(id=id)
     requests.delete(f'http://tracker-deployer:7000/simulations/{id}')
     sim.delete()
     return HttpResponse(sim, 200)
 
 
 def command_pause(request, id):
-    sim = Simulation.objects.get(id)
+    sim = Simulation.objects.get(id=id)
     requests.post(f'http://tracker-deployer:7000/simulations/{id}/PAUSE')
     sim.isrunning = False
     sim.save()
@@ -196,9 +220,9 @@ def command_pause(request, id):
 @csrf_exempt
 def command_simulation(request, command, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please log in",403)
-    if not Simulation.objects.filter(id__exact=id,owner=request.user).exists():
-        return HttpResponse("You do not own this simulation",403)
+        return HttpResponse("Please log in", 403)
+    if not Simulation.objects.filter(id__exact=id, owner=request.user).exists():
+        return HttpResponse("You do not own this simulation", 403)
     if command == "START":
         return command_start(request, id)
     elif command == "STOP":

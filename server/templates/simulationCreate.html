@@ -23,6 +23,10 @@
                             {{ configForm.name.label_tag }}
                         </div>
                         <div class="form-floating mb-3">
+                            {{ configForm.batch_size }}
+                            {{ configForm.batch_size.label_tag }}
+                        </div>
+                        <div class="form-floating mb-3">
                             {{ configForm.max_epochs }}
                             {{ configForm.max_epochs.label_tag }}
                         </div>
@@ -30,13 +34,13 @@
                             {{ configForm.logging_interval }}
                             {{ configForm.logging_interval.label_tag }}
                         </div>
-                        <div class="form-floating mb-3">
-                            {{ configForm.train_dataset_url }}
-                            {{ configForm.train_dataset_url.label_tag }}
+                        <div class="mb-3 d-flex">
+                            <label for="{{ configForm.train_dataset.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ configForm.train_dataset.label }}</label>
+                            {{ configForm.train_dataset }}
                         </div>
-                        <div class="form-floating mb-3">
-                            {{ configForm.test_dataset_url }}
-                            {{ configForm.test_dataset_url.label_tag }}
+                        <div class="mb-3 d-flex">
+                            <label for="{{ configForm.test_dataset.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ configForm.test_dataset.label }}</label>
+                            {{ configForm.test_dataset }}
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Create</button>
