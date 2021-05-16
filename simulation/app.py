@@ -78,7 +78,7 @@ print(type(dataset_test))
 print(type(dataset_train))
 
 #Get URL to aggregator
-url = '/localhost/aggregator'
+url = 'http://parser:6000'
 
 def get_optimizer_tensorflow(conf_json):
     if 'adadelta' in conf_json['optimizer'].lower():
