@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:nightly
+FROM tensorflow/tensorflow
 WORKDIR /app 
 COPY /simulation /app
 RUN pip3 install -r requirements.txt --no-cache-dir
