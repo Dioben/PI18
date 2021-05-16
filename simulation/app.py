@@ -158,7 +158,7 @@ class DataAggregateCallback(keras.callbacks.Callback):
 
             data = json.dumps(res_dic)
             print(len(data))
-            #res = requests.post(url, json = data)
+            res = requests.post(url, json = data)
             #print('Post status:',res)
 
 model.fit(dataset_train, batch_size=BATCH_SIZE, epochs=EPOCHS
