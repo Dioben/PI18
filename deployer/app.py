@@ -26,20 +26,17 @@ def make_simulation():
         id_gen = uuid.uuid4()
         sim_id = id_gen.int
     result = make_simualtion.delay(sim_id,data['model'],data['conf'])
-    result.wait()
     resp = jsonify(success=True)
     return resp
 
 @app.route('/simulations/<simulation_id>', methods=['DELETE'])
 def delete_simulation(simulation_id):
     result = delete_simulation.delay(simulation_id)
-    result.wait() 
     return 'All good'
 
 @app.route('/simulations/<simulation_id>/<command>', methods=['POST'])
 def change_simulation(simulation_id,command):
     result = change_simulation.delay(simulation_id,command)
-    result.wait() 
     return 'All good'
 
 def print_flask(input):
@@ -88,9 +85,10 @@ def make_simualtion(sim_id,model_data,conf_data):
     print_flask('Making new sim of id:'+str(sim_id))
     #Path where to put all data simlation needs
     #TODO:Replace this with /files after updating image in docker hub
-    dest_path = '.'
+    dest_path = '/app'
     #For all files needed tar them and put them in container
     tar_model = get_tarstream(json.dumps(model_data).encode('utf8'),"model.json")
+    print_flask(str(tar_model))
     tar_conf = get_tarstream(json.dumps(conf_data).encode('utf8'),"conf.json")
     print_flask('Conversion to tar for both jsons')
 
@@ -106,15 +104,19 @@ def make_simualtion(sim_id,model_data,conf_data):
     else:
         #Copy dataset files from path given to containner
         path_test = conf_data["dataset_test"]
-        file_test = open(path_test,'rb').read()
+        file_obj_test = open(path_test,'rb')
+        file_test = file_obj_test.read()
+        file_obj_test.close()
         tar_test = get_tarstream(file_test,"dataset_test.csv")
         success = container_made.put_archive(dest_path, tar_test)
         print_flask('Put test tar:'+str(success))
 
         path_train = conf_data["dataset_train"]
-        file_train = open(path_train,'rb').read()
+        file_obj_train = open(path_train,'rb')
+        file_train = file_obj_train.read()
+        file_obj_train.close()
         tar_train = get_tarstream(file_train,"dataset_train.csv")
-        success = container_made.put_archive(dest_path, tar_test)
+        success = container_made.put_archive(dest_path, tar_train)
         print_flask('Put train tar:'+str(success))
 
     success = container_made.put_archive(dest_path, tar_model)

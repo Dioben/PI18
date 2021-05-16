@@ -13,3 +13,16 @@ README.md.backup
 /timescaledbdocker/data/*
 /server/app/__pycache__
 /server/NeuralNetTracker/__pycache__
+deployer/test_api.py
+deployer/test_docker.py
+.gitignore
+deployer/dataset/mnist_test.csv
+deployer/dataset/mnist_train.csv
+simulation/dataset_test.csv
+simulation/dataset_train.csv
+simulation/dataset_train_dataset_test.npz
+simulation/conf_npz.json
+simulation/conf.json
+simulation/model_npz.json
+simulation/model.json
+simulation/test.py
