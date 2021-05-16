@@ -45,9 +45,9 @@
                                 {% if simulation.isdone %}
                                     <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100%</div>
                                 {% elif simulation.isrunning %}
-                                    <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{ simulation.epoch_interval|div:simulation.goal_epochs|mul:100 }}%" aria-valuenow="{{ simulation.epoch_interval|div:simulation.goal_epochs|mul:100 }}" aria-valuemin="0" aria-valuemax="100">{{ simulation.epoch_interval|div:simulation.goal_epochs|mul:100 }}%</div>
+                                    <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{ simulation.current_epoch.epoch|div:simulation.goal_epochs|mul:100 }}%" aria-valuenow="{{ simulation.current_epoch.epoch|div:simulation.goal_epochs|mul:100 }}" aria-valuemin="0" aria-valuemax="100">{{ simulation.current_epoch.epoch|div:simulation.goal_epochs|mul:100 }}%</div>
                                 {% else %}
-                                    <div class="progress-bar progress-bar-striped bg-secondary" role="progressbar" style="width: {{ simulation.epoch_interval|div:simulation.goal_epochs|mul:100 }}%" aria-valuenow="{{ simulation.epoch_interval|div:simulation.goal_epochs|mul:100 }}" aria-valuemin="0" aria-valuemax="100">{{ simulation.epoch_interval|div:simulation.goal_epochs|mul:100 }}%</div>
+                                    <div class="progress-bar progress-bar-striped bg-secondary" role="progressbar" style="width: {{ simulation.current_epoch.epoch|div:simulation.goal_epochs|mul:100 }}%" aria-valuenow="{{ simulation.current_epoch.epoch|div:simulation.goal_epochs|mul:100 }}" aria-valuemin="0" aria-valuemax="100">{{ simulation.current_epoch.epoch|div:simulation.goal_epochs|mul:100 }}%</div>
                                 {% endif %}
                             </div>
                         </div>
