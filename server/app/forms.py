@@ -49,17 +49,25 @@ class ConfSimForm(forms.Form):
             }
         )
     )
-    train_dataset_url = forms.URLField(
-        widget=forms.TextInput(
+    batch_size = forms.IntegerField(
+        validators=[MinValueValidator(1)],
+        widget=forms.NumberInput(
             attrs={
                 'class': 'form-control'
             }
         )
     )
-    test_dataset_url = forms.URLField(
+    train_dataset = forms.FileField(
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    test_dataset = forms.FileField(
         required=False,
         help_text="If absent we will use the training dataset",
-        widget=forms.TextInput(
+        widget=forms.FileInput(
             attrs={
                 'class': 'form-control'
             }

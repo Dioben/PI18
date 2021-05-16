@@ -4,7 +4,6 @@ from django.contrib import auth
 from django.shortcuts import render, redirect
 
 # Create your views here.
-from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -57,7 +56,7 @@ def simulation_create(request):
         response = simulations(request)
         if type(response) is HttpResponse:
             return response
-        redirect('/simulations/'+response.id)
+        redirect('/simulations/'+str(response.id.int))
     return render(request, 'simulationCreate.html', {'fileForm': UploadModelFileForm(), 'configForm': ConfSimForm()})
 
 
@@ -77,19 +76,10 @@ def simulation_info(request, id):
         'simulation': response
     }
     return render(request, 'simulationInfo.html', t_params)
-"""
-def simulation_createTest(request):
-    sim = Simulation(owner=User.objects.get(username="admin"), isdone=False, isrunning=False, model="modeltext",
-                     name="Sim 1", layers=4,
-                     biases=bytes("test_string", 'utf-8'), epoch_interval=2,
-                     goal_epochs=5)
-    sim.save()
-    return HttpResponse("Failed to reach deployer", 500)
-"""
 
 def post_sim(request):  #TODO: add a version that allows file upload for Dataset
     modelForm = UploadModelFileForm(request.POST, request.FILES)
-    confForm = ConfSimForm(request.POST)
+    confForm = ConfSimForm(request.POST, request.FILES)
     if modelForm.is_valid() and confForm.is_valid():
         model = request.FILES['model']
         modeltext = b''
@@ -116,20 +106,37 @@ def post_sim(request):  #TODO: add a version that allows file upload for Dataset
                          goal_epochs=confForm.cleaned_data["max_epochs"])
         sim.save()
 
-        trainset = confForm.cleaned_data['train_dataset_url']
-        if "test_dataset_url" in confForm.cleaned_data.keys():
-            testset = confForm.cleaned_data['test_dataset_url']
+        trainset = '/all_datasets/'+str(sim.id)+'-dataset_train.npz'
+        if "test_dataset" in request.FILES:
+            testset = '/all_datasets/'+str(sim.id)+'-dataset_test.npz'
+            f = open(testset, 'wb+')
+            for chunk in request.FILES['test_dataset'].chunks():
+                f.write(chunk)
+            f.close()
         else:
             testset = trainset
+        f = open(trainset, 'wb+')
+        for chunk in request.FILES['train_dataset'].chunks():
+            f.write(chunk)
+        f.close()
 
         postdata = {
             "conf": {
                 "id": str(sim.id.int),
                 "dataset_train": trainset,
                 "dataset_test": testset,
-                "dataset_url": True,
+                "dataset_url": False,
+                "batch_size": confForm.cleaned_data['batch_size'],
                 "epochs": sim.goal_epochs,
-                "interval": sim.epoch_interval
+                "epoch_period": sim.epoch_interval,
+                "train_feature_name": "x_train",
+                "train_label_name": "y_train",
+                "test_feature_name": "x_test",
+                "test_label_name": "y_test",
+                "optimizer": "rmsprop",
+                "loss_function": "SparseCategoricalCrossentropy",
+                "from_logits": True,
+                "validation_split": 0.3
             },
             "model": json.loads(sim.model)
         }
