@@ -628,14 +628,19 @@ progress {
     max-width: 1320px;
   }
 }
+@media (min-width: 1800px) {
+  .container-xxl, .container-xl, .container-lg, .container-md, .container-sm, .container {
+    max-width: 1600px;
+  }
+}
 .row {
   --bs-gutter-x: 1.5rem;
   --bs-gutter-y: 0;
   display: flex;
   flex-wrap: wrap;
   margin-top: calc(var(--bs-gutter-y) * -1);
-  margin-right: calc(var(--bs-gutter-x) / -2);
-  margin-left: calc(var(--bs-gutter-x) / -2);
+  /*margin-right: calc(var(--bs-gutter-x) / -2);*/
+  /*margin-left: calc(var(--bs-gutter-x) / -2);*/
 }
 .row > * {
   flex-shrink: 0;
