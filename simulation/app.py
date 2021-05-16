@@ -129,7 +129,7 @@ def listify_numpy_arr(lst):
 
 class DataAggregateCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
-        if epoch % EPOCH_PERIOD == 0:
+        if epoch % EPOCH_PERIOD == 0 or epoch == EPOCHS-1:
             print('Post to aggregator',file=sys.stderr)
 
             logs = {i : logs[i] for i in logs.keys()}
