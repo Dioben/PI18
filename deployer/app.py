@@ -146,11 +146,20 @@ def change_simulation(simulation_id,command):
     try:
         containner = client.containers.get(simulation_id)
         if 'START' in command:
-            containner.unpause()
+            if containner.status == 'paused':
+                containner.unpause()
+            else:
+                print_flask('ERROR:Trying to unpause while running')
         elif 'PAUSE' in command:
-            containner.pause()
+            if containner.status == 'running':
+                containner.pause()
+            else:
+                print_flask('ERROR:Trying to pause while paused already')
         elif 'STOP' in command:
-            containner.stop()
+            if containner.status == 'running':
+                containner.stop()
+            else:
+                print_flask('ERROR:Trying to stop while not running')
         else:
             print_flask('ERROR:','Given invalid command ',command)
     except Exception as e:
