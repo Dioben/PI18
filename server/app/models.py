@@ -19,6 +19,11 @@ class Simulation(models.Model):
     layers = models.IntegerField()
     epoch_interval = models.IntegerField(validators=[MinValueValidator(1)])
     goal_epochs = models.IntegerField()
+
+    def get_current_epoch(self):
+        return Update.objects.filter(sim=self.id).latest('time')
+    current_epoch = property(get_current_epoch)
+
     #insert more stats/goals here
     class Meta:
         db_table = "simulations"

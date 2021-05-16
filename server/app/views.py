@@ -45,7 +45,7 @@ def simulation_list(request):
     if type(response) == HttpResponse:
         return response
     t_parms = {
-        'simulations': response
+        'simulations': response,
     }
     return render(request, 'simulations.html', t_parms)
 
