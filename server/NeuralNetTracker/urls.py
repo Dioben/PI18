@@ -24,6 +24,7 @@ urlpatterns = [
     path('', views.index, name="Frontpage"),
     path('simulations/', views.simulation_list, name="SimulationList"),
     path('simulations/create/', views.simulation_create, name="SimulationCreate"),
+    path('simulations/command/<int:id>/<str:command>', views.simulation_command, name="SimulationCommand"),
     path('simulations/<int:id>/', views.simulation_info, name="SimulationInfo"),
     path('api/simulations/', views.simulations, name="Simulations"),
     path('api/simulations/<str:id>/', views.get_simulation, name="GetSimulation"),

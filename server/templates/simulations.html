@@ -37,9 +37,15 @@
                             {% if simulation.isdone %}
                                 <button class="btn p-0 ms-2 text-secondary" disabled><i class="fas fa-play fa-sm"></i></button>
                             {% elif simulation.isrunning %}
-                                <button class="btn p-0 ms-2" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fas fa-pause fa-sm"></i></button>
+                                <form method="post" action="/simulations/command/{{ simulation.id.int }}/PAUSE">
+                                    {% csrf_token %}
+                                    <button class="btn p-0 ms-2" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fas fa-pause fa-sm"></i></button>
+                                </form>
                             {% else %}
-                                <button class="btn p-0 ms-2" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fa fa-play fa-sm"></i></button>
+                                <form method="post" action="/simulations/command/{{ simulation.id.int }}/START">
+                                    {% csrf_token %}
+                                    <button class="btn p-0 ms-2" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fa fa-play fa-sm"></i></button>
+                                </form>
                             {% endif %}
                             <button class="btn p-0 ms-2" style="color: red" data-bs-toggle="modal" data-bs-target="#deleteModal{{ simulation.pk }}"><i class="fa fa-trash fa-sm"></i></button>
 
@@ -50,7 +56,7 @@
                                             Are you sure you want to delete the simulation "{{ simulation.name }}"?
                                         </div>
                                         <div class="modal-footer d-flex justify-content-center">
-                                            <form action="{{ simulation.pk.int }}/" method="POST">
+                                            <form action="/simulations/command/{{ simulation.pk.int }}/STOP" method="POST">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="method" value="delete">
                                                 <button type="submit" class="btn btn-primary">Yes</button>
@@ -92,17 +98,19 @@
     +
     </a>
 
-    <div class="modal fade" id="notificationModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body d-flex justify-content-center my-3">
-                    Simulation "XXX" has been resumed/paused. / Server message
-                </div>
-                <div class="modal-footer d-flex justify-content-center">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Ok</button>
+    {% if notification != None %}
+        <div class="modal show" id="notificationModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body d-flex justify-content-center my-3">
+                        {{ notification }}
+                    </div>
+                    <div class="modal-footer d-flex justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Ok</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    {% endif %}
 {% endblock %}
 
