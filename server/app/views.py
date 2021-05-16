@@ -44,6 +44,11 @@ def signup(request):
 
 
 def simulation_list(request):
+    notification = None
+    if 'notification' in request.session:
+        notification = request.session['notification']
+        del request.session['notification']
+        request.session.modified = True
     if not request.user.is_authenticated:
         return HttpResponse("Please Log In", 403)
     response = simulations(request)
@@ -51,7 +56,7 @@ def simulation_list(request):
         return response
     t_parms = {
         'simulations': response,
-        'notification': request.GET['notification'] if 'notification' in request.GET else None,
+        'notification': notification,
     }
     return render(request, 'simulations.html', t_parms)
 
@@ -68,6 +73,11 @@ def simulation_create(request):
 
 
 def simulation_info(request, id):
+    notification = None
+    if 'notification' in request.session:
+        notification = request.session['notification']
+        del request.session['notification']
+        request.session.modified = True
     if not request.user.is_authenticated:
         return HttpResponse("Please Log In", 403)
     response = get_simulation(request, id)
@@ -75,7 +85,7 @@ def simulation_info(request, id):
         return response
     t_params = {
         'simulation': response,
-        'notification': request.GET['notification'] if 'notification' in request.GET else None,
+        'notification': notification,
     }
     return render(request, 'simulationInfo.html', t_params)
 
@@ -88,9 +98,15 @@ def simulation_command(request, id, command):
         if sim.exists():
             sim = sim.get()
             if sim.isrunning:
-                return redirect(request.path_info+"?notification=Simulation \""+simName+"\" has been resumed.")
-            return redirect(request.path_info+"?notification=Simulation \""+simName+"\" has been paused.")
-        return redirect('/simulations/'+"?notification=Simulation \""+simName+"\" has been deleted.")
+                request.session['notification'] = "Simulation \""+simName+"\" has been resumed."
+                request.session.modified = True
+                return redirect(request.path_info)
+            request.session['notification'] = "Simulation \""+simName+"\" has been paused."
+            request.session.modified = True
+            return redirect(request.path_info)
+        request.session['notification'] = "Simulation \""+simName+"\" has been deleted."
+        request.session.modified = True
+        return redirect('/simulations/')
     return response
 
 
