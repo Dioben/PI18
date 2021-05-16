@@ -90,7 +90,7 @@ def process_data(data_dict):
     loss = data_dict['logs']['loss']
     accuracy = data_dict['logs']['accuracy']
     epoch = data_dict['epoch']
-    simid = uuid.UUID(str(data_dict['sim_id']))
+    simid = uuid.UUID(int=int(data_dict['sim_id']))
     print(simid)
     return simid, epoch, weights, loss, accuracy
 
