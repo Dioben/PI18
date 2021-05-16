@@ -1,3 +1,4 @@
+from tensorflow.keras.layers import LayerNormalization
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D, Input, BatchNormalization
@@ -7,7 +8,6 @@ import requests
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import model_from_json
-from tensorflow import keras
 import re
 import os
 import urllib.request
@@ -17,9 +17,9 @@ import sys
 print("Simulation start",file=sys.stderr)
 #Read files from pre-defined directory
 DIR_FILES = "."
-with open(os.path.join(DIR_FILES,"model_npz.json"),"r") as model_file:
+with open(os.path.join(DIR_FILES,"model.json"),"r") as model_file:
     model_json = model_file.read()
-with open(os.path.join(DIR_FILES,"conf_npz.json"),"r") as conf_file:
+with open(os.path.join(DIR_FILES,"conf.json"),"r") as conf_file:
     conf_txt = conf_file.read()
     conf_json = json.loads(conf_txt)
 
@@ -127,7 +127,7 @@ def listify_numpy_arr(lst):
             lst[i] = listify_numpy_arr(lst[i])
     return lst
 
-class DataAggregateCallback(keras.callbacks.Callback):
+class DataAggregateCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         if epoch % EPOCH_PERIOD == 0:
             print('Post to aggregator',file=sys.stderr)

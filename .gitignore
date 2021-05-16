@@ -26,3 +26,7 @@ simulation/conf.json
 simulation/model_npz.json
 simulation/model.json
 simulation/test.py
+deployer/dataset/dataset_test.npz
+deployer/dataset/dataset_train.npz
+simulation/dataset_test.npz
+simulation/dataset_train.npz
