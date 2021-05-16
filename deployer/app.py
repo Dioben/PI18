@@ -124,6 +124,9 @@ def make_simualtion(sim_id,model_data,conf_data):
     success = container_made.put_archive(dest_path, tar_conf)
     print_flask('Put concif tar:'+str(success))
 
+    networks_available = client.networks.list(names=['pi18_default'])
+    network = networks_available[0]
+    network.connect(container_made)
     container_made.start()
     print_flask('Started script')
 
