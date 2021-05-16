@@ -36,12 +36,12 @@
                                 {% if simulation.isdone %}
                                     <button class="btn p-0 me-1 text-secondary" disabled><i class="fas fa-play"></i></button>
                                 {% elif simulation.isrunning %}
-                                    <form method="post" action="/simulations/command/{{ simulation.id.int }}/PAUSE">
+                                    <form method="post" class="m-0" action="/simulations/command/{{ simulation.id.int }}/PAUSE">
                                         {% csrf_token %}
                                         <button type="submit" class="btn p-0 me-1"><i class="fas fa-pause"></i></button>
                                     </form>
                                 {% else %}
-                                    <form method="post" action="/simulations/command/{{ simulation.id.int }}/START">
+                                    <form method="post" class="m-0" action="/simulations/command/{{ simulation.id.int }}/START">
                                         {% csrf_token %}
                                         <button type="submit" class="btn p-0 me-1"><i class="fa fa-play"></i></button>
                                     </form>
@@ -98,7 +98,7 @@
     </div>
 
     {% if notification != None %}
-        <div class="modal show" id="notificationModal" tabindex="-1">
+        <div class="modal fade" id="notificationModal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body d-flex justify-content-center my-3">
