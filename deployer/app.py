@@ -107,7 +107,7 @@ def make_simualtion(sim_id,model_data,conf_data):
         file_obj_test = open(path_test,'rb')
         file_test = file_obj_test.read()
         file_obj_test.close()
-        tar_test = get_tarstream(file_test,"dataset_test.csv")
+        tar_test = get_tarstream(file_test,"dataset_test.npz")
         success = container_made.put_archive(dest_path, tar_test)
         print_flask('Put test tar:'+str(success))
 
@@ -115,7 +115,7 @@ def make_simualtion(sim_id,model_data,conf_data):
         file_obj_train = open(path_train,'rb')
         file_train = file_obj_train.read()
         file_obj_train.close()
-        tar_train = get_tarstream(file_train,"dataset_train.csv")
+        tar_train = get_tarstream(file_train,"dataset_train.npz")
         success = container_made.put_archive(dest_path, tar_train)
         print_flask('Put train tar:'+str(success))
 
