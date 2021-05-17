@@ -69,14 +69,14 @@ celery = make_celery(app)
 def update_data_sent(json_file):
     curr = conn.cursor()
     logger.info('update starting')
-    simid, epoch, weights, loss, accuracy = process_data(json_file)
+    simid, epoch, weights, loss, accuracy, val_loss, val_accuracy = process_data(json_file)
     sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
-    sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time) VALUES(%s,%s,%s,%s,%s)"
+    sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss, val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
 
     for w in weights.keys():
         index = w
         curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
-    curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now()))
+    curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(), val_loss, val_accuracy))
     conn.commit()
     curr.close()
     return None
@@ -89,23 +89,25 @@ def process_data(data_dict):
     weights = {str(i) : data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
     loss = data_dict['logs']['loss']
     accuracy = data_dict['logs']['accuracy']
+    val_loss = data_dict['logs']["val_loss"]
+    val_accuracy = data_dict['logs']["val_accuracy"]
     epoch = data_dict['epoch']
     simid = uuid.UUID(int=int(data_dict['sim_id']))
     print(simid)
-    return simid, epoch, weights, loss, accuracy
+    return simid, epoch, weights, loss, accuracy,val_loss,val_accuracy
 
 
 @celery.task()
 def finish_data_sent(json_file):
     curr = conn.cursor()
-    simid, epoch, weights, loss, accuracy = process_data(json_file)
+    simid, epoch, weights, loss, accuracy,val_loss, val_accuracy = process_data(json_file)
     sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
-    sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time) VALUES(%s,%s,%s,%s,%s)"
+    sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss,val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
     sqlUpdate = "UPDATE simulations SET isdone=TRUE, isrunning=FALSE WHERE id=%s"
     for w in weights.keys():
         index = w
         curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
-    curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now()))
+    curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(),val_loss, val_accuracy))
     curr.execute(sqlUpdate,(simid,))
     conn.commit()
     curr.close()
