@@ -2,7 +2,7 @@ BEGIN;
 --
 -- Create model Simulation
 --
-CREATE TABLE "simulations" ("id" uuid NOT NULL PRIMARY KEY, "name" varchar(100) NOT NULL, "model" text NOT NULL, "isdone" boolean NOT NULL, "isrunning" boolean NOT NULL, "biases" bytea NOT NULL, "layers" integer NOT NULL, "epoch_interval" integer NOT NULL, "goal_epochs" integer NOT NULL, "owner_id" integer NOT NULL);
+CREATE TABLE "simulations" ("id" uuid NOT NULL PRIMARY KEY, "name" varchar(100) NOT NULL, "model" text NOT NULL, "learning_rate" double precision NOT NULL, "isdone" boolean NOT NULL, "isrunning" boolean NOT NULL, "biases" bytea NOT NULL, "layers" integer NOT NULL, "epoch_interval" integer NOT NULL, "goal_epochs" integer NOT NULL, "owner_id" integer NOT NULL);
 --
 -- Create model Weights
 --
@@ -13,7 +13,7 @@ SELECT create_hypertable('weights', 'time', chunk_time_interval => interval '1 d
 --
 -- Create model Update
 --
-CREATE TABLE "epoch_values" ("id" bigserial NOT NULL PRIMARY KEY, "time" timestamp with time zone NOT NULL, "epoch" integer NOT NULL, "loss" double precision NOT NULL, "accuracy" double precision NOT NULL, "sim_id" uuid NOT NULL);
+CREATE TABLE "epoch_values" ("id" bigserial NOT NULL PRIMARY KEY, "time" timestamp with time zone NOT NULL, "epoch" integer NOT NULL, "loss" double precision NOT NULL, "accuracy" double precision NOT NULL, "val_loss" double precision NOT NULL, "val_accuracy" double precision NOT NULL, "sim_id" uuid NOT NULL);
 DO $do$ BEGIN IF EXISTS ( SELECT * FROM timescaledb_information.hypertables WHERE hypertable_name = 'epoch_values') THEN RAISE EXCEPTION 'assert failed - ''epoch_values'' should not be a hyper table'; ELSE NULL; END IF;END; $do$;
 ALTER TABLE "epoch_values" DROP CONSTRAINT "epoch_values_pkey";
 SELECT create_hypertable('epoch_values', 'time', chunk_time_interval => interval '1 day', migrate_data => false);
