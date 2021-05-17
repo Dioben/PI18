@@ -136,7 +136,7 @@ def make_simualtion(sim_id,model_data,conf_data):
 def delete_simulation(simulation_id):
     try:
         containner_kill = client.containers.get(simulation_id)
-        containner_kill.kill()
+        containner_kill.remove(force=True)
     except Exception as e:
         print_flask('ERROR:'+str(e))
     return None
