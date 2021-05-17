@@ -61,13 +61,13 @@
                 </div>
             </div>
             <div style="margin-top: 5px;">
-                <nav>
+                {% comment %}<nav>
                     <div class="nav nav-tabs nav-fill" id="tab" role="tablist">
                         <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
                         <button class="nav-link" id="network-tab" data-bs-toggle="tab" data-bs-target="#network" type="button" role="tab" aria-controls="network" aria-selected="false">Network</button>
                     </div>
-                </nav>
-                <div class="tab-content" id="tabContent" style="border: 1px solid #DCDCDE; border-top: none;min-height: 50vh; background-color: white; padding: 8px">
+                </nav>{% endcomment %}
+                <div class="tab-content" id="tabContent" style="border: 1px solid #DCDCDE; {% comment %}border-top: none;{% endcomment %}min-height: 50vh; background-color: white; padding: 8px">
                     <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                         <ul>
                             <li>ID: {{ simulation.id }}</li>
@@ -76,8 +76,9 @@
                             <li>Model: {{ simulation.model }}</li>
                             <li>IsDone: {{ simulation.isdone }}</li>
                             <li>IsRunning: {{ simulation.isrunning }}</li>
-                            <li>Biases: {{ simulation.biases }}</li>
+{#                            <li>Biases: {{ simulation.biases }}</li>#}
                             <li>Layers: {{ simulation.layers }}</li>
+                            <li>Learning rate: {{ simulation.learning_rate }}</li>
                             <li>Epoch period: {{ simulation.epoch_interval }}</li>
                             <li>Total epochs: {{ simulation.goal_epochs }}</li>
                             {% for update in updates %}
@@ -85,6 +86,8 @@
                                 <li>Epoch: {{ update.epoch }}</li>
                                 <li>Loss: {{ update.loss }}</li>
                                 <li>Accuracy: {{ update.accuracy }}</li>
+                                <li>Validation Loss: {{ update.val_loss }}</li>
+                                <li>Validation Accuracy: {{ update.val_accuracy }}</li>
                             {% endfor %}
                         </ul>
                     </div>

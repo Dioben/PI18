@@ -137,7 +137,8 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                          layers=len(modeljson['config']['layers']),
                          biases=bytes(biastext, 'utf-8'),
                          epoch_interval=confForm.cleaned_data["logging_interval"],
-                         goal_epochs=confForm.cleaned_data["max_epochs"])
+                         goal_epochs=confForm.cleaned_data["max_epochs"],
+                         learning_rate=confForm.cleaned_data["learning_rate"])
         sim.save()
 
         trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.npz'
@@ -163,6 +164,7 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                 "batch_size": confForm.cleaned_data['batch_size'],
                 "epochs": sim.goal_epochs,
                 "epoch_period": sim.epoch_interval,
+                "learning_rate": sim.learning_rate,
                 "train_feature_name": "x_train",
                 "train_label_name": "y_train",
                 "test_feature_name": "x_test",
