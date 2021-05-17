@@ -43,6 +43,7 @@ class ConfSimForm(forms.Form):
     )
     logging_interval = forms.IntegerField(
         validators=[MinValueValidator(1)],
+        label='Epoch period',
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control'
@@ -54,6 +55,14 @@ class ConfSimForm(forms.Form):
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control'
+            }
+        )
+    )
+    learning_rate = forms.FloatField(
+        validators=[MinValueValidator(0.00001)],
+        widget=forms.NumberInput(
+            attrs={
+                'class': 'form-control',
             }
         )
     )

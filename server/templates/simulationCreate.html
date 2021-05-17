@@ -34,6 +34,10 @@
                             {{ configForm.logging_interval }}
                             {{ configForm.logging_interval.label_tag }}
                         </div>
+                        <div class="form-floating mb-3">
+                            {{ configForm.learning_rate }}
+                            {{ configForm.learning_rate.label_tag }}
+                        </div>
                         <div class="mb-3 d-flex">
                             <label for="{{ configForm.train_dataset.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ configForm.train_dataset.label }}</label>
                             {{ configForm.train_dataset }}
