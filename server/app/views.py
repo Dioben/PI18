@@ -86,6 +86,7 @@ def simulation_info(request, id):
     t_params = {
         'simulation': response,
         'notification': notification,
+        'updates': Update.objects.filter(sim_id=id)
     }
     return render(request, 'simulationInfo.html', t_params)
 
