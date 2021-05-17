@@ -28,7 +28,7 @@ with open(os.path.join(DIR_FILES,"conf.json"),"r") as conf_file:
 BATCH_SIZE = int(conf_json['batch_size'])
 EPOCHS = int(conf_json['epochs'])
 EPOCH_PERIOD = int(conf_json['epoch_period'])
-
+LEARNING_RATE = int(conf_json['learning_rate'])
 
 #Search directory for files dataset_test dataset_train
 print(os.listdir())
@@ -82,21 +82,21 @@ print(type(dataset_train))
 #Get URL to aggregator
 url = 'http://parser:6000/update'
 
-def get_optimizer_tensorflow(conf_json):
+def get_optimizer_tensorflow(conf_json,base_learning_rate):
     if 'adadelta' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.Adadelta()
+        return tf.keras.optimizers.Adadelta(lr=base_learning_rate)
     elif 'adagrad' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.Adagrad()
+        return tf.keras.optimizers.Adagrad(lr=base_learning_rate)
     elif 'adam' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.Adam()
+        return tf.keras.optimizers.Adam(lr=base_learning_rate)
     elif 'ftrl' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.Ftrl()
+        return tf.keras.optimizers.Ftrl(lr=base_learning_rate)
     elif 'nadam' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.Nadam()
+        return tf.keras.optimizers.Nadam(lr=base_learning_rate)
     elif 'rmsprop' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.RMSprop()
+        return tf.keras.optimizers.RMSprop(lr=base_learning_rate)
     elif 'sgd' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.SGD()
+        return tf.keras.optimizers.SGD(lr=base_learning_rate)
 
 def get_loss_func_tensorflow(conf_json):
     print(type(conf_json['from_logits']))
@@ -105,7 +105,7 @@ def get_loss_func_tensorflow(conf_json):
     loss = tf.keras.losses.get(identifier)
     return loss
 
-optimizer_choosen = get_optimizer_tensorflow(conf_json)
+optimizer_choosen = get_optimizer_tensorflow(conf_json,LEARNING_RATE)
 loss_function_choosen = get_loss_func_tensorflow(conf_json)
 
 
@@ -171,12 +171,13 @@ class DataAggregateCallback(tf.keras.callbacks.Callback):
             try:
                 headers = {'Content-type': 'application/json'}
                 res = requests.post(url, json = data,headers=headers,timeout=50)
+                print('Post status:',res,file=sys.stderr)
             except Exception as error:
                 print(error)
                 print("Exception")
             print('Here after post')
-            print('Post status:',res,file=sys.stderr)
 
+print('Learning rate:',LEARNING_RATE)
 model.fit(dataset_train, batch_size=BATCH_SIZE, epochs=EPOCHS
           , callbacks= [DataAggregateCallback()])
 model.evaluate(dataset_test, batch_size=BATCH_SIZE, verbose=0)
