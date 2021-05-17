@@ -165,6 +165,7 @@ class DataAggregateCallback(tf.keras.callbacks.Callback):
             data = res_dic
             print('Here after json')
             print(len(data),file=sys.stderr)
+            url = 'http://parser:6000/update'
             if epoch == EPOCHS-1:
                 url = 'http://parser:6000/finish'
             try:
