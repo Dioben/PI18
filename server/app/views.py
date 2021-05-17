@@ -171,15 +171,17 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                 "batch_size": confForm.cleaned_data['batch_size'],
                 "epochs": sim.goal_epochs,
                 "epoch_period": sim.epoch_interval,
-                "learning_rate": sim.learning_rate,
                 "train_feature_name": "x_train",
                 "train_label_name": "y_train",
                 "test_feature_name": "x_test",
                 "test_label_name": "y_test",
+                "val_feature_name": "x_val",
+                "val_label_name": "y_val",
                 "optimizer": "rmsprop",
                 "loss_function": "SparseCategoricalCrossentropy",
                 "from_logits": True,
-                "validation_split": 0.3
+                "validation_split": 0.3,
+                "learning_rate": sim.learning_rate,
             },
             "model": json.loads(sim.model)
         }
