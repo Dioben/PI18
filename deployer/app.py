@@ -119,10 +119,18 @@ def make_simualtion(sim_id,model_data,conf_data):
         success = container_made.put_archive(dest_path, tar_train)
         print_flask('Put train tar:'+str(success))
 
+        path_train = conf_data["dataset_val"]
+        file_obj_train = open(path_train,'rb')
+        file_train = file_obj_train.read()
+        file_obj_train.close()
+        tar_train = get_tarstream(file_train,"dataset_val.npz")
+        success = container_made.put_archive(dest_path, tar_train)
+        print_flask('Put val tar:'+str(success))
+
     success = container_made.put_archive(dest_path, tar_model)
     print_flask('Put model tar:'+str(success))
     success = container_made.put_archive(dest_path, tar_conf)
-    print_flask('Put concif tar:'+str(success))
+    print_flask('Put config tar:'+str(success))
 
     networks_available = client.networks.list(names=['pi18_default'])
     network = networks_available[0]
