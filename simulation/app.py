@@ -28,7 +28,7 @@ with open(os.path.join(DIR_FILES,"conf.json"),"r") as conf_file:
 BATCH_SIZE = int(conf_json['batch_size'])
 EPOCHS = int(conf_json['epochs'])
 EPOCH_PERIOD = int(conf_json['epoch_period'])
-LEARNING_RATE = int(conf_json['learning_rate'])
+LEARNING_RATE = float(conf_json['learning_rate'])
 
 #Search directory for files dataset_test dataset_train
 print(os.listdir())
@@ -37,9 +37,12 @@ for file_name in os.listdir():
         test_path = file_name
     if 'dataset_train' in file_name:
         train_path = file_name
+    if 'dataset_train' in file_name:
+        val_path = file_name
 
 print('test:',test_path)
 print('train:',train_path)
+print('val:',val_path)
 
 def load_database(path_given,conf_json,type_file='train'):
     #File path given to file in VFS
@@ -65,6 +68,9 @@ def load_database(path_given,conf_json,type_file='train'):
             elif type_file == 'test':
                 feature_name = conf_json['test_feature_name']
                 label_name = conf_json['test_label_name']
+            elif type_file == 'validation':
+                feature_name = conf_json['val_feature_name']
+                label_name = conf_json['val_label_name']
             features = numpy_data[feature_name]
             labels = numpy_data[label_name]
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
@@ -76,8 +82,10 @@ def load_database(path_given,conf_json,type_file='train'):
 
 dataset_train = load_database(train_path,conf_json)
 dataset_test = load_database(test_path,conf_json)
+dataset_val = load_database(val_path,conf_json)
 print(type(dataset_test),file=sys.stderr)
 print(type(dataset_train))
+print(type(dataset_val))
 
 #Get URL to aggregator
 url = 'http://parser:6000/update'
@@ -179,6 +187,6 @@ class DataAggregateCallback(tf.keras.callbacks.Callback):
 
 print('Learning rate:',LEARNING_RATE)
 model.fit(dataset_train, batch_size=BATCH_SIZE, epochs=EPOCHS
-          , callbacks= [DataAggregateCallback()])
+          , callbacks= [DataAggregateCallback()], validation_data=dataset_val)
 model.evaluate(dataset_test, batch_size=BATCH_SIZE, verbose=0)
 
