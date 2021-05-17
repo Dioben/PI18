@@ -155,11 +155,18 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
             f.write(chunk)
         f.close()
 
+        valset = '/all_datasets/' + str(sim.id) + '-dataset_val.npz'
+        f = open(valset, 'wb+')
+        for chunk in request.FILES['val_dataset'].chunks():
+            f.write(chunk)
+        f.close()
+
         postdata = {
             "conf": {
                 "id": str(sim.id.int),
                 "dataset_train": trainset,
                 "dataset_test": testset,
+                "dataset_val": valset,
                 "dataset_url": False,
                 "batch_size": confForm.cleaned_data['batch_size'],
                 "epochs": sim.goal_epochs,

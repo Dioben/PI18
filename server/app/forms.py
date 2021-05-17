@@ -82,6 +82,14 @@ class ConfSimForm(forms.Form):
             }
         )
     )
+    val_dataset = forms.FileField(
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+
 
     def clean_logging_interval(self):
         cleaned_data = super().clean()
