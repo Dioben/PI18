@@ -69,10 +69,27 @@
                 </nav>
                 <div class="tab-content" id="tabContent" style="border: 1px solid #DCDCDE; border-top: none;min-height: 50vh; background-color: white; padding: 8px">
                     <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
-                        General info
+                        <ul>
+                            <li>ID: {{ simulation.id }}</li>
+                            <li>Owner: {{ simulation.owner }}</li>
+                            <li>Name: {{ simulation.name }}</li>
+                            <li>Model: {{ simulation.model }}</li>
+                            <li>IsDone: {{ simulation.isdone }}</li>
+                            <li>IsRunning: {{ simulation.isrunning }}</li>
+                            <li>Biases: {{ simulation.biases }}</li>
+                            <li>Layers: {{ simulation.layers }}</li>
+                            <li>Epoch period: {{ simulation.epoch_interval }}</li>
+                            <li>Total epochs: {{ simulation.goal_epochs }}</li>
+                            {% for update in updates %}
+                                <li>==========</li>
+                                <li>Epoch: {{ update.epoch }}</li>
+                                <li>Loss: {{ update.loss }}</li>
+                                <li>Accuracy: {{ update.accuracy }}</li>
+                            {% endfor %}
+                        </ul>
                     </div>
                     <div class="tab-pane fade" id="network" role="tabpanel" aria-labelledby="network-tab">
-                        Network info
+                        
                     </div>
                 </div>
             </div>
