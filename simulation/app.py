@@ -28,7 +28,7 @@ with open(os.path.join(DIR_FILES,"conf.json"),"r") as conf_file:
 BATCH_SIZE = int(conf_json['batch_size'])
 EPOCHS = int(conf_json['epochs'])
 EPOCH_PERIOD = int(conf_json['epoch_period'])
-
+LEARNING_RATE = float(conf_json['learning_rate'])
 
 #Search directory for files dataset_test dataset_train
 print(os.listdir())
@@ -37,9 +37,12 @@ for file_name in os.listdir():
         test_path = file_name
     if 'dataset_train' in file_name:
         train_path = file_name
+    if 'dataset_val' in file_name:
+        val_path = file_name
 
 print('test:',test_path)
 print('train:',train_path)
+print('val:',val_path)
 
 def load_database(path_given,conf_json,type_file='train'):
     #File path given to file in VFS
@@ -65,6 +68,10 @@ def load_database(path_given,conf_json,type_file='train'):
             elif type_file == 'test':
                 feature_name = conf_json['test_feature_name']
                 label_name = conf_json['test_label_name']
+            elif type_file == 'validation':
+                feature_name = conf_json['val_feature_name']
+                label_name = conf_json['val_label_name']
+            print(type_file)
             features = numpy_data[feature_name]
             labels = numpy_data[label_name]
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
@@ -75,28 +82,30 @@ def load_database(path_given,conf_json,type_file='train'):
     return dataset
 
 dataset_train = load_database(train_path,conf_json)
-dataset_test = load_database(test_path,conf_json)
+dataset_test = load_database(test_path,conf_json,type_file="test")
+dataset_val = load_database(val_path,conf_json,type_file="validation")
 print(type(dataset_test),file=sys.stderr)
 print(type(dataset_train))
+print(type(dataset_val))
 
 #Get URL to aggregator
 url = 'http://parser:6000/update'
 
-def get_optimizer_tensorflow(conf_json):
+def get_optimizer_tensorflow(conf_json,base_learning_rate):
     if 'adadelta' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.Adadelta()
+        return tf.keras.optimizers.Adadelta(lr=base_learning_rate)
     elif 'adagrad' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.Adagrad()
+        return tf.keras.optimizers.Adagrad(lr=base_learning_rate)
     elif 'adam' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.Adam()
+        return tf.keras.optimizers.Adam(lr=base_learning_rate)
     elif 'ftrl' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.Ftrl()
+        return tf.keras.optimizers.Ftrl(lr=base_learning_rate)
     elif 'nadam' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.Nadam()
+        return tf.keras.optimizers.Nadam(lr=base_learning_rate)
     elif 'rmsprop' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.RMSprop()
+        return tf.keras.optimizers.RMSprop(lr=base_learning_rate)
     elif 'sgd' in conf_json['optimizer'].lower():
-        return tf.keras.optimizers.SGD()
+        return tf.keras.optimizers.SGD(lr=base_learning_rate)
 
 def get_loss_func_tensorflow(conf_json):
     print(type(conf_json['from_logits']))
@@ -105,7 +114,7 @@ def get_loss_func_tensorflow(conf_json):
     loss = tf.keras.losses.get(identifier)
     return loss
 
-optimizer_choosen = get_optimizer_tensorflow(conf_json)
+optimizer_choosen = get_optimizer_tensorflow(conf_json,LEARNING_RATE)
 loss_function_choosen = get_loss_func_tensorflow(conf_json)
 
 
@@ -171,13 +180,14 @@ class DataAggregateCallback(tf.keras.callbacks.Callback):
             try:
                 headers = {'Content-type': 'application/json'}
                 res = requests.post(url, json = data,headers=headers,timeout=50)
+                print('Post status:',res,file=sys.stderr)
             except Exception as error:
                 print(error)
                 print("Exception")
             print('Here after post')
-            print('Post status:',res,file=sys.stderr)
 
+print('Learning rate:',LEARNING_RATE)
 model.fit(dataset_train, batch_size=BATCH_SIZE, epochs=EPOCHS
-          , callbacks= [DataAggregateCallback()])
+          , callbacks= [DataAggregateCallback()], validation_data=dataset_val)
 model.evaluate(dataset_test, batch_size=BATCH_SIZE, verbose=0)
 
