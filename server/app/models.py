@@ -13,6 +13,7 @@ class Simulation(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     model = models.TextField()
+    learning_rate = models.FloatField()
     isdone = models.BooleanField()
     isrunning = models.BooleanField()
     biases = models.BinaryField()
@@ -34,6 +35,8 @@ class Update(TimescaleModel):
     epoch = models.IntegerField()
     loss = models.FloatField()
     accuracy = models.FloatField()
+    val_loss = models.FloatField()
+    val_accuracy = models.FloatField()
     class Meta:
         db_table = "epoch_values"
         indexes = [models.Index(fields=["sim","epoch"])]
