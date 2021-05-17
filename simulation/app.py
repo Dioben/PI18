@@ -37,7 +37,7 @@ for file_name in os.listdir():
         test_path = file_name
     if 'dataset_train' in file_name:
         train_path = file_name
-    if 'dataset_train' in file_name:
+    if 'dataset_val' in file_name:
         val_path = file_name
 
 print('test:',test_path)
@@ -71,6 +71,7 @@ def load_database(path_given,conf_json,type_file='train'):
             elif type_file == 'validation':
                 feature_name = conf_json['val_feature_name']
                 label_name = conf_json['val_label_name']
+            print(type_file)
             features = numpy_data[feature_name]
             labels = numpy_data[label_name]
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
@@ -81,8 +82,8 @@ def load_database(path_given,conf_json,type_file='train'):
     return dataset
 
 dataset_train = load_database(train_path,conf_json)
-dataset_test = load_database(test_path,conf_json)
-dataset_val = load_database(val_path,conf_json)
+dataset_test = load_database(test_path,conf_json,type_file="test")
+dataset_val = load_database(val_path,conf_json,type_file="validation")
 print(type(dataset_test),file=sys.stderr)
 print(type(dataset_train))
 print(type(dataset_val))
