@@ -97,13 +97,13 @@ def simulation_command(request, id, command):
         sim = Simulation.objects.filter(id__exact=id, owner=request.user)
         if sim.exists():
             sim = sim.get()
-            if sim.isrunning:
-                request.session['notification'] = "Simulation \""+simName+"\" has been resumed."
+            if not sim.isrunning:
+                request.session['notification'] = "Simulation \""+simName+"\" has been paused."
                 request.session.modified = True
-                return redirect(request.path_info)
-            request.session['notification'] = "Simulation \""+simName+"\" has been paused."
+                return redirect(request.META.get('HTTP_REFERER'))
+            request.session['notification'] = "Simulation \""+simName+"\" has been resumed."
             request.session.modified = True
-            return redirect(request.path_info)
+            return redirect(request.META.get('HTTP_REFERER'))
         request.session['notification'] = "Simulation \""+simName+"\" has been deleted."
         request.session.modified = True
         return redirect('/simulations/')
@@ -130,7 +130,7 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
 
         sim = Simulation(owner=request.user,
                          isdone=False,
-                         isrunning=False,
+                         isrunning=True,
                          model=modeltext,
                          name=confForm.cleaned_data["name"],
                          layers=len(modeljson['config']['layers']),
@@ -215,6 +215,7 @@ def command_start(request, id):  # return the objects you're acting on in these
     sim = Simulation.objects.get(id=id)
     requests.post(f'http://tracker-deployer:7000/simulations/{id}/START')
     sim.isrunning = True
+    sim.save()
     return HttpResponse(sim, 200)
 
 
