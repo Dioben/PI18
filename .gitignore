@@ -11,6 +11,7 @@ README.md.backup
 */venv/
 */__pycache__/
 /timescaledbdocker/data/*
+datasetstore/*
 /server/app/__pycache__
 /server/NeuralNetTracker/__pycache__
 deployer/test_api.py
