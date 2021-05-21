@@ -34,3 +34,6 @@ simulation/dataset_train.npz
 deployer/conf.json
 deployer/model.json
 simulation/dataset_val.npz
+deployer/dataset_train.npz
+deployer/dataset_test.npz
+deployer/test_tensorflow.py
