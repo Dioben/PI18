@@ -17,62 +17,241 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1621595981495,
+  "iteration": 1621611572501,
   "links": [],
   "panels": [
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "datasource": null,
       "fieldConfig": {
         "defaults": {},
         "overrides": []
       },
-      "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
         "y": 0
       },
-      "hiddenSeries": false,
       "id": 2,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
+      "pconfig": {
+        "fixScale": "",
+        "layout": {
+          "dragmode": "zoom",
+          "font": {
+            "family": "\"Open Sans\", Helvetica, Arial, sans-serif"
+          },
+          "hovermode": "closest",
+          "legend": {
+            "orientation": "h"
+          },
+          "showlegend": false,
+          "xaxis": {
+            "rangemode": "normal",
+            "showgrid": true,
+            "title": "epoch",
+            "type": "",
+            "zeroline": false
+          },
+          "yaxis": {
+            "rangemode": "nonnegative",
+            "showgrid": true,
+            "type": "linear",
+            "zeroline": false
+          },
+          "zaxis": {
+            "rangemode": "normal",
+            "showgrid": true,
+            "type": "linear",
+            "zeroline": false
+          }
+        },
+        "loadFromCDN": false,
+        "settings": {
+          "displayModeBar": false,
+          "type": "scatter"
+        },
+        "showAnnotations": true,
+        "traces": [
+          {
+            "mapping": {
+              "color": "time",
+              "size": null,
+              "text": "accuracy",
+              "x": "epoch",
+              "y": "accuracy",
+              "z": null
+            },
+            "name": "Accuracy",
+            "settings": {
+              "color_option": "solid",
+              "line": {
+                "color": "#005f81",
+                "dash": "solid",
+                "shape": "linear",
+                "width": 4
+              },
+              "marker": {
+                "color": "#33B5E5",
+                "colorscale": "YlOrRd",
+                "line": {
+                  "color": "#DDD",
+                  "width": 0
+                },
+                "showscale": false,
+                "size": 10,
+                "sizemin": 3,
+                "sizemode": "diameter",
+                "sizeref": 0.2,
+                "symbol": "circle"
+              },
+              "textposition": ""
+            },
+            "show": {
+              "line": true,
+              "lines": true,
+              "markers": true
+            }
+          },
+          {
+            "mapping": {
+              "color": "time",
+              "size": null,
+              "text": "loss",
+              "x": "epoch",
+              "y": "loss",
+              "z": null
+            },
+            "name": "Loss",
+            "settings": {
+              "color_option": "solid",
+              "line": {
+                "color": "#C4162A",
+                "dash": "solid",
+                "shape": "linear",
+                "width": 4
+              },
+              "marker": {
+                "color": "#E02F44",
+                "colorscale": "YlOrRd",
+                "line": {
+                  "color": "#DDD",
+                  "width": 0
+                },
+                "showscale": false,
+                "size": 10,
+                "sizemin": 3,
+                "sizemode": "diameter",
+                "sizeref": 0.2,
+                "symbol": "circle"
+              },
+              "textposition": "bottom"
+            },
+            "show": {
+              "line": true,
+              "lines": true,
+              "markers": true
+            }
+          },
+          {
+            "mapping": {
+              "color": "time",
+              "size": null,
+              "text": null,
+              "x": "epoch",
+              "y": "val_accuracy",
+              "z": null
+            },
+            "name": "Validation Accuracy",
+            "settings": {
+              "color_option": "solid",
+              "line": {
+                "color": "rgb(29, 224, 180)",
+                "dash": "solid",
+                "shape": "linear",
+                "width": 4
+              },
+              "marker": {
+                "color": "rgb(12, 115, 94)",
+                "colorscale": "YlOrRd",
+                "line": {
+                  "color": "#DDD",
+                  "width": 0
+                },
+                "showscale": false,
+                "size": 10,
+                "sizemin": 3,
+                "sizemode": "diameter",
+                "sizeref": 0.2,
+                "symbol": "circle"
+              },
+              "textposition": ""
+            },
+            "show": {
+              "line": true,
+              "lines": true,
+              "markers": true
+            }
+          },
+          {
+            "mapping": {
+              "color": "time",
+              "size": null,
+              "text": "val_loss",
+              "x": "epoch",
+              "y": "val_loss",
+              "z": null
+            },
+            "name": "Validation Loss",
+            "settings": {
+              "color_option": "solid",
+              "line": {
+                "color": "rgb(156, 10, 106)",
+                "dash": "solid",
+                "shape": "linear",
+                "width": 4
+              },
+              "marker": {
+                "color": "rgb(133, 5, 88)",
+                "colorscale": "YlOrRd",
+                "line": {
+                  "color": "#DDD",
+                  "width": 0
+                },
+                "showscale": false,
+                "size": 10,
+                "sizemin": 3,
+                "sizemode": "diameter",
+                "sizeref": 0.2,
+                "symbol": "circle"
+              },
+              "textposition": ""
+            },
+            "show": {
+              "line": true,
+              "lines": true,
+              "markers": true
+            }
+          }
+        ]
       },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
       "pluginVersion": "7.5.6",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
       "targets": [
         {
-          "format": "table",
+          "format": "time_series",
           "group": [],
           "metricColumn": "none",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  epoch AS \"time\",\n  ${values:csv}\nFROM epoch_values\nWHERE\n  $__unixEpochFilter(epoch) AND\n  sim_id = '$sim_id'\nORDER BY 1",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  \"time\" AS \"time\",\n  epoch,\n  case when E'${values:csv}E' like '%1%' then accuracy else -100 end as accuracy,\n  case when E'${values:csv}E' like '%2%' then loss else -100 end as loss,\n  case when E'${values:csv}E' like '%3%' then val_accuracy else -100 end as val_accuracy,\n  case when E'${values:csv}E' like '%4%' then val_loss else -100 end as val_loss\nFROM epoch_values\nWHERE\n  $__timeFilter(\"time\") AND\n  sim_id = '$sim_id'\nORDER BY 1",
           "refId": "A",
           "select": [
+            [
+              {
+                "params": [
+                  "epoch"
+                ],
+                "type": "column"
+              }
+            ],
             [
               {
                 "params": [
@@ -83,11 +262,11 @@
             ]
           ],
           "table": "epoch_values",
-          "timeColumn": "epoch",
-          "timeColumnType": "int4",
+          "timeColumn": "\"time\"",
+          "timeColumnType": "timestamptz",
           "where": [
             {
-              "name": "$__unixEpochFilter",
+              "name": "$__timeFilter",
               "params": [],
               "type": "macro"
             },
@@ -104,48 +283,11 @@
           ]
         }
       ],
-      "thresholds": [],
       "timeFrom": null,
-      "timeRegions": [],
       "timeShift": null,
       "title": "Panel Title",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": false,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:68",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:69",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      "type": "natel-plotly-panel",
+      "version": 1
     }
   ],
   "refresh": false,
@@ -171,11 +313,15 @@
           "tags": [],
           "text": [
             "accuracy",
-            "loss"
+            "loss",
+            "validation accuracy",
+            "validation loss"
           ],
           "value": [
-            "accuracy",
-            "loss"
+            "1",
+            "2",
+            "3",
+            "4"
           ]
         },
         "description": "values to display",
@@ -189,25 +335,25 @@
           {
             "selected": true,
             "text": "accuracy",
-            "value": "accuracy"
+            "value": "1"
           },
           {
             "selected": true,
             "text": "loss",
-            "value": "loss"
+            "value": "2"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "validation accuracy",
-            "value": "val_accuracy"
+            "value": "3"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "validation loss",
-            "value": "val_loss"
+            "value": "4"
           }
         ],
-        "query": "accuracy : accuracy, loss : loss,validation accuracy : val_accuracy,validation loss : val_loss",
+        "query": "accuracy : 1, loss : 2,validation accuracy : 3, validation loss : 4",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
@@ -222,5 +368,5 @@
   "timezone": "",
   "title": "Epoch Values Dash",
   "uid": "oZOstZ3Gz",
-  "version": 6
+  "version": 7
 }
