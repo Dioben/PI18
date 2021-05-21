@@ -181,6 +181,10 @@ class DataAggregateCallback(tf.keras.callbacks.Callback):
                 headers = {'Content-type': 'application/json'}
                 res = requests.post(url, json = data,headers=headers,timeout=50)
                 print('Post status:',res,file=sys.stderr)
+                if epoch == EPOCHS - 1:
+                    url = 'http://deployer:7000/simulations/' + conf_json["id"]
+                    res = requests.delete(url)
+                    print('Delete status:', res, file=sys.stderr)
             except Exception as error:
                 print(error)
                 print("Exception")
