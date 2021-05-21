@@ -190,4 +190,6 @@ print('Learning rate:',LEARNING_RATE)
 model.fit(dataset_train, batch_size=BATCH_SIZE, epochs=EPOCHS
           , callbacks= [DataAggregateCallback()], validation_data=dataset_val)
 model.evaluate(dataset_test, batch_size=BATCH_SIZE, verbose=0)
-
+urlDelete = 'http://deployer:7000/simulations/' + conf_json["id"]
+res = requests.delete(urlDelete)
+print('Delete status:', res, file=sys.stderr)
