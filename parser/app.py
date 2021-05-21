@@ -12,12 +12,18 @@ psycopg2.extras.register_uuid()
 
 conn = None
 if "celery" in sys.argv[0]:
-    conn = psycopg2.connect(
-        host="timescaledb",
-        database="nntracker",
-        user="root",
-        password="postgres",
-        port="5432")
+    try:
+        conn = psycopg2.connect(
+            host="timescaledb",
+            database="nntracker",
+            user="root",
+            password="postgres",
+            port="5432",
+            connect_timeout=4
+        )
+    except Exception as error:
+        print("Error connecting to db: ", error, file=sys.stderr)
+        print("Error type: ", type(error), file=sys.stderr)
 
 
 app = Flask(__name__)
@@ -68,16 +74,19 @@ celery = make_celery(app)
 @celery.task()
 def update_data_sent(json_file):
     curr = conn.cursor()
-    logger.info('update starting')
-    simid, epoch, weights, loss, accuracy, val_loss, val_accuracy = process_data(json_file)
-    sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
-    sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss, val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
-
-    for w in weights.keys():
-        index = w
-        curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
-    curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(), val_loss, val_accuracy))
-    conn.commit()
+    try:
+        logger.info('update starting')
+        simid, epoch, weights, loss, accuracy, val_loss, val_accuracy = process_data(json_file)
+        sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
+        sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss, val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
+        for w in weights.keys():
+            index = w
+            curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
+        curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(), val_loss, val_accuracy))
+        conn.commit()
+    except Exception as error:
+        print("Error executing queries on /update task with error: ", error, file=sys.stderr)
+        print("Error type: ", type(error), file=sys.stderr)
     curr.close()
     return None
 
@@ -94,21 +103,26 @@ def process_data(data_dict):
     epoch = data_dict['epoch']
     simid = uuid.UUID(int=int(data_dict['sim_id']))
     print(simid)
-    return simid, epoch, weights, loss, accuracy,val_loss,val_accuracy
+    return simid, epoch, weights, loss, accuracy, val_loss, val_accuracy
 
 
 @celery.task()
 def finish_data_sent(json_file):
     curr = conn.cursor()
-    simid, epoch, weights, loss, accuracy,val_loss, val_accuracy = process_data(json_file)
-    sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
-    sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss,val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
-    sqlUpdate = "UPDATE simulations SET isdone=TRUE, isrunning=FALSE WHERE id=%s"
-    for w in weights.keys():
-        index = w
-        curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
-    curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(),val_loss, val_accuracy))
-    curr.execute(sqlUpdate,(simid,))
-    conn.commit()
+    try:
+        simid, epoch, weights, loss, accuracy,val_loss, val_accuracy = process_data(json_file)
+        sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
+        sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss,val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
+        sqlUpdate = "UPDATE simulations SET isdone=TRUE, isrunning=FALSE WHERE id=%s"
+        for w in weights.keys():
+            index = w
+            curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
+        curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(),val_loss, val_accuracy))
+        curr.execute(sqlUpdate,(simid,))
+        conn.commit()
+    except Exception as error:
+        print("Error executing queries on /finish task with error: ", error, file=sys.stderr)
+        print("Error type: ", type(error), file=sys.stderr)
+
     curr.close()
     return None
