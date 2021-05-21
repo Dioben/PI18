@@ -37,3 +37,4 @@ simulation/dataset_val.npz
 deployer/dataset_train.npz
 deployer/dataset_test.npz
 deployer/test_tensorflow.py
+deployer/dataset/dataset_val.npz

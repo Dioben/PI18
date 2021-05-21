@@ -8,6 +8,10 @@ import json
 import sys
 import docker
 import uuid
+import tensorflow as tf
+import numpy as np
+import re
+import os
 
 app = Flask(__name__)
 client = docker.from_env()
@@ -90,6 +94,7 @@ def convert_data(path_given,conf_json,type_file='train'):
         file_name = file_arr[0]
         file_extension = file_arr[1]
 
+        BATCH_SIZE = conf_json['batch_size']
         if 'csv' in file_arr[1]:
             print('File is csv')
             #If it's a csv it's expect of conf to have this extra
@@ -135,11 +140,13 @@ def convert_data(path_given,conf_json,type_file='train'):
             simulation_feature_name = "x_val"
             simulation_label_name = "y_val"
         
+        print('before savez')
         path = f'./{file_name}'
         np.savez_compressed(path, simulation_feature_name=dataset_numpy_features, simulation_label_name=dataset_numpy_features)
-        file_object = open(path,'rb')
+        file_object = open(path+'.npz','rb')
         file_data = file_object.read()
         file_object.close()
+        print('after savez')
     except Exception as e:
         print_flask('ERROR:'+str(e))
         return None
@@ -170,6 +177,7 @@ def make_simualtion(sim_id,model_data,conf_data):
         #Copy dataset files from path given to containner
 
         #After read convert to "normalized" file format to .npz
+        print(conf_data)
         path_test = conf_data["dataset_test"]
         file_test = convert_data(path_test,conf_data,'test')
         tar_test = get_tarstream(file_test,"dataset_test.npz")
