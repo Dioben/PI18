@@ -30,7 +30,9 @@ services:
            db:
             condition: service_healthy
         volumes:
-            - ./grafana:/etc/grafana/provisioning/datasources
+            - ./grafana/datasources:/etc/grafana/provisioning/datasources
+            - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+            - ./grafana/dashboard_confs:/var/lib/grafana/dashboards
     server:
         container_name: tracker-server
         image: dioben/nntrackerua-server:latest
