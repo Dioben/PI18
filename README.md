@@ -14,12 +14,14 @@ All custom-made components are available as docker images at the following repos
 
 <br>
 How to run:<br>
-```bash
+
+```
 run.sh
 ```
 <br>
-This is equivalent to:
-```bash
+This is equivalent to:<br>
+
+```
 docker pull dioben/nntrackerua-simulation:latest
 docker-compose up
 ```
