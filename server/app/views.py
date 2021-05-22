@@ -1,12 +1,10 @@
 import json
-import sys
 
 from django.contrib import auth
 from django.shortcuts import render, redirect
 
 # Create your views here.
-from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import requests
