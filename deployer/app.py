@@ -12,6 +12,8 @@ import tensorflow as tf
 import numpy as np
 import re
 import os
+import pickle
+from sklearn.model_selection import StratifiedKFold
 
 app = Flask(__name__)
 client = docker.from_env()
@@ -85,9 +87,33 @@ def get_tarstream(file_data,file_name):
     return pw_tarstream
 
 
-def convert_data(path_given,conf_json,type_file='train'):
-    print('convert data for',path_given)
+def convert_data(file_data_features,file_data_labels,conf_json,type_file='train'):
+    print('convert data to pickle:',type_file)
     #Converts from this file object to standard .npz
+    try:
+        #Pickle numpy files
+        if type_file == "train":
+            simulation_feature_name = "x_train"
+            simulation_label_name = "y_train"
+        elif type_file == 'test':
+            simulation_feature_name = "x_test"
+            simulation_label_name = "y_test"
+        elif type_file == 'validation':
+            simulation_feature_name = "x_val"
+            simulation_label_name = "y_val"
+        
+        print('before pickle')
+        file_dic = {simulation_feature_name : file_data_features, simulation_label_name : file_data_labels}
+        file_data = pickle.dumps(file_dic)
+        print('after pickle')
+    except Exception as e:
+        print('ERROR:'+str(e))
+        return None
+    return file_data
+
+def parse_to_numpy(path_given,conf_json,type_file='train'):
+    print('convert data for',path_given)
+    #Converts from this file object to numpy
     try:
         #File path given to file in conf
         file_arr =  os.path.basename(path_given).split('.')
@@ -126,39 +152,58 @@ def convert_data(path_given,conf_json,type_file='train'):
             #Non suported file extension
             dataset = None
             return None
-        #Convert to numpy and then to .npz
-        print('Converting to .npz')
-        dataset_numpy_features = [x for x,y in dataset.as_numpy_iterator()]
-        dataset_numpy_label = [y for x,y in dataset.as_numpy_iterator()]
-        if type_file == "train":
-            simulation_feature_name = "x_train"
-            simulation_label_name = "y_train"
-        elif type_file == 'test':
-            simulation_feature_name = "x_test"
-            simulation_label_name = "y_test"
-        elif type_file == 'validation':
-            simulation_feature_name = "x_val"
-            simulation_label_name = "y_val"
         
-        print('before savez')
-        path = f'./{file_name}'
-        np.savez_compressed(path, simulation_feature_name=dataset_numpy_features, simulation_label_name=dataset_numpy_features)
-        file_object = open(path+'.npz','rb')
-        file_data = file_object.read()
-        file_object.close()
-        print('after savez')
-    except Exception as e:
-        print_flask('ERROR:'+str(e))
-        return None
-    return file_data
+        list_dataset = list(dataset.as_numpy_iterator())
+        return list_dataset
+    return None
+
 
 @celery.task()
 def make_simualtion(sim_id,model_data,conf_data):
     print_flask('Making new sim of id:'+str(sim_id))
-    #Path where to put all data simlation needs
-    #TODO:Replace this with /files after updating image in docker hub
-    dest_path = '/app'
+    #Check config for k-fold validation, get data -> numpy and then use stratifield k-fold
+    #Get data -> numpy
+    
+    #Attention, should not be used in k-fold
+    path_test = conf_data["dataset_test"]
+    dataset_test = parse_to_numpy(path_test,conf_data,'test')
+
+    path_train = conf_data["dataset_train"]
+    dataset_train = parse_to_numpy(path_train,conf_data,'train')
+
+    path_val = conf_data["dataset_val"]
+    dataset_val = parse_to_numpy(path_val,conf_data,'validation')
+
+    x_test = [x for x,y in dataset_test]
+    y_test = [y for x,y in dataset_test]
+    #K-fold or not
+    k_fold_number = int(conf_data['k-fold_validation'])
+    if k_fold_number > 1:
+        dataset_train_val = np.append(dataset_train,dataset_val)
+        dataset_train_val_features = [x for x,y in dataset_train_val]
+        dataset_train_val_labels = [y for x,y in dataset_train_val]
+        kfold = StratifiedKFold(n_splits=k_fold_number, shuffle=True, random_state=1048596)
+        for train_index, val_index in kfold.split(dataset_train_val_features, dataset_train_val_labels):
+            #Stratified fold for train and validation
+            x_train_kf, x_val_kf = dataset_train_val_features[train_index], dataset_train_val_features[val_index]
+            y_train_kf, y_val_kf = dataset_train_val_labels[train_index], dataset_train_val_labels[val_index]
+            start_simulation(sim_id,model_data,conf_data,x_train_kf,y_train_kf,x_test,y_test,x_val_kf,y_val_kf)
+            #TODO:Replace this
+            sim_id+=1
+    else:
+        #Do just once a simulation
+        x_train = [x for x,y in dataset_train]
+        y_train = [y for x,y in dataset_train]
+
+        x_val = [x for x,y in dataset_val]
+        y_val = [y for x,y in dataset_val]
+        start_simulation(sim_id,model_data,conf_data,x_train,y_train,x_test,y_test,x_val,y_val)
+    return None
+
+
+def start_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_data_X,test_data_y,val_data_X,val_data_y):
     #For all files needed tar them and put them in container
+    dest_path = '/app'
     tar_model = get_tarstream(json.dumps(model_data).encode('utf8'),"model.json")
     print_flask(str(tar_model))
     tar_conf = get_tarstream(json.dumps(conf_data).encode('utf8'),"conf.json")
@@ -175,23 +220,19 @@ def make_simualtion(sim_id,model_data,conf_data):
         container_made.exec_run(helper_script)
     else:
         #Copy dataset files from path given to containner
-
         #After read convert to "normalized" file format to .npz
         print(conf_data)
-        path_test = conf_data["dataset_test"]
-        file_test = convert_data(path_test,conf_data,'test')
+        file_test = convert_data(test_data_X,test_data_y,conf_data,'test')
         tar_test = get_tarstream(file_test,"dataset_test.npz")
         success = container_made.put_archive(dest_path, tar_test)
         print_flask('Put test tar:'+str(success))
 
-        path_train = conf_data["dataset_train"]
-        file_train = convert_data(path_train,conf_data,'train')
+        file_train = convert_data(train_data_X,train_data_y,conf_data,'train')
         tar_train = get_tarstream(file_train,"dataset_train.npz")
         success = container_made.put_archive(dest_path, tar_train)
         print_flask('Put train tar:'+str(success))
 
-        path_val = conf_data["dataset_val"]
-        file_val = convert_data(path_val,conf_data,'validation')
+        file_val = convert_data(val_data_X,val_data_y,conf_data,'validation')
         tar_train = get_tarstream(file_val,"dataset_val.npz")
         success = container_made.put_archive(dest_path, tar_train)
         print_flask('Put val tar:'+str(success))
@@ -207,7 +248,6 @@ def make_simualtion(sim_id,model_data,conf_data):
     container_made.start()
     print_flask('Started script')
 
-    return None
 
 @celery.task()
 def delete_simulation(simulation_id):
