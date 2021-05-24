@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1621611572501,
+  "iteration": 1621872591822,
   "links": [],
   "panels": [
     {
@@ -46,14 +46,18 @@
           },
           "showlegend": false,
           "xaxis": {
-            "rangemode": "normal",
+            "rangemode": "nonnegative",
             "showgrid": true,
             "title": "epoch",
             "type": "",
             "zeroline": false
           },
           "yaxis": {
-            "rangemode": "nonnegative",
+            "range": [
+              -1,
+              100
+            ],
+            "rangemode": "between",
             "showgrid": true,
             "type": "linear",
             "zeroline": false
@@ -368,5 +372,5 @@
   "timezone": "",
   "title": "Epoch Values Dash",
   "uid": "oZOstZ3Gz",
-  "version": 7
+  "version": 2
 }
