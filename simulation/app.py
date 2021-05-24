@@ -45,40 +45,23 @@ print('train:',train_path)
 print('val:',val_path)
 
 def load_database(path_given,conf_json,type_file='train'):
-    #File path given to file in VFS
-    file_arr =  os.path.basename(path_given).split('.')
-    file_name = file_arr[0]
-    file_extension = file_arr[1]
+    #Should always be .npz with same name for everything
+    with np.load(path_given) as numpy_data:
+        if type_file == "train":
+            feature_name = "x_train"
+            label_name = "y_train"
+        elif type_file == 'test':
+            feature_name = "x_test"
+            label_name = "y_test"
+        elif type_file == 'validation':
+            feature_name = "x_val"
+            label_name = "y_val"
+        print(type_file)
+        features = numpy_data[feature_name]
+        labels = numpy_data[label_name]
+        dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+        dataset = dataset.shuffle(len(labels)).batch(BATCH_SIZE)
 
-    if 'csv' in file_arr[1]:
-      #If it's a csv it's expect of conf to have this extra
-      LABEL_COLUMN = conf_json['label_collumn']
-      dataset = tf.data.experimental.make_csv_dataset(
-          path_given,
-          batch_size=BATCH_SIZE,
-          label_name=LABEL_COLUMN,
-          num_epochs=1,
-          ignore_errors=True)
-    elif 'npz' in file_arr[1]:
-        print('File is npz')
-        with np.load(path_given) as numpy_data:
-            if type_file == "train":
-                feature_name = conf_json['train_feature_name']
-                label_name = conf_json['train_label_name']
-            elif type_file == 'test':
-                feature_name = conf_json['test_feature_name']
-                label_name = conf_json['test_label_name']
-            elif type_file == 'validation':
-                feature_name = conf_json['val_feature_name']
-                label_name = conf_json['val_label_name']
-            print(type_file)
-            features = numpy_data[feature_name]
-            labels = numpy_data[label_name]
-            dataset = tf.data.Dataset.from_tensor_slices((features, labels))
-            dataset = dataset.shuffle(len(labels)).batch(BATCH_SIZE)
-    else:
-        #Non suported file extension
-        dataset = None
     return dataset
 
 dataset_train = load_database(train_path,conf_json)

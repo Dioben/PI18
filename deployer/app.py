@@ -8,6 +8,10 @@ import json
 import sys
 import docker
 import uuid
+import tensorflow as tf
+import numpy as np
+import re
+import os
 
 app = Flask(__name__)
 client = docker.from_env()
@@ -80,6 +84,74 @@ def get_tarstream(file_data,file_name):
     pw_tarstream.seek(0)
     return pw_tarstream
 
+
+def convert_data(path_given,conf_json,type_file='train'):
+    print('convert data for',path_given)
+    #Converts from this file object to standard .npz
+    try:
+        #File path given to file in conf
+        file_arr =  os.path.basename(path_given).split('.')
+        file_name = file_arr[0]
+        file_extension = file_arr[1]
+
+        BATCH_SIZE = conf_json['batch_size']
+        if 'csv' in file_arr[1]:
+            print('File is csv')
+            #If it's a csv it's expect of conf to have this extra
+            LABEL_COLUMN = conf_json['label_collumn']
+            dataset = tf.data.experimental.make_csv_dataset(
+                path_given,
+                batch_size=BATCH_SIZE,
+                label_name=LABEL_COLUMN,
+                num_epochs=1,
+                ignore_errors=True)
+        elif 'npz' in file_arr[1]:
+            print('File is npz')
+            with np.load(path_given) as numpy_data:
+                if type_file == "train":
+                    feature_name = conf_json['train_feature_name']
+                    label_name = conf_json['train_label_name']
+                elif type_file == 'test':
+                    feature_name = conf_json['test_feature_name']
+                    label_name = conf_json['test_label_name']
+                elif type_file == 'validation':
+                    feature_name = conf_json['val_feature_name']
+                    label_name = conf_json['val_label_name']
+                print(type_file)
+                features = numpy_data[feature_name]
+                labels = numpy_data[label_name]
+                dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+                dataset = dataset.shuffle(len(labels)).batch(BATCH_SIZE)
+        else:
+            #Non suported file extension
+            dataset = None
+            return None
+        #Convert to numpy and then to .npz
+        print('Converting to .npz')
+        dataset_numpy_features = [x for x,y in dataset.as_numpy_iterator()]
+        dataset_numpy_label = [y for x,y in dataset.as_numpy_iterator()]
+        if type_file == "train":
+            simulation_feature_name = "x_train"
+            simulation_label_name = "y_train"
+        elif type_file == 'test':
+            simulation_feature_name = "x_test"
+            simulation_label_name = "y_test"
+        elif type_file == 'validation':
+            simulation_feature_name = "x_val"
+            simulation_label_name = "y_val"
+        
+        print('before savez')
+        path = f'./{file_name}'
+        np.savez_compressed(path, simulation_feature_name=dataset_numpy_features, simulation_label_name=dataset_numpy_features)
+        file_object = open(path+'.npz','rb')
+        file_data = file_object.read()
+        file_object.close()
+        print('after savez')
+    except Exception as e:
+        print_flask('ERROR:'+str(e))
+        return None
+    return file_data
+
 @celery.task()
 def make_simualtion(sim_id,model_data,conf_data):
     print_flask('Making new sim of id:'+str(sim_id))
@@ -103,27 +175,24 @@ def make_simualtion(sim_id,model_data,conf_data):
         container_made.exec_run(helper_script)
     else:
         #Copy dataset files from path given to containner
+
+        #After read convert to "normalized" file format to .npz
+        print(conf_data)
         path_test = conf_data["dataset_test"]
-        file_obj_test = open(path_test,'rb')
-        file_test = file_obj_test.read()
-        file_obj_test.close()
+        file_test = convert_data(path_test,conf_data,'test')
         tar_test = get_tarstream(file_test,"dataset_test.npz")
         success = container_made.put_archive(dest_path, tar_test)
         print_flask('Put test tar:'+str(success))
 
         path_train = conf_data["dataset_train"]
-        file_obj_train = open(path_train,'rb')
-        file_train = file_obj_train.read()
-        file_obj_train.close()
+        file_train = convert_data(path_train,conf_data,'train')
         tar_train = get_tarstream(file_train,"dataset_train.npz")
         success = container_made.put_archive(dest_path, tar_train)
         print_flask('Put train tar:'+str(success))
 
-        path_train = conf_data["dataset_val"]
-        file_obj_train = open(path_train,'rb')
-        file_train = file_obj_train.read()
-        file_obj_train.close()
-        tar_train = get_tarstream(file_train,"dataset_val.npz")
+        path_val = conf_data["dataset_val"]
+        file_val = convert_data(path_val,conf_data,'validation')
+        tar_train = get_tarstream(file_val,"dataset_val.npz")
         success = container_made.put_archive(dest_path, tar_train)
         print_flask('Put val tar:'+str(success))
 
