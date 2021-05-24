@@ -20,7 +20,7 @@ SELECT create_hypertable('epoch_values', 'time', chunk_time_interval => interval
 --
 -- Create model Tagged
 --
-CREATE TABLE "Tags" ("id" bigserial NOT NULL PRIMARY KEY, "tag" varchar(200) NOT NULL, "sim_id" uuid NOT NULL, "tagger_id" integer NOT NULL);
+CREATE TABLE "Tags" ("id" bigserial NOT NULL PRIMARY KEY, "tag" varchar(200) NOT NULL, "sim_id" uuid NOT NULL, "tagger_id" integer NOT NULL, "iskfold" boolean default FALSE);
 --
 -- Create index weights_sim_id_5dcd13_idx on field(s) sim, epoch of model weights
 --

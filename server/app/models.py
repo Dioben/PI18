@@ -55,6 +55,7 @@ class Tagged(models.Model):
     tag = models.CharField(max_length=200)
     sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
     tagger = models.ForeignKey(User,on_delete=models.CASCADE)
+    iskfold = models.BooleanField(default=False)
     class Meta:
         unique_together = (('tag','sim'),)
         db_table = "Tags"
