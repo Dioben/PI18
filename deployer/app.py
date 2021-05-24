@@ -1,3 +1,4 @@
+import requests
 from flask import Flask, request
 from flask import jsonify
 from celery import Celery
@@ -155,7 +156,21 @@ def parse_to_numpy(path_given,conf_json,type_file='train'):
         
         list_dataset = list(dataset.as_numpy_iterator())
         return list_dataset
+    except:
+        pass
     return None
+
+
+def download_dataset(url,filename):
+    local_filename = "./dataset/" + filename
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    print("done ", local_filename)
+    return local_filename
+
 
 
 @celery.task()
@@ -163,15 +178,22 @@ def make_simualtion(sim_id,model_data,conf_data):
     print_flask('Making new sim of id:'+str(sim_id))
     #Check config for k-fold validation, get data -> numpy and then use stratifield k-fold
     #Get data -> numpy
+    if conf_data["dataset_url"]:
+        #download
+        path_train = download_dataset(conf_data["dataset_train"], "dataset_train")
+        path_test = download_dataset(conf_data["dataset_test"], "dataset_test")
+        path_val = download_dataset(conf_data["dataset_val"], "dataset_val")
+    else:
+        path_test = conf_data["dataset_test"]
+        path_train = conf_data["dataset_train"]
+        path_val = conf_data["dataset_val"]
+
     
     #Attention, should not be used in k-fold
-    path_test = conf_data["dataset_test"]
     dataset_test = parse_to_numpy(path_test,conf_data,'test')
 
-    path_train = conf_data["dataset_train"]
     dataset_train = parse_to_numpy(path_train,conf_data,'train')
 
-    path_val = conf_data["dataset_val"]
     dataset_val = parse_to_numpy(path_val,conf_data,'validation')
 
     x_test = [x for x,y in dataset_test]

@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.9-slim
 EXPOSE 7000
 WORKDIR /app 
 COPY /deployer /app
