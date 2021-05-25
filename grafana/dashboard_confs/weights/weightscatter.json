@@ -1,0 +1,215 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 3,
+  "iteration": 1621874712293,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "pconfig": {
+        "fixScale": "",
+        "layout": {
+          "dragmode": "lasso",
+          "font": {
+            "family": "\"Open Sans\", Helvetica, Arial, sans-serif"
+          },
+          "hovermode": "closest",
+          "legend": {
+            "orientation": "h"
+          },
+          "showlegend": false,
+          "xaxis": {
+            "rangemode": "nonnegative",
+            "showgrid": true,
+            "title": "layer_index",
+            "type": "",
+            "zeroline": false
+          },
+          "yaxis": {
+            "rangemode": "nonnegative",
+            "showgrid": true,
+            "title": "Epoch",
+            "type": "linear",
+            "zeroline": false
+          },
+          "zaxis": {
+            "rangemode": "normal",
+            "showgrid": true,
+            "title": "Weight",
+            "type": "",
+            "zeroline": false
+          }
+        },
+        "loadFromCDN": false,
+        "settings": {
+          "displayModeBar": false,
+          "type": "scatter3d"
+        },
+        "showAnnotations": true,
+        "traces": [
+          {
+            "mapping": {
+              "color": "epoch",
+              "size": null,
+              "text": null,
+              "x": "array_index",
+              "y": "epoch",
+              "z": "w"
+            },
+            "name": "main trace",
+            "settings": {
+              "color_option": "ramp",
+              "line": {
+                "color": "#005f81",
+                "dash": "solid",
+                "shape": "linear",
+                "width": 6
+              },
+              "marker": {
+                "color": "#33B5E5",
+                "colorscale": "YlOrRd",
+                "line": {
+                  "color": "#DDD",
+                  "width": 0
+                },
+                "showscale": false,
+                "size": 5,
+                "sizemin": 3,
+                "sizemode": "diameter",
+                "sizeref": 0.2,
+                "symbol": "circle"
+              }
+            },
+            "show": {
+              "line": true,
+              "lines": false,
+              "markers": true
+            }
+          }
+        ]
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  \"time\" AS \"time\",\n  epoch,\n  w,\n  array_index\n  \n  \nFROM weights,unnest(weight) with ordinality as a(w,array_index)\nWHERE\n  $__timeFilter(\"time\") and layer_index= $layer and sim_id= '$sim_id'\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "epoch"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "weights",
+          "timeColumn": "\"time\"",
+          "timeColumnType": "timestamptz",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Panel Title",
+      "type": "natel-plotly-panel",
+      "version": 1
+    }
+  ],
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "2",
+          "value": "2"
+        },
+        "description": "layer index",
+        "error": null,
+        "hide": 0,
+        "label": "layer",
+        "name": "layer",
+        "options": [
+          {
+            "selected": true,
+            "text": "2",
+            "value": "2"
+          }
+        ],
+        "query": "2",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "95e23c35-24ed-445f-81cb-850024a994ec",
+          "value": "95e23c35-24ed-445f-81cb-850024a994ec"
+        },
+        "description": "Simulation ID",
+        "error": null,
+        "hide": 0,
+        "label": "simulation id",
+        "name": "sim_id",
+        "options": [
+          {
+            "selected": true,
+            "text": "95e23c35-24ed-445f-81cb-850024a994ec",
+            "value": "95e23c35-24ed-445f-81cb-850024a994ec"
+          }
+        ],
+        "query": "95e23c35-24ed-445f-81cb-850024a994ec",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "weights graphing",
+  "uid": "kbM_Fx3Mz",
+  "version": 7
+} 
