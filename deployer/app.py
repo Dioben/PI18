@@ -14,7 +14,7 @@ import numpy as np
 import re
 import os
 import pickle
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import KFold
 
 app = Flask(__name__)
 client = docker.from_env()
@@ -87,10 +87,9 @@ def get_tarstream(file_data,file_name):
     pw_tarstream.seek(0)
     return pw_tarstream
 
-
-def convert_data(file_data_features,file_data_labels,conf_json,type_file='train'):
+#Convert from numpy type supported to pickle
+def numpy_to_pickle(file_data_features,file_data_labels,conf_json,type_file='train'):
     print('convert data to pickle:',type_file)
-    #Converts from this file object to standard .npz
     try:
         #Pickle numpy files
         if type_file == "train":
@@ -104,7 +103,12 @@ def convert_data(file_data_features,file_data_labels,conf_json,type_file='train'
             simulation_label_name = "y_val"
         
         print('before pickle')
-        file_dic = {simulation_feature_name : file_data_features, simulation_label_name : file_data_labels}
+        # path = f'./{type_file}'
+        # np.savez_compressed(path, simulation_feature_name=file_data_features, simulation_label_name=file_data_labels)
+        # file_object = open(path+'.npz','rb')
+        # file_data = file_object.read()
+        # file_object.close()
+        file_dic = {'simulation_feature_name' : file_data_features, 'simulation_label_name' : file_data_labels}
         file_data = pickle.dumps(file_dic)
         print('after pickle')
     except Exception as e:
@@ -112,6 +116,7 @@ def convert_data(file_data_features,file_data_labels,conf_json,type_file='train'
         return None
     return file_data
 
+#From any file object to Dataset and from there to numpy
 def parse_to_numpy(path_given,conf_json,type_file='train'):
     print('convert data for',path_given)
     #Converts from this file object to numpy
@@ -147,16 +152,37 @@ def parse_to_numpy(path_given,conf_json,type_file='train'):
                 print(type_file)
                 features = numpy_data[feature_name]
                 labels = numpy_data[label_name]
+                print_flask('Type stuff first ds:')
+                print_flask(type(features))
+                print_flask(type(labels))
                 dataset = tf.data.Dataset.from_tensor_slices((features, labels))
-                dataset = dataset.shuffle(len(labels)).batch(BATCH_SIZE)
         else:
             #Non suported file extension
             dataset = None
             return None
+
+        dataset_numpy_features = np.array([x for x,y in dataset.as_numpy_iterator()])
+        dataset_numpy_label = np.array([y for x,y in dataset.as_numpy_iterator()])
+
+        #For testing purposes
+        # print_flask(len(dataset_numpy_features))
+        # print_flask(len(dataset_numpy_label))
         
-        list_dataset = list(dataset.as_numpy_iterator())
-        return list_dataset
-    except:
+        # dnf = tf.convert_to_tensor(dataset_numpy_features)
+        # dnl = tf.convert_to_tensor(dataset_numpy_label)
+
+        # print_flask('Type stuff:')
+        # print_flask(type(dataset_numpy_features))
+        # print_flask(type(dataset_numpy_features[0]))
+
+        # print_flask('New dataset test')
+        # dataset = tf.data.Dataset.from_tensor_slices((dnf, dnl))
+        # print_flask('After new ds')
+
+        return dataset_numpy_features,dataset_numpy_label
+    except Exception as e:
+        print_flask('Error:')
+        print_flask(e)
         pass
     return None
 
@@ -174,6 +200,18 @@ def download_dataset(url,filename):
     return local_filename
 
 
+#Done in order to have a second task to handle k-fold simulations parrallely
+#Only thing it does is convert to numpy and continue with start_simualtion 
+@celery.task()
+def make_k_fold_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_data_X,test_data_y,val_data_X,val_data_y):
+    print_flask('K-fold simulation'+str(sim_id))
+    train_data_X = np.array(train_data_X)
+    train_data_y = np.array(train_data_y)
+    test_data_X = np.array(test_data_X)
+    test_data_y = np.array(test_data_y)
+    val_data_X = np.array(val_data_X)
+    val_data_y = np.array(val_data_y)
+    start_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_data_X,test_data_y,val_data_X,val_data_y)
 
 @celery.task()
 def make_simualtion(sim_id,model_data,conf_data):
@@ -190,38 +228,37 @@ def make_simualtion(sim_id,model_data,conf_data):
         path_train = conf_data["dataset_train"]
         path_val = conf_data["dataset_val"]
 
-    
     #Attention, should not be used in k-fold
-    dataset_test = parse_to_numpy(path_test,conf_data,'test')
+    dataset_test_x,dataset_test_y = parse_to_numpy(path_test,conf_data,'test')
 
-    dataset_train = parse_to_numpy(path_train,conf_data,'train')
+    dataset_train_x,dataset_train_y = parse_to_numpy(path_train,conf_data,'train')
 
-    dataset_val = parse_to_numpy(path_val,conf_data,'validation')
+    dataset_val_x,dataset_val_y = parse_to_numpy(path_val,conf_data,'validation')
 
-    x_test = [x for x,y in dataset_test]
-    y_test = [y for x,y in dataset_test]
     #K-fold or not
     k_fold_number = int(conf_data['k-fold_validation'])
     if k_fold_number > 1:
-        dataset_train_val = np.append(dataset_train,dataset_val)
-        dataset_train_val_features = [x for x,y in dataset_train_val]
-        dataset_train_val_labels = [y for x,y in dataset_train_val]
-        kfold = StratifiedKFold(n_splits=k_fold_number, shuffle=True, random_state=1048596)
-        for train_index, val_index in kfold.split(dataset_train_val_features, dataset_train_val_labels):
+        #TODO:Rework to make everying list here,mght give problems
+        #dataset_train_val = np.append(dataset_train,dataset_val)
+        #print_flask(dataset_train_val[0])
+        dataset_train_val_features = np.append(dataset_train_x,dataset_val_x)
+        dataset_train_val_labels = np.append(dataset_train_y,dataset_val_y)
+        print_flask('Dump of shapes after append')
+        print_flask(dataset_train_val_features.shape)
+        print_flask(dataset_train_val_labels.shape)
+        x_test = list(x_test)
+        y_test = list(y_test)
+        kfold = KFold(n_splits=k_fold_number, shuffle=True, random_state=1048596)
+        for train_index, val_index in kfold.split(dataset_train_val_features):
             #Stratified fold for train and validation
-            x_train_kf, x_val_kf = dataset_train_val_features[train_index], dataset_train_val_features[val_index]
-            y_train_kf, y_val_kf = dataset_train_val_labels[train_index], dataset_train_val_labels[val_index]
-            start_simulation(sim_id,model_data,conf_data,x_train_kf,y_train_kf,x_test,y_test,x_val_kf,y_val_kf)
+            x_train_kf, x_val_kf = list(dataset_train_val_features[train_index]), list(dataset_train_val_features[val_index])
+            y_train_kf, y_val_kf = list(dataset_train_val_labels[train_index]), list(dataset_train_val_labels[val_index])
+
+            make_k_fold_simulation.delay(sim_id,model_data,conf_data,x_train_kf,y_train_kf,x_test,y_test,x_val_kf,y_val_kf)
             #TODO:Replace this
             sim_id+=1
     else:
-        #Do just once a simulation
-        x_train = [x for x,y in dataset_train]
-        y_train = [y for x,y in dataset_train]
-
-        x_val = [x for x,y in dataset_val]
-        y_val = [y for x,y in dataset_val]
-        start_simulation(sim_id,model_data,conf_data,x_train,y_train,x_test,y_test,x_val,y_val)
+        start_simulation(sim_id,model_data,conf_data,dataset_train_x,dataset_train_y,dataset_test_x,dataset_test_y,dataset_val_x,dataset_val_y)
     return None
 
 
@@ -236,30 +273,23 @@ def start_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_
     container_made = client.containers.create("dioben/nntrackerua-simulation",name=str(sim_id),detach=True)
     print_flask('Containner with id:'+container_made.id + " was made")
 
-    if conf_data['dataset_url'] is True:
-        #TODO:Replace this section, container is stoped at the moment
-        #Not sure where to put this, maybe in dockerfile
-        print_flask("Preparing to download dataset...")
-        helper_script = "curl smt.com"
-        container_made.exec_run(helper_script)
-    else:
-        #Copy dataset files from path given to containner
-        #After read convert to "normalized" file format to .npz
-        print(conf_data)
-        file_test = convert_data(test_data_X,test_data_y,conf_data,'test')
-        tar_test = get_tarstream(file_test,"dataset_test.npz")
-        success = container_made.put_archive(dest_path, tar_test)
-        print_flask('Put test tar:'+str(success))
+    #Copy dataset files from path given to containner
+    #After read convert to "normalized" file format to .npz
+    print(conf_data)
+    file_test = numpy_to_pickle(test_data_X,test_data_y,conf_data,'test')
+    tar_test = get_tarstream(file_test,"dataset_test.npz")
+    success = container_made.put_archive(dest_path, tar_test)
+    print_flask('Put test tar:'+str(success))
 
-        file_train = convert_data(train_data_X,train_data_y,conf_data,'train')
-        tar_train = get_tarstream(file_train,"dataset_train.npz")
-        success = container_made.put_archive(dest_path, tar_train)
-        print_flask('Put train tar:'+str(success))
+    file_train = numpy_to_pickle(train_data_X,train_data_y,conf_data,'train')
+    tar_train = get_tarstream(file_train,"dataset_train.npz")
+    success = container_made.put_archive(dest_path, tar_train)
+    print_flask('Put train tar:'+str(success))
 
-        file_val = convert_data(val_data_X,val_data_y,conf_data,'validation')
-        tar_train = get_tarstream(file_val,"dataset_val.npz")
-        success = container_made.put_archive(dest_path, tar_train)
-        print_flask('Put val tar:'+str(success))
+    file_val = numpy_to_pickle(val_data_X,val_data_y,conf_data,'validation')
+    tar_train = get_tarstream(file_val,"dataset_val.npz")
+    success = container_made.put_archive(dest_path, tar_train)
+    print_flask('Put val tar:'+str(success))
 
     success = container_made.put_archive(dest_path, tar_model)
     print_flask('Put model tar:'+str(success))
