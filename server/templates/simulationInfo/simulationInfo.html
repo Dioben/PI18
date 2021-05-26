@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+{% load mathfilters %}
+
+{% block title %}NNT - {{ simulation.name }}{% endblock %}
+
+{% block content %}
+    <div id="content">
+        {% include 'simulationInfo/simulationInfoContent.html' %}
+    </div>
+
+    <script>
+        let lastUpdate = {{ updates|length }};
+        window.addEventListener('load', function() {
+            setInterval(function() {
+                $.ajax({
+                    method: "GET",
+                    url: "{% url 'SimulationInfoContext' id=simulation.id.int %}",
+                    success: function(data) {
+                        let updatesLength = JSON.parse(data).updates.length
+                        if (updatesLength > lastUpdate) {
+                            lastUpdate = updatesLength
+                            $.get("{% url 'SimulationInfoContent' id=simulation.id.int %}", function (data) {
+                                $('#content').html(data)
+                                reloadGrafana()
+                            })
+                        }
+                    },
+                    error: function(data) {
+                        {#console.log(data)#}
+                        console.log('UPDATE AJAX ERROR')
+                    }
+                })
+            }, 10000);
+        }, false);
+    </script>
+{% endblock %}

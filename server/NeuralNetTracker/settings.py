@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.postgres',
     'app.apps.AppConfig',
-    'mathfilters'
+    'mathfilters',
+    'django.core.serializers',
 
 ]
 
