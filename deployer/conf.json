@@ -18,5 +18,5 @@
     "from_logits" : true,
     "validation_split" : 0.3,
     "learning_rate" : 0.01,
-    "k-fold_validation" : 0
+    "k-fold_validation" : 2
 }

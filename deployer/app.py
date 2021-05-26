@@ -238,6 +238,7 @@ def make_simualtion(sim_id,model_data,conf_data):
     #K-fold or not
     k_fold_number = int(conf_data['k-fold_validation'])
     if k_fold_number > 1:
+        print_flask('K-fold for'+str(k_fold_number))
         #TODO:Rework to make everying list here,mght give problems
         #dataset_train_val = np.append(dataset_train,dataset_val)
         #print_flask(dataset_train_val[0])
@@ -246,15 +247,19 @@ def make_simualtion(sim_id,model_data,conf_data):
         print_flask('Dump of shapes after append')
         print_flask(dataset_train_val_features.shape)
         print_flask(dataset_train_val_labels.shape)
-        x_test = list(x_test)
-        y_test = list(y_test)
+
+        x_test = list(dataset_test_x)
+        y_test = list(dataset_test_y)
         kfold = KFold(n_splits=k_fold_number, shuffle=True, random_state=1048596)
         for train_index, val_index in kfold.split(dataset_train_val_features):
             #Stratified fold for train and validation
-            x_train_kf, x_val_kf = list(dataset_train_val_features[train_index]), list(dataset_train_val_features[val_index])
-            y_train_kf, y_val_kf = list(dataset_train_val_labels[train_index]), list(dataset_train_val_labels[val_index])
-
-            make_k_fold_simulation.delay(sim_id,model_data,conf_data,x_train_kf,y_train_kf,x_test,y_test,x_val_kf,y_val_kf)
+            x_train_kf, x_val_kf = list(dataset_train_val_features[train_index-1]), list(dataset_train_val_features[val_index-1])
+            y_train_kf, y_val_kf = list(dataset_train_val_labels[train_index-1]), list(dataset_train_val_labels[val_index-1])
+            try:
+                make_k_fold_simulation.delay(sim_id,model_data,conf_data,x_train_kf,y_train_kf,x_test,y_test,x_val_kf,y_val_kf)
+            except Exception as e:
+                print_flask('Creating new sim task error')
+                print_flask(e)
             #TODO:Replace this
             sim_id+=1
     else:
