@@ -13,6 +13,7 @@ import os
 import urllib.request
 import json
 import sys
+import pickle
 
 print("Simulation start",file=sys.stderr)
 #Read files from pre-defined directory
@@ -45,23 +46,17 @@ print('train:',train_path)
 print('val:',val_path)
 
 def load_database(path_given,conf_json,type_file='train'):
-    #Should always be .npz with same name for everything
-    with np.load(path_given) as numpy_data:
-        if type_file == "train":
-            feature_name = "x_train"
-            label_name = "y_train"
-        elif type_file == 'test':
-            feature_name = "x_test"
-            label_name = "y_test"
-        elif type_file == 'validation':
-            feature_name = "x_val"
-            label_name = "y_val"
-        print(type_file)
-        features = numpy_data[feature_name]
-        labels = numpy_data[label_name]
+    try:
+        file_read = open(path_given,'rb')
+        file_data = file_read.read()
+        file_read.close()
+        numpy_data = pickle.loads(file_data)
+        features = numpy_data['simulation_feature_name']
+        labels = numpy_data['simulation_label_name']
         dataset = tf.data.Dataset.from_tensor_slices((features, labels))
         dataset = dataset.shuffle(len(labels)).batch(BATCH_SIZE)
-
+    except Exception as e:
+        print(e)
     return dataset
 
 dataset_train = load_database(train_path,conf_json)

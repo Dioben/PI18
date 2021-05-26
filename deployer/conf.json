@@ -1,0 +1,22 @@
+{
+    "id" : "112312225459766",
+    "dataset_train" : "./dataset/dataset_train.npz",
+    "dataset_test" : "./dataset/dataset_test.npz",
+    "dataset_val" : "./dataset/dataset_val.npz",
+    "dataset_url" : false,
+    "batch_size" : 32,
+    "epochs" : 1,
+    "epoch_period" : 1,
+    "train_feature_name" : "x_train",
+    "train_label_name" : "y_train",
+    "test_feature_name" : "x_test",
+    "test_label_name" : "y_test",
+    "val_feature_name" : "x_val",
+    "val_label_name" : "y_val",
+    "optimizer" : "rmsprop",
+    "loss_function" : "SparseCategoricalCrossentropy",
+    "from_logits" : true,
+    "validation_split" : 0.3,
+    "learning_rate" : 0.01,
+    "k-fold_validation" : 0
+}
