@@ -162,9 +162,11 @@ def parse_to_numpy(path_given,conf_json,type_file='train'):
 
 
 def download_dataset(url,filename):
-    local_filename = "./dataset/" + filename
+    local_filename = "./dataset/"
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
+        fname = re.findall('filename=(.+)', r.headers.get('content-disposition'))
+        local_filename = local_filename + fname[0].split('"')[1]
         with open(local_filename, 'wb') as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
