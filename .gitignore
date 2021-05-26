@@ -14,7 +14,6 @@ README.md.backup
 datasetstore/*
 /server/app/__pycache__
 /server/NeuralNetTracker/__pycache__
-deployer/test_api.py
 deployer/test_docker.py
 .gitignore
 deployer/dataset/mnist_test.csv
@@ -31,8 +30,6 @@ deployer/dataset/dataset_test.npz
 deployer/dataset/dataset_train.npz
 simulation/dataset_test.npz
 simulation/dataset_train.npz
-deployer/conf.json
-deployer/model.json
 simulation/dataset_val.npz
 deployer/dataset_train.npz
 deployer/dataset_test.npz
