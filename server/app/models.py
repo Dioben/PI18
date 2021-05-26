@@ -20,7 +20,7 @@ class Simulation(models.Model):
     layers = models.IntegerField()
     epoch_interval = models.IntegerField(validators=[MinValueValidator(1)])
     goal_epochs = models.IntegerField()
-
+    metrics = ArrayField(models.CharField(max_length=60))
     def get_current_epoch(self):
         return Update.objects.filter(sim=self.id).latest('time')
     current_epoch = property(get_current_epoch)
@@ -60,3 +60,12 @@ class Tagged(models.Model):
         unique_together = (('tag','sim'),)
         db_table = "Tags"
         indexes = [models.Index(fields=['tag']),models.Index(fields=['tagger']),models.Index(fields=["sim"])]
+
+class ExtraMetrics(TimescaleModel):
+    epoch = models.IntegerField()
+    sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
+    value = models.FloatField()
+    metric = models.CharField(max_length=60)
+    class Meta:
+        db_table = "extra_metrics"
+        indexes =[ models.Index(fields=['sim','epoch']),models.Index(fields=['sim','metric'])]
