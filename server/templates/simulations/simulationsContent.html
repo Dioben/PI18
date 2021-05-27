@@ -35,33 +35,24 @@
                         {% elif simulation.isrunning %}
                             <form method="post" class="m-0" action="/simulations/command/{{ simulation.id.int }}/PAUSE">
                                 {% csrf_token %}
-                                <button class="btn p-0 ms-2" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fas fa-pause fa-sm"></i></button>
+                                <button type="submit" class="btn p-0 ms-2"><i class="fas fa-pause fa-sm"></i></button>
                             </form>
                         {% else %}
                             <form method="post" class="m-0" action="/simulations/command/{{ simulation.id.int }}/START">
                                 {% csrf_token %}
-                                <button class="btn p-0 ms-2" data-bs-toggle="modal" data-bs-target="#notificationModal"><i class="fa fa-play fa-sm"></i></button>
+                                <button type="submit" class="btn p-0 ms-2"><i class="fa fa-play fa-sm"></i></button>
                             </form>
                         {% endif %}
-                        <button class="btn p-0 ms-2" style="color: red" data-bs-toggle="modal" data-bs-target="#deleteModal{{ simulation.pk }}"><i class="fa fa-trash fa-sm"></i></button>
-
-                        <div class="modal fade" id="deleteModal{{ simulation.pk }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-body d-flex justify-content-center my-3">
-                                        Are you sure you want to delete the simulation "{{ simulation.name }}"?
-                                    </div>
-                                    <div class="modal-footer d-flex justify-content-center">
-                                        <form action="/simulations/command/{{ simulation.pk.int }}/STOP" method="POST">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="method" value="delete">
-                                            <button type="submit" class="btn btn-primary">Yes</button>
-                                        </form>
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">No</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <button id="deleteButton{{ simulation.pk }}" class="btn p-0 ms-2" style="color: red"><i class="fa fa-trash fa-sm"></i></button>
+                        <script>
+                            window.addEventListener('load', function() {
+                                $('#deleteButton{{ simulation.pk }}').click(function() {
+                                    $('#deleteModalSimName').text('{{ simulation.name }}');
+                                    $('#deleteModalForm').prop('action', "/simulations/command/{{ simulation.pk.int }}/STOP");
+                                    $('#deleteModal').modal('show');
+                                });
+                            }, false);
+                        </script>
                     </div>
                 </div>
             </div>
@@ -95,20 +86,9 @@
 </a>
 
 {% if notification != None %}
-    <div class="modal fade" id="notificationModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body d-flex justify-content-center my-3">
-                    {{ notification }}
-                </div>
-                <div class="modal-footer d-flex justify-content-center">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Ok</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <script type="text/javascript">
         window.addEventListener('load', function() {
+            $('#notification').text('{{ notification }}'.replaceAll('&quot;', '\"'));
             $('#notificationModal').modal('show');
         }, false);
     </script>

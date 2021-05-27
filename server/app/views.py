@@ -133,7 +133,6 @@ def simulation_info_context(request, id):
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
-    # this is a mess but it works
     t_params = {
         'simulation': SimulationSerializer(response).data,
         'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]

@@ -8,6 +8,36 @@
         {% include 'simulations/simulationsContent.html' %}
     </div>
 
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body d-flex justify-content-center my-3">
+                    Are you sure you want to delete the simulation "<span id="deleteModalSimName"></span>"?
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <form id="deleteModalForm" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="method" value="delete">
+                        <button type="submit" class="btn btn-primary">Yes</button>
+                    </form>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="notificationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div id="notification" class="modal-body d-flex justify-content-center my-3">
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         window.addEventListener('load', function() {
             setInterval(function() {
