@@ -1,4 +1,5 @@
 import json
+import sys
 
 from django.contrib import auth
 from django.shortcuts import render, redirect
@@ -10,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 import requests
 from app.forms import UploadModelFileForm, UploadDataSetFileForm, ConfSimForm, CustomUserCreationForm
 from app.models import *
-from django.core.serializers import serialize
+from app.serializers import SimulationSerializer, UpdateSerializer
 
 
 def index(request):
@@ -134,8 +135,8 @@ def simulation_info_context(request, id):
         return response
     # this is a mess but it works
     t_params = {
-        'simulation': json.loads(serialize('json', [response, ]))[0],
-        'updates': json.loads(serialize('json', Update.objects.filter(sim_id=id)))
+        'simulation': SimulationSerializer(response).data,
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
     }
     return HttpResponse(json.dumps(t_params), 200)
 
