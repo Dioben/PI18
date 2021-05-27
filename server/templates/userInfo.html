@@ -7,7 +7,7 @@
                 <a href="/users/" style="color: grey; text-decoration: none"><i class="fa fa-arrow-left"></i> Back</a>
             </div>
             <ul class="list-group"  style="border: 1px solid #DCDCDE; margin-top: 5px; background-color: white;">
-                {% for user in users %}
+                {% for user in usera %}
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <a style="align-items: center" href="{{ user.id }}">{{ user.username }}</a>
                         {% if user.is_staff %}
