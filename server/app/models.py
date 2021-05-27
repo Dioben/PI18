@@ -22,7 +22,10 @@ class Simulation(models.Model):
     goal_epochs = models.IntegerField()
     metrics = ArrayField(models.CharField(max_length=60))
     def get_current_epoch(self):
-        return Update.objects.filter(sim=self.id).latest('time')
+        updateSet = Update.objects.filter(sim=self.id)
+        if len(updateSet) > 0:
+            return updateSet.latest('time')
+        return None
     current_epoch = property(get_current_epoch)
 
     #insert more stats/goals here

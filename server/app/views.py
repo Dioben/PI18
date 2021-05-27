@@ -1,4 +1,5 @@
 import json
+import sys
 
 from django.contrib import auth
 from django.shortcuts import render, redirect
@@ -10,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 import requests
 from app.forms import UploadModelFileForm, UploadDataSetFileForm, ConfSimForm, CustomUserCreationForm
 from app.models import *
+from app.serializers import SimulationSerializer, UpdateSerializer
 
 
 def index(request):
@@ -56,8 +58,25 @@ def simulation_list(request):
         'simulations': response,
         'notification': notification,
     }
-    return render(request, 'simulations.html', t_parms)
+    return render(request, 'simulations/simulations.html', t_parms)
 
+
+def simulation_list_content(request):
+    notification = None
+    if 'notification' in request.session:
+        notification = request.session['notification']
+        del request.session['notification']
+        request.session.modified = True
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
+    response = simulations(request)
+    if type(response) == HttpResponse:
+        return response
+    t_parms = {
+        'simulations': response,
+        'notification': notification,
+    }
+    return render(request, 'simulations/simulationsContent.html', t_parms)
 
 def simulation_create(request):
     if not request.user.is_authenticated:  # you could use is_active here for email verification i think
@@ -86,7 +105,39 @@ def simulation_info(request, id):
         'notification': notification,
         'updates': Update.objects.filter(sim_id=id)
     }
-    return render(request, 'simulationInfo.html', t_params)
+    return render(request, 'simulationInfo/simulationInfo.html', t_params)
+
+
+def simulation_info_content(request, id):
+    notification = None
+    if 'notification' in request.session:
+        notification = request.session['notification']
+        del request.session['notification']
+        request.session.modified = True
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
+    response = get_simulation(request, id)
+    if type(response) == HttpResponse:
+        return response
+    t_params = {
+        'simulation': response,
+        'notification': notification,
+        'updates': Update.objects.filter(sim_id=id)
+    }
+    return render(request, 'simulationInfo/simulationInfoContent.html', t_params)
+
+
+def simulation_info_context(request, id):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
+    response = get_simulation(request, id)
+    if type(response) == HttpResponse:
+        return response
+    t_params = {
+        'simulation': SimulationSerializer(response).data,
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
+    }
+    return HttpResponse(json.dumps(t_params), 200)
 
 
 def simulation_command(request, id, command):
@@ -180,6 +231,7 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                 "from_logits": True,
                 "validation_split": 0.3,
                 "learning_rate": sim.learning_rate,
+                "k-fold_validation": 0,
             },
             "model": json.loads(sim.model)
         }

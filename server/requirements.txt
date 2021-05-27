@@ -3,3 +3,7 @@ django-timescaledb
 django-mathfilters==1.0.0
 psycopg2-binary
 requests
+djangorestframework
+markdown
+django-filter
+django-cors-headers
