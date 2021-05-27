@@ -44,7 +44,7 @@ def signup(request):
 
 def users(request):
     if request.user.is_authenticated and request.user.is_staff:
-        users = User.objects.all()
+        users = User.objects.all().exclude(id=request.user.id)
         t_parms = {
             'users': users
         }
@@ -55,9 +55,14 @@ def users(request):
 
 def userinfo(request, id):
     if request.user.is_authenticated and request.user.is_staff:
+        # Not efficient but it works
         usera = User.objects.filter(id=id)
+        for user in usera:
+            simulations = Simulation.objects.filter(owner=user)
+
         t_parms = {
-            'usera': usera
+            'usera': usera,
+            'simulations': simulations
         }
         return render(request, 'userInfo.html', t_parms)
     return render(request, 'login.html')
