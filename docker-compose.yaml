@@ -37,8 +37,8 @@ services:
             - ./grafana/dashboard_confs:/var/lib/grafana/dashboards
     server:
         container_name: tracker-server
-        image: dioben/nntrackerua-server:latest
-        #build: ./server
+        #image: dioben/nntrackerua-server:latest
+        build: ./server
         ports: 
          - "8000:8000"
         volumes:

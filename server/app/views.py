@@ -2,6 +2,7 @@ import json
 
 from django.contrib import auth
 from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
 
 # Create your views here.
 from django.http import HttpResponse
@@ -39,6 +40,27 @@ def signup(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'signup.html', {'form': form})
+
+
+def users(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        users = User.objects.all()
+        t_parms = {
+            'users': users
+        }
+        return render(request, 'users.html', t_parms)
+
+    return render(request, 'login.html')
+
+
+def userinfo(request, id):
+    if request.user.is_authenticated and request.user.is_staff:
+        usera = User.objects.filter(id=id)
+        t_parms = {
+            'usera': usera
+        }
+        return render(request, 'userInfo.html', t_parms)
+    return render(request, 'login.html')
 
 
 def simulation_list(request):
@@ -97,13 +119,13 @@ def simulation_command(request, id, command):
         if sim.exists():
             sim = sim.get()
             if not sim.isrunning:
-                request.session['notification'] = "Simulation \""+simName+"\" has been paused."
+                request.session['notification'] = "Simulation \"" + simName + "\" has been paused."
                 request.session.modified = True
                 return redirect(request.META.get('HTTP_REFERER'))
-            request.session['notification'] = "Simulation \""+simName+"\" has been resumed."
+            request.session['notification'] = "Simulation \"" + simName + "\" has been resumed."
             request.session.modified = True
             return redirect(request.META.get('HTTP_REFERER'))
-        request.session['notification'] = "Simulation \""+simName+"\" has been deleted."
+        request.session['notification'] = "Simulation \"" + simName + "\" has been deleted."
         request.session.modified = True
         return redirect('/simulations/')
     return response
