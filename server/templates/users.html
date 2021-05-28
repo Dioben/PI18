@@ -6,20 +6,23 @@
             <small style="color: grey">Manage of users on the Platform </small>
             <ul class="list-group"  style="border: 1px solid #DCDCDE; margin-top: 5px; background-color: white;">
                 {% for user in users %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <form action="{% url 'Users' %}" method="post" >
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
                         <a style="align-items: center" href="{{ user.id }}">{{ user.username }}</a>
+                        <input type="hidden" name="user_id" value="{{user.id}}" />
                         {% if user.is_staff %}
-                           <button type="submit" class="btn btn-primary"><i class="fas fa-user-secret"></i> Remove admin privileges</button>
+                           <button type="submit" value="remove" name="remove" class="btn btn-primary"><i class="fas fa-user-secret"></i> Remove admin privileges</button>
                         {% else %}
-                           <button type="submit" class="btn btn-primary"><i class="fas fa-user-secret"></i> Give admin privileges</button>
+                           <button type="submit" name="give" value="give" class="btn btn-primary"><i class="fas fa-user-secret"></i> Give admin privileges</button>
                         {% endif %}
                         {% if user.is_active %}
-                           <button type="submit" class="btn btn-primary"><i class="fas fa-lock"></i> Disable</button>
+                           <button type="submit" name="disable" value="disable" class="btn btn-primary"><i class="fas fa-lock"></i> Disable</button>
                         {% else %}
-                           <button type="submit" class="btn btn-primary"><i class="fas fa-lock-open"></i> Enable</button>
+                           <button type="submit" name="enable" value="enable" class="btn btn-primary"><i class="fas fa-lock-open"></i> Enable</button>
                         {% endif %}
-                           <button type="submit" class="btn btn-danger"><i class="fas fa-user-times"></i> Delete</button>
-                    </li>
+                           <button type="submit" name="delete" value="delete" value="enable" class="btn btn-danger"><i class="fas fa-user-times"></i> Delete</button>
+                        </li>
+                        </form>
                 {% endfor %}
             </ul>
         </div>

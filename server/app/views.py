@@ -3,7 +3,8 @@ import json
 from django.contrib import auth
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 # Create your views here.
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -41,28 +42,59 @@ def signup(request):
         form = CustomUserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
-
+@csrf_exempt
 def users(request):
     if request.user.is_authenticated and request.user.is_staff:
-        users = User.objects.all().exclude(id=request.user.id)
-        t_parms = {
-            'users': users
-        }
-        return render(request, 'users.html', t_parms)
+        if 'give' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'remove' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'enable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'disable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'delete' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.delete()
+            return HttpResponseRedirect(request.path)
+        else:
+            users = User.objects.all().exclude(id=request.user.id)
+            t_parms = {
+                'users': users
+            }
+            return render(request, 'users.html', t_parms)
 
     return render(request, 'login.html')
 
 
 def userinfo(request, id):
     if request.user.is_authenticated and request.user.is_staff:
-        # Not efficient but it works
         usera = User.objects.filter(id=id)
-        for user in usera:
-            simulations = Simulation.objects.filter(owner=user)
-
         t_parms = {
-            'usera': usera,
-            'simulations': simulations
+            'usera': usera[0],
+            'simulations': Simulation.objects.filter(owner=usera[0])
         }
         return render(request, 'userInfo.html', t_parms)
     return render(request, 'login.html')
@@ -219,7 +251,6 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
         return HttpResponse("Failed to reach deployer", 500)
     else:
         return HttpResponse("Bad request", 400)
-
 
 @csrf_exempt
 def simulations(request):
