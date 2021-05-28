@@ -199,10 +199,9 @@ def make_simualtion(sim_id,model_data,conf_data):
     if k_fold_number > 1:
         print_flask('K-fold for '+str(k_fold_number))
         #For each fold that will be made make a new simulation with an index provided to simulation
-        sim_idx = 0
+        sim_idx_lst = conf_data['k-fold_ids']
         for i in range(k_fold_number):
-            start_simulation(sim_id+sim_idx,model_data,conf_data,path_train,path_val,path_test,i)
-            sim_idx+=1
+            start_simulation(sim_idx_lst[i],model_data,conf_data,path_train,path_val,path_test,i)
     else:
         start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test)
     return None
