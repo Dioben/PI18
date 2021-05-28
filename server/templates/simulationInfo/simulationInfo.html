@@ -4,8 +4,81 @@
 {% block title %}NNT - {{ simulation.name }}{% endblock %}
 
 {% block content %}
-    <div id="content">
-        {% include 'simulationInfo/simulationInfoContent.html' %}
+    <div class="row my-3">
+        <div class="col">
+            <div id="content1">
+                {% include 'simulationInfo/simulationInfoContent1.html' %}
+            </div>
+        </div>
+    </div>
+    <div style="margin-top: 5px;">
+        <nav>
+            <div class="nav nav-tabs nav-fill" id="tab" role="tablist">
+                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
+                <button class="nav-link" id="network-tab" data-bs-toggle="tab" data-bs-target="#network" type="button" role="tab" aria-controls="network" aria-selected="false">Network</button>
+            </div>
+        </nav>
+        <div class="tab-content" id="tabContent" style="border: 1px solid #DCDCDE; border-top: none; min-height: 50vh; background-color: white; padding: 8px">
+            <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                <div class="input-group">
+                    <span class="input-group-text">Values:</span>
+                    <div class="input-group-text form-switch" style="background-color: white">
+                        <input id="grafanaAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                        <label for="grafanaAccuracySwitch" class="form-check-label ms-1">Accuracy</label>
+                    </div>
+                    <div class="input-group-text form-switch" style="background-color: white">
+                        <input id="grafanaLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                        <label for="grafanaLossSwitch" class="form-check-label ms-1">Loss</label>
+                    </div>
+                    <div class="input-group-text form-switch" style="background-color: white">
+                        <input id="grafanaValidationAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                        <label for="grafanaValidationAccuracySwitch" class="form-check-label ms-1">Validation accuracy</label>
+                    </div>
+                    <div class="input-group-text form-switch" style="background-color: white">
+                        <input id="grafanaValidationLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                        <label for="grafanaValidationLossSwitch" class="form-check-label ms-1">Validation loss</label>
+                    </div>
+                </div>
+                {% with simulation.updates.0 as first  %}
+                    {% with simulation.updates|last as last %}
+                        <iframe width="100%" height="400" frameborder="0" id="grafanaIFrame"></iframe>
+                        <script type="text/javascript">
+                            function reloadGrafana() {
+                                let grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&from={{ first.time|add:-30 }}&to={{ last.time|add:30 }}&var-sim_id={{ simulation.id }}&panelId=2";
+                                if ($("#grafanaAccuracySwitch").prop("checked")) {
+                                    grafanaUrl += "&var-values=1";
+                                }
+                                if ($("#grafanaLossSwitch").prop("checked")) {
+                                    grafanaUrl += "&var-values=2";
+                                }
+                                if ($("#grafanaValidationAccuracySwitch").prop("checked")) {
+                                    grafanaUrl += "&var-values=3";
+                                }
+                                if ($("#grafanaValidationLossSwitch").prop("checked")) {
+                                    grafanaUrl += "&var-values=4";
+                                }
+                                console.log(grafanaUrl);
+                                $("#grafanaIFrame").prop("src", grafanaUrl);
+                            }
+
+                            window.addEventListener('load', function() {
+                                reloadGrafana();
+                                $("#grafanaAccuracySwitch").change(reloadGrafana);
+                                $("#grafanaLossSwitch").change(reloadGrafana);
+                                $("#grafanaValidationAccuracySwitch").change(reloadGrafana);
+                                $("#grafanaValidationLossSwitch").change(reloadGrafana);
+                            }, false);
+                        </script>
+                    {% endwith %}
+                {% endwith %}
+                <div id="content2">
+                    {% include 'simulationInfo/simulationInfoContent2.html' %}
+                </div>
+            </div>
+            <div class="tab-pane fade" id="network" role="tabpanel" aria-labelledby="network-tab">
+                <div id="content3"></div>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
@@ -52,9 +125,11 @@
                         let currentUpdate = JSON.parse(data).simulation.current_epoch.epoch
                         if (currentUpdate > lastUpdate) {
                             lastUpdate = currentUpdate
-                            $.get("{% url 'SimulationInfoContent' id=simulation.id.int %}", function (data) {
-                                $('#content').html(data)
-                                reloadGrafana()
+                            $.get("{% url 'SimulationInfoContent1' id=simulation.id.int %}", function (data) {
+                                $('#content1').html(data)
+                            })
+                            $.get("{% url 'SimulationInfoContent2' id=simulation.id.int %}", function (data) {
+                                $('#content2').html(data)
                             })
                         }
                     },
@@ -63,7 +138,7 @@
                         console.log('UPDATE AJAX ERROR')
                     }
                 })
-            }, 10000);
+            }, 30000);
         }, false);
     </script>
 {% endblock %}
