@@ -42,6 +42,7 @@ def signup(request):
         form = CustomUserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
+
 @csrf_exempt
 def users(request):
     if request.user.is_authenticated and request.user.is_staff:
@@ -88,6 +89,7 @@ def users(request):
 
     return render(request, 'login.html')
 
+
 @csrf_exempt
 def userinfo(request, id):
     if request.user.is_authenticated and request.user.is_staff:
@@ -127,9 +129,14 @@ def userinfo(request, id):
             return HttpResponseRedirect(request.path)
         else:
             usera = User.objects.filter(id=id)
+            print(Simulation.objects.filter(owner=usera[0]).count())
+            print(len(Simulation.objects.filter(owner=usera[0])))
             t_parms = {
                 'usera': usera[0],
-                'simulations': Simulation.objects.filter(owner=usera[0])
+                'simulations': Simulation.objects.filter(owner=usera[0]),
+                'simulations_total': Simulation.objects.filter(owner=usera[0]).count(),
+                'simulations_run': Simulation.objects.filter(owner=usera[0], isrunning=True).count(),
+                'simulations_done': Simulation.objects.filter(owner=usera[0], isdone=True).count(),
             }
             return render(request, 'userInfo.html', t_parms)
     return render(request, 'login.html')
@@ -286,6 +293,7 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
         return HttpResponse("Failed to reach deployer", 500)
     else:
         return HttpResponse("Bad request", 400)
+
 
 @csrf_exempt
 def simulations(request):
