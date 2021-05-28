@@ -157,15 +157,27 @@ def get_loss_func_tensorflow(conf_json):
     loss = tf.keras.losses.get(identifier)
     return loss
 
+def get_metrics_tensorflow(conf_json):
+    print(conf_json['metrics'])
+    metrics_lst_json = conf_json['metrics']
+    metrics_lst_class = []
+    for metrics_json in metrics_lst_json:
+        metrics_class = tf.keras.metrics.get(metrics_json)
+        metrics_lst_class.append(metrics_class)
+    if metrics_lst_json == []:
+        metrics_lst_class.append('accuracy')
+    return metrics_lst_class
+
 optimizer_choosen = get_optimizer_tensorflow(conf_json,LEARNING_RATE)
 loss_function_choosen = get_loss_func_tensorflow(conf_json)
 
-
 #Get Model
 model = model_from_json(model_json)
+#Get Metrics
+metrics = get_metrics_tensorflow(conf_json)
 model.compile(optimizer=optimizer_choosen,
               loss=loss_function_choosen,
-              metrics=['accuracy'])
+              metrics=metrics)
 json_model = model_json
 
 #Used because keras seems to use both lists and numpy arrays in toweights
