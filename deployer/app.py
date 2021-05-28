@@ -9,12 +9,9 @@ import json
 import sys
 import docker
 import uuid
-import tensorflow as tf
-import numpy as np
 import re
 import os
 import pickle
-from sklearn.model_selection import KFold
 
 app = Flask(__name__)
 client = docker.from_env()
@@ -94,75 +91,6 @@ def read_file(path):
     file_obj.close()
     return file_data
 
-#From any file object to Dataset and from there to numpy
-def parse_to_numpy(path_given,conf_json,type_file='train'):
-    print('convert data for',path_given)
-    #Converts from this file object to numpy
-    try:
-        #File path given to file in conf
-        file_arr =  os.path.basename(path_given).split('.')
-        file_name = file_arr[0]
-        file_extension = file_arr[1]
-
-        BATCH_SIZE = conf_json['batch_size']
-        if 'csv' in file_arr[1]:
-            print('File is csv')
-            #If it's a csv it's expect of conf to have this extra
-            LABEL_COLUMN = conf_json['label_collumn']
-            dataset = tf.data.experimental.make_csv_dataset(
-                path_given,
-                batch_size=BATCH_SIZE,
-                label_name=LABEL_COLUMN,
-                num_epochs=1,
-                ignore_errors=True)
-        elif 'npz' in file_arr[1]:
-            print('File is npz')
-            with np.load(path_given) as numpy_data:
-                if type_file == "train":
-                    feature_name = conf_json['train_feature_name']
-                    label_name = conf_json['train_label_name']
-                elif type_file == 'test':
-                    feature_name = conf_json['test_feature_name']
-                    label_name = conf_json['test_label_name']
-                elif type_file == 'validation':
-                    feature_name = conf_json['val_feature_name']
-                    label_name = conf_json['val_label_name']
-                print(type_file)
-                features = numpy_data[feature_name]
-                labels = numpy_data[label_name]
-                print_flask('Type stuff first ds:')
-                print_flask(type(features))
-                print_flask(type(labels))
-                dataset = tf.data.Dataset.from_tensor_slices((features, labels))
-        else:
-            #Non suported file extension
-            dataset = None
-            return None
-
-        dataset_numpy_features = np.array([x for x,y in dataset.as_numpy_iterator()])
-        dataset_numpy_label = np.array([y for x,y in dataset.as_numpy_iterator()])
-
-        #For testing purposes
-        # print_flask(len(dataset_numpy_features))
-        # print_flask(len(dataset_numpy_label))
-        
-        # dnf = tf.convert_to_tensor(dataset_numpy_features)
-        # dnl = tf.convert_to_tensor(dataset_numpy_label)
-
-        # print_flask('Type stuff:')
-        # print_flask(type(dataset_numpy_features))
-        # print_flask(type(dataset_numpy_features[0]))
-
-        # print_flask('New dataset test')
-        # dataset = tf.data.Dataset.from_tensor_slices((dnf, dnl))
-        # print_flask('After new ds')
-
-        return dataset_numpy_features,dataset_numpy_label
-    except Exception as e:
-        print_flask('Error:')
-        print_flask(e)
-        pass
-    return None
 
 
 def download_dataset(url,filename):
