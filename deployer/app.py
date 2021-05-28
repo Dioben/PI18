@@ -87,33 +87,11 @@ def get_tarstream(file_data,file_name):
     pw_tarstream.seek(0)
     return pw_tarstream
 
-#Convert from numpy type supported to pickle
-def numpy_to_pickle(file_data_features,file_data_labels,conf_json,type_file='train'):
-    print('convert data to pickle:',type_file)
-    try:
-        #Pickle numpy files
-        if type_file == "train":
-            simulation_feature_name = "x_train"
-            simulation_label_name = "y_train"
-        elif type_file == 'test':
-            simulation_feature_name = "x_test"
-            simulation_label_name = "y_test"
-        elif type_file == 'validation':
-            simulation_feature_name = "x_val"
-            simulation_label_name = "y_val"
-        
-        print('before pickle')
-        # path = f'./{type_file}'
-        # np.savez_compressed(path, simulation_feature_name=file_data_features, simulation_label_name=file_data_labels)
-        # file_object = open(path+'.npz','rb')
-        # file_data = file_object.read()
-        # file_object.close()
-        file_dic = {'simulation_feature_name' : file_data_features, 'simulation_label_name' : file_data_labels}
-        file_data = pickle.dumps(file_dic)
-        print('after pickle')
-    except Exception as e:
-        print('ERROR:'+str(e))
-        return None
+def read_file(path):
+    print('reading data from file:',path)
+    file_obj = open(path,'rb')
+    file_data = file_obj.read()
+    file_obj.close()
     return file_data
 
 #From any file object to Dataset and from there to numpy
@@ -200,18 +178,6 @@ def download_dataset(url,filename):
     return local_filename
 
 
-#Done in order to have a second task to handle k-fold simulations parrallely
-#Only thing it does is convert to numpy and continue with start_simualtion 
-@celery.task()
-def make_k_fold_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_data_X,test_data_y,val_data_X,val_data_y):
-    print_flask('K-fold simulation'+str(sim_id))
-    train_data_X = np.array(train_data_X)
-    train_data_y = np.array(train_data_y)
-    test_data_X = np.array(test_data_X)
-    test_data_y = np.array(test_data_y)
-    val_data_X = np.array(val_data_X)
-    val_data_y = np.array(val_data_y)
-    start_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_data_X,test_data_y,val_data_X,val_data_y)
 
 @celery.task()
 def make_simualtion(sim_id,model_data,conf_data):
@@ -228,46 +194,26 @@ def make_simualtion(sim_id,model_data,conf_data):
         path_train = conf_data["dataset_train"]
         path_val = conf_data["dataset_val"]
 
-    #Attention, should not be used in k-fold
-    dataset_test_x,dataset_test_y = parse_to_numpy(path_test,conf_data,'test')
-
-    dataset_train_x,dataset_train_y = parse_to_numpy(path_train,conf_data,'train')
-
-    dataset_val_x,dataset_val_y = parse_to_numpy(path_val,conf_data,'validation')
-
     #K-fold or not
     k_fold_number = int(conf_data['k-fold_validation'])
     if k_fold_number > 1:
-        print_flask('K-fold for'+str(k_fold_number))
-        #TODO:Rework to make everying list here,mght give problems
-        #dataset_train_val = np.append(dataset_train,dataset_val)
-        #print_flask(dataset_train_val[0])
-        dataset_train_val_features = np.append(dataset_train_x,dataset_val_x)
-        dataset_train_val_labels = np.append(dataset_train_y,dataset_val_y)
-        print_flask('Dump of shapes after append')
-        print_flask(dataset_train_val_features.shape)
-        print_flask(dataset_train_val_labels.shape)
-
-        x_test = list(dataset_test_x)
-        y_test = list(dataset_test_y)
-        kfold = KFold(n_splits=k_fold_number, shuffle=True, random_state=1048596)
-        for train_index, val_index in kfold.split(dataset_train_val_features):
-            #Stratified fold for train and validation
-            x_train_kf, x_val_kf = list(dataset_train_val_features[train_index-1]), list(dataset_train_val_features[val_index-1])
-            y_train_kf, y_val_kf = list(dataset_train_val_labels[train_index-1]), list(dataset_train_val_labels[val_index-1])
-            try:
-                make_k_fold_simulation.delay(sim_id,model_data,conf_data,x_train_kf,y_train_kf,x_test,y_test,x_val_kf,y_val_kf)
-            except Exception as e:
-                print_flask('Creating new sim task error')
-                print_flask(e)
-            #TODO:Replace this
-            sim_id+=1
+        print_flask('K-fold for '+str(k_fold_number))
+        #For each fold that will be made make a new simulation with an index provided to simulation
+        sim_idx = 0
+        for i in range(k_fold_number):
+            start_simulation(sim_id+sim_idx,model_data,conf_data,path_train,path_val,path_test,i)
+            sim_idx+=1
     else:
-        start_simulation(sim_id,model_data,conf_data,dataset_train_x,dataset_train_y,dataset_test_x,dataset_test_y,dataset_val_x,dataset_val_y)
+        start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test)
     return None
 
 
-def start_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_data_X,test_data_y,val_data_X,val_data_y):
+
+def start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test,k_fold_idx = None):
+    if k_fold_idx != None:
+        print_flask(str(conf_data))
+        print_flask('K fold index:'+str(k_fold_idx))
+        conf_data['k-fold_index'] = k_fold_idx
     #For all files needed tar them and put them in container
     dest_path = '/app'
     tar_model = get_tarstream(json.dumps(model_data).encode('utf8'),"model.json")
@@ -279,19 +225,18 @@ def start_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_
     print_flask('Containner with id:'+container_made.id + " was made")
 
     #Copy dataset files from path given to containner
-    #After read convert to "normalized" file format to .npz
     print(conf_data)
-    file_test = numpy_to_pickle(test_data_X,test_data_y,conf_data,'test')
+    file_test = read_file(path_test)
     tar_test = get_tarstream(file_test,"dataset_test.npz")
     success = container_made.put_archive(dest_path, tar_test)
     print_flask('Put test tar:'+str(success))
 
-    file_train = numpy_to_pickle(train_data_X,train_data_y,conf_data,'train')
+    file_train = read_file(path_train)
     tar_train = get_tarstream(file_train,"dataset_train.npz")
     success = container_made.put_archive(dest_path, tar_train)
     print_flask('Put train tar:'+str(success))
 
-    file_val = numpy_to_pickle(val_data_X,val_data_y,conf_data,'validation')
+    file_val = read_file(path_val)
     tar_train = get_tarstream(file_val,"dataset_val.npz")
     success = container_made.put_archive(dest_path, tar_train)
     print_flask('Put val tar:'+str(success))

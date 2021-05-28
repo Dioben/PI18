@@ -8,6 +8,7 @@ import requests
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import model_from_json
+from sklearn.model_selection import KFold
 import re
 import os
 import urllib.request
@@ -46,26 +47,90 @@ print('train:',train_path)
 print('val:',val_path)
 
 def load_database(path_given,conf_json,type_file='train'):
-    try:
-        file_read = open(path_given,'rb')
-        file_data = file_read.read()
-        file_read.close()
-        numpy_data = pickle.loads(file_data)
-        features = numpy_data['simulation_feature_name']
-        labels = numpy_data['simulation_label_name']
-        dataset = tf.data.Dataset.from_tensor_slices((features, labels))
-        dataset = dataset.shuffle(len(labels)).batch(BATCH_SIZE)
-    except Exception as e:
-        print(e)
+    #File path given to file in VFS
+    file_arr =  os.path.basename(path_given).split('.')
+    file_name = file_arr[0]
+    file_extension = file_arr[1]
+
+    if 'csv' in file_arr[1]:
+      #If it's a csv it's expect of conf to have this extra
+      LABEL_COLUMN = conf_json['label_collumn']
+      dataset = tf.data.experimental.make_csv_dataset(
+          path_given,
+          batch_size=BATCH_SIZE,
+          label_name=LABEL_COLUMN,
+          num_epochs=1,
+          ignore_errors=True)
+    elif 'npz' in file_arr[1]:
+        print('File is npz')
+        with np.load(path_given) as numpy_data:
+            if type_file == "train":
+                feature_name = conf_json['train_feature_name']
+                label_name = conf_json['train_label_name']
+            elif type_file == 'test':
+                feature_name = conf_json['test_feature_name']
+                label_name = conf_json['test_label_name']
+            elif type_file == 'validation':
+                feature_name = conf_json['val_feature_name']
+                label_name = conf_json['val_label_name']
+            print(type_file)
+            features = numpy_data[feature_name]
+            labels = numpy_data[label_name]
+            dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+    else:
+        #Non suported file extension
+        dataset = None
+
     return dataset
+
+def get_chunk_k_fold(dataset_train,dataset_test,k_fold_number,k_fold_index):
+    print('K-fold for ',k_fold_number,' and index ',k_fold_index)
+    dataset_train_x = np.array([x for x,y in dataset_train.as_numpy_iterator()])
+    dataset_train_y = np.array([y for x,y in dataset_train.as_numpy_iterator()])
+    
+    dataset_test_x = np.array([x for x,y in dataset_test.as_numpy_iterator()])
+    dataset_test_y = np.array([y for x,y in dataset_test.as_numpy_iterator()])
+    print(len(dataset_train_x))
+    print(len(dataset_test_x))
+    
+    dataset_train_test_features = np.append(dataset_train_x,dataset_test_x, axis=0)
+    dataset_train_test_labels = np.append(dataset_train_y,dataset_test_y, axis=0)
+
+    print('Starting up K-fold')
+    print(len(dataset_train_test_features))
+    print(len(dataset_train_test_labels))
+    kfold = KFold(n_splits=k_fold_number, shuffle=True, random_state=1048596)
+    idx = 0
+    for train_index, val_index in kfold.split(dataset_train_test_features):
+        #Stratified fold for train and validation
+        x_train_kf, x_val_kf = dataset_train_test_features[train_index], dataset_train_test_features[val_index]
+        y_train_kf, y_val_kf = dataset_train_test_labels[train_index], dataset_train_test_labels[val_index]
+        if idx == k_fold_index:
+            #Get new datasets
+            dataset_train = tf.data.Dataset.from_tensor_slices((x_train_kf, y_train_kf))
+            dataset_val = tf.data.Dataset.from_tensor_slices((x_val_kf, y_val_kf))
+            return dataset_train,dataset_val
+        idx+=1
 
 dataset_train = load_database(train_path,conf_json)
 dataset_test = load_database(test_path,conf_json,type_file="test")
 dataset_val = load_database(val_path,conf_json,type_file="validation")
 print(type(dataset_test),file=sys.stderr)
+print(len(dataset_test))
 print(type(dataset_train))
+print(len(dataset_train))
 print(type(dataset_val))
+print(len(dataset_train))
 
+
+if 'k-fold_index' in conf_json:
+    print('K-fold product simulation')
+    dataset_train,dataset_val = get_chunk_k_fold(dataset_train,dataset_test,int(conf_json['k-fold_validation']),int(conf_json['k-fold_index']))
+
+#After k-chunk only
+dataset_train = dataset_train.shuffle(len(dataset_train)).batch(BATCH_SIZE)
+dataset_val = dataset_val.shuffle(len(dataset_val)).batch(BATCH_SIZE)
+dataset_test = dataset_test.shuffle(len(dataset_test)).batch(BATCH_SIZE)
 #Get URL to aggregator
 url = 'http://parser:6000/update'
 
