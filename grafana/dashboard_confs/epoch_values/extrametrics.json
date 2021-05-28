@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1622198696803,
+  "iteration": 1622215114913,
   "links": [],
   "panels": [
     {
@@ -444,7 +444,7 @@
       "version": 1
     }
   ],
-  "refresh": false,
+  "refresh": "30s",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
@@ -492,5 +492,5 @@
   "timezone": "",
   "title": "Extra metrics dash",
   "uid": "oZOstZ3Gz",
-  "version": 3
-} 
+  "version": 9
+}
