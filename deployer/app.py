@@ -132,9 +132,19 @@ def make_simualtion(sim_id,model_data,conf_data):
             start_simulation(sim_idx_lst[i],model_data,conf_data,path_train,path_val,path_test,i)
     else:
         start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test)
+    
+    #Disabled for testing purposes, but its tested
+    #cleanup_data(path_train,path_val,path_test)
     return None
 
-
+def cleanup_data(path_train,path_val,path_test):
+    print_flask('Cleanup after sim creation')
+    if os.path.exists(path_train):
+        os.remove(path_train)
+    if os.path.exists(path_val):
+        os.remove(path_val)
+    if os.path.exists(path_test):
+        os.remove(path_test)
 
 def start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test,k_fold_idx = None):
     if k_fold_idx != None:
