@@ -88,15 +88,50 @@ def users(request):
 
     return render(request, 'login.html')
 
-
+@csrf_exempt
 def userinfo(request, id):
     if request.user.is_authenticated and request.user.is_staff:
-        usera = User.objects.filter(id=id)
-        t_parms = {
-            'usera': usera[0],
-            'simulations': Simulation.objects.filter(owner=usera[0])
-        }
-        return render(request, 'userInfo.html', t_parms)
+        if 'give' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'remove' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'enable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'disable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'delete' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.delete()
+            return HttpResponseRedirect(request.path)
+        else:
+            usera = User.objects.filter(id=id)
+            t_parms = {
+                'usera': usera[0],
+                'simulations': Simulation.objects.filter(owner=usera[0])
+            }
+            return render(request, 'userInfo.html', t_parms)
     return render(request, 'login.html')
 
 
