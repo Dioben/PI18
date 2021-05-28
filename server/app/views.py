@@ -108,7 +108,7 @@ def simulation_info(request, id):
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
 
 
-def simulation_info_content(request, id):
+def simulation_info_content1(request, id):
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
@@ -124,7 +124,20 @@ def simulation_info_content(request, id):
         'notification': notification,
         'updates': Update.objects.filter(sim_id=id)
     }
-    return render(request, 'simulationInfo/simulationInfoContent.html', t_params)
+    return render(request, 'simulationInfo/simulationInfoContent1.html', t_params)
+
+
+def simulation_info_content2(request, id):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
+    response = get_simulation(request, id)
+    if type(response) == HttpResponse:
+        return response
+    t_params = {
+        'simulation': response,
+        'updates': Update.objects.filter(sim_id=id)
+    }
+    return render(request, 'simulationInfo/simulationInfoContent2.html', t_params)
 
 
 def simulation_info_context(request, id):
@@ -187,7 +200,8 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                          biases=bytes(biastext, 'utf-8'),
                          epoch_interval=confForm.cleaned_data["logging_interval"],
                          goal_epochs=confForm.cleaned_data["max_epochs"],
-                         learning_rate=confForm.cleaned_data["learning_rate"])
+                         learning_rate=confForm.cleaned_data["learning_rate"],
+                         metrics=[])
         sim.save()
 
         trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.npz'
