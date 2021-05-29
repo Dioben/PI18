@@ -3,7 +3,9 @@ import sys
 
 from django.contrib import auth
 from django.shortcuts import render, redirect
-
+from django.contrib.auth.models import User
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 # Create your views here.
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -41,6 +43,105 @@ def signup(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'signup.html', {'form': form})
+
+
+@csrf_exempt
+def users(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        if 'give' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'remove' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'enable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'disable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'delete' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.delete()
+            return HttpResponseRedirect(request.path)
+        else:
+            users = User.objects.all().exclude(id=request.user.id)
+            t_parms = {
+                'users': users
+            }
+            return render(request, 'users.html', t_parms)
+
+    return render(request, 'login.html')
+
+
+@csrf_exempt
+def userinfo(request, id):
+    if request.user.is_authenticated and request.user.is_staff:
+        if 'give' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'remove' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'enable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'disable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'delete' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.delete()
+            return HttpResponseRedirect(request.path)
+        else:
+            usera = User.objects.filter(id=id)
+            print(Simulation.objects.filter(owner=usera[0]).count())
+            print(len(Simulation.objects.filter(owner=usera[0])))
+            t_parms = {
+                'usera': usera[0],
+                'simulations': Simulation.objects.filter(owner=usera[0]),
+                'simulations_total': Simulation.objects.filter(owner=usera[0]).count(),
+                'simulations_run': Simulation.objects.filter(owner=usera[0], isrunning=True).count(),
+                'simulations_done': Simulation.objects.filter(owner=usera[0], isdone=True).count(),
+            }
+            return render(request, 'userInfo.html', t_parms)
+    return render(request, 'login.html')
 
 
 def simulation_list(request):
@@ -161,13 +262,13 @@ def simulation_command(request, id, command):
         if sim.exists():
             sim = sim.get()
             if not sim.isrunning:
-                request.session['notification'] = "Simulation \""+simName+"\" has been paused."
+                request.session['notification'] = "Simulation \"" + simName + "\" has been paused."
                 request.session.modified = True
                 return redirect(request.META.get('HTTP_REFERER'))
-            request.session['notification'] = "Simulation \""+simName+"\" has been resumed."
+            request.session['notification'] = "Simulation \"" + simName + "\" has been resumed."
             request.session.modified = True
             return redirect(request.META.get('HTTP_REFERER'))
-        request.session['notification'] = "Simulation \""+simName+"\" has been deleted."
+        request.session['notification'] = "Simulation \"" + simName + "\" has been deleted."
         request.session.modified = True
         return redirect('/simulations/')
     return response

@@ -36,5 +36,7 @@ urlpatterns = [
     path('accounts/register/', views.signup, name="Register"),
     path('accounts/login/', auth_views.LoginView.as_view(template_name='login.html', authentication_form=CustomAuthenticationForm), name="Login"),
     path("accounts/logout/", auth_views.LogoutView.as_view(next_page="/"), name="Logout"),
+    path('users/', views.users, name="Users"),
+    path('users/<str:id>/', views.userinfo, name="UserInfo"),
 
 ]

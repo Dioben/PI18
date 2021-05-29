@@ -25,6 +25,15 @@
                             {{ form.password }}
                             {{ form.password.label_tag }}
                         </div>
+                        {% for error in form.username.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                        {% for error in form.password.errors %}
+                            <p style="color: red">{{ error }}</p>
+                        {% endfor %}
+                        {% if form.errors %}
+                            <small style="color: red" >Please enter a correct username and password.</small>
+                        {% endif %}
                         <div class="d-flex mt-4 justify-content-center">
                             <button type="submit" class="btn btn-primary px-4">Login</button>
                         </div>
