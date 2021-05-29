@@ -1,3 +1,6 @@
+import datetime
+import time
+
 from rest_framework import serializers
 
 from app.models import Simulation, Update
@@ -18,6 +21,7 @@ class SimulationSerializer(serializers.ModelSerializer):
 
 class UpdateSerializer(serializers.ModelSerializer):
     sim = serializers.SerializerMethodField()
+    time = serializers.SerializerMethodField()
 
     class Meta:
         model = Update
@@ -25,3 +29,6 @@ class UpdateSerializer(serializers.ModelSerializer):
 
     def get_sim(self, obj):
         return str(obj.sim.id)
+
+    def get_time(self, obj):
+        return int(datetime.datetime.timestamp(obj.time)*1000)
