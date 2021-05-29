@@ -2,7 +2,7 @@ BEGIN;
 --
 -- Create model Simulation
 --
-CREATE TABLE "simulations" ("id" uuid NOT NULL PRIMARY KEY, "name" varchar(100) NOT NULL, "model" text NOT NULL, "learning_rate" double precision NOT NULL, "isdone" boolean NOT NULL, "isrunning" boolean NOT NULL, "biases" bytea NOT NULL, "layers" integer NOT NULL, "epoch_interval" integer NOT NULL, "goal_epochs" integer NOT NULL,"metrics" varchar(60)[] NOT NULL, "owner_id" integer NOT NULL);
+CREATE TABLE "simulations" ("id" uuid NOT NULL PRIMARY KEY, "name" varchar(100) NOT NULL, "model" text NOT NULL, "learning_rate" double precision NOT NULL, "isdone" boolean NOT NULL, "isrunning" boolean NOT NULL, "biases" bytea NOT NULL, "layers" integer NOT NULL, "epoch_interval" integer NOT NULL, "goal_epochs" integer NOT NULL,"metrics" varchar(60)[] NOT NULL,"error_text" varchar(500) NOT NULL, "owner_id" integer NOT NULL);
 --
 -- Create model Weights
 --

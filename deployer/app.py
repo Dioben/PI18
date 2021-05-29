@@ -9,12 +9,9 @@ import json
 import sys
 import docker
 import uuid
-import tensorflow as tf
-import numpy as np
 import re
 import os
 import pickle
-from sklearn.model_selection import KFold
 
 app = Flask(__name__)
 client = docker.from_env()
@@ -87,104 +84,13 @@ def get_tarstream(file_data,file_name):
     pw_tarstream.seek(0)
     return pw_tarstream
 
-#Convert from numpy type supported to pickle
-def numpy_to_pickle(file_data_features,file_data_labels,conf_json,type_file='train'):
-    print('convert data to pickle:',type_file)
-    try:
-        #Pickle numpy files
-        if type_file == "train":
-            simulation_feature_name = "x_train"
-            simulation_label_name = "y_train"
-        elif type_file == 'test':
-            simulation_feature_name = "x_test"
-            simulation_label_name = "y_test"
-        elif type_file == 'validation':
-            simulation_feature_name = "x_val"
-            simulation_label_name = "y_val"
-        
-        print('before pickle')
-        # path = f'./{type_file}'
-        # np.savez_compressed(path, simulation_feature_name=file_data_features, simulation_label_name=file_data_labels)
-        # file_object = open(path+'.npz','rb')
-        # file_data = file_object.read()
-        # file_object.close()
-        file_dic = {'simulation_feature_name' : file_data_features, 'simulation_label_name' : file_data_labels}
-        file_data = pickle.dumps(file_dic)
-        print('after pickle')
-    except Exception as e:
-        print('ERROR:'+str(e))
-        return None
+def read_file(path):
+    print('reading data from file:',path)
+    file_obj = open(path,'rb')
+    file_data = file_obj.read()
+    file_obj.close()
     return file_data
 
-#From any file object to Dataset and from there to numpy
-def parse_to_numpy(path_given,conf_json,type_file='train'):
-    print('convert data for',path_given)
-    #Converts from this file object to numpy
-    try:
-        #File path given to file in conf
-        file_arr =  os.path.basename(path_given).split('.')
-        file_name = file_arr[0]
-        file_extension = file_arr[1]
-
-        BATCH_SIZE = conf_json['batch_size']
-        if 'csv' in file_arr[1]:
-            print('File is csv')
-            #If it's a csv it's expect of conf to have this extra
-            LABEL_COLUMN = conf_json['label_collumn']
-            dataset = tf.data.experimental.make_csv_dataset(
-                path_given,
-                batch_size=BATCH_SIZE,
-                label_name=LABEL_COLUMN,
-                num_epochs=1,
-                ignore_errors=True)
-        elif 'npz' in file_arr[1]:
-            print('File is npz')
-            with np.load(path_given) as numpy_data:
-                if type_file == "train":
-                    feature_name = conf_json['train_feature_name']
-                    label_name = conf_json['train_label_name']
-                elif type_file == 'test':
-                    feature_name = conf_json['test_feature_name']
-                    label_name = conf_json['test_label_name']
-                elif type_file == 'validation':
-                    feature_name = conf_json['val_feature_name']
-                    label_name = conf_json['val_label_name']
-                print(type_file)
-                features = numpy_data[feature_name]
-                labels = numpy_data[label_name]
-                print_flask('Type stuff first ds:')
-                print_flask(type(features))
-                print_flask(type(labels))
-                dataset = tf.data.Dataset.from_tensor_slices((features, labels))
-        else:
-            #Non suported file extension
-            dataset = None
-            return None
-
-        dataset_numpy_features = np.array([x for x,y in dataset.as_numpy_iterator()])
-        dataset_numpy_label = np.array([y for x,y in dataset.as_numpy_iterator()])
-
-        #For testing purposes
-        # print_flask(len(dataset_numpy_features))
-        # print_flask(len(dataset_numpy_label))
-        
-        # dnf = tf.convert_to_tensor(dataset_numpy_features)
-        # dnl = tf.convert_to_tensor(dataset_numpy_label)
-
-        # print_flask('Type stuff:')
-        # print_flask(type(dataset_numpy_features))
-        # print_flask(type(dataset_numpy_features[0]))
-
-        # print_flask('New dataset test')
-        # dataset = tf.data.Dataset.from_tensor_slices((dnf, dnl))
-        # print_flask('After new ds')
-
-        return dataset_numpy_features,dataset_numpy_label
-    except Exception as e:
-        print_flask('Error:')
-        print_flask(e)
-        pass
-    return None
 
 
 def download_dataset(url,filename):
@@ -200,18 +106,6 @@ def download_dataset(url,filename):
     return local_filename
 
 
-#Done in order to have a second task to handle k-fold simulations parrallely
-#Only thing it does is convert to numpy and continue with start_simualtion 
-@celery.task()
-def make_k_fold_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_data_X,test_data_y,val_data_X,val_data_y):
-    print_flask('K-fold simulation'+str(sim_id))
-    train_data_X = np.array(train_data_X)
-    train_data_y = np.array(train_data_y)
-    test_data_X = np.array(test_data_X)
-    test_data_y = np.array(test_data_y)
-    val_data_X = np.array(val_data_X)
-    val_data_y = np.array(val_data_y)
-    start_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_data_X,test_data_y,val_data_X,val_data_y)
 
 @celery.task()
 def make_simualtion(sim_id,model_data,conf_data):
@@ -228,41 +122,35 @@ def make_simualtion(sim_id,model_data,conf_data):
         path_train = conf_data["dataset_train"]
         path_val = conf_data["dataset_val"]
 
-    #Attention, should not be used in k-fold
-    dataset_test_x,dataset_test_y = parse_to_numpy(path_test,conf_data,'test')
-
-    dataset_train_x,dataset_train_y = parse_to_numpy(path_train,conf_data,'train')
-
-    dataset_val_x,dataset_val_y = parse_to_numpy(path_val,conf_data,'validation')
-
     #K-fold or not
     k_fold_number = int(conf_data['k-fold_validation'])
     if k_fold_number > 1:
-        #TODO:Rework to make everying list here,mght give problems
-        #dataset_train_val = np.append(dataset_train,dataset_val)
-        #print_flask(dataset_train_val[0])
-        dataset_train_val_features = np.append(dataset_train_x,dataset_val_x)
-        dataset_train_val_labels = np.append(dataset_train_y,dataset_val_y)
-        print_flask('Dump of shapes after append')
-        print_flask(dataset_train_val_features.shape)
-        print_flask(dataset_train_val_labels.shape)
-        x_test = list(x_test)
-        y_test = list(y_test)
-        kfold = KFold(n_splits=k_fold_number, shuffle=True, random_state=1048596)
-        for train_index, val_index in kfold.split(dataset_train_val_features):
-            #Stratified fold for train and validation
-            x_train_kf, x_val_kf = list(dataset_train_val_features[train_index]), list(dataset_train_val_features[val_index])
-            y_train_kf, y_val_kf = list(dataset_train_val_labels[train_index]), list(dataset_train_val_labels[val_index])
-
-            make_k_fold_simulation.delay(sim_id,model_data,conf_data,x_train_kf,y_train_kf,x_test,y_test,x_val_kf,y_val_kf)
-            #TODO:Replace this
-            sim_id+=1
+        print_flask('K-fold for '+str(k_fold_number))
+        #For each fold that will be made make a new simulation with an index provided to simulation
+        sim_idx_lst = conf_data['k-fold_ids']
+        for i in range(k_fold_number):
+            start_simulation(sim_idx_lst[i],model_data,conf_data,path_train,path_val,path_test,i)
     else:
-        start_simulation(sim_id,model_data,conf_data,dataset_train_x,dataset_train_y,dataset_test_x,dataset_test_y,dataset_val_x,dataset_val_y)
+        start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test)
+    
+    #Disabled for testing purposes, but its tested
+    #cleanup_data(path_train,path_val,path_test)
     return None
 
+def cleanup_data(path_train,path_val,path_test):
+    print_flask('Cleanup after sim creation')
+    if os.path.exists(path_train):
+        os.remove(path_train)
+    if os.path.exists(path_val):
+        os.remove(path_val)
+    if os.path.exists(path_test):
+        os.remove(path_test)
 
-def start_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_data_X,test_data_y,val_data_X,val_data_y):
+def start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test,k_fold_idx = None):
+    if k_fold_idx != None:
+        print_flask(str(conf_data))
+        print_flask('K fold index:'+str(k_fold_idx))
+        conf_data['k-fold_index'] = k_fold_idx
     #For all files needed tar them and put them in container
     dest_path = '/app'
     tar_model = get_tarstream(json.dumps(model_data).encode('utf8'),"model.json")
@@ -274,19 +162,18 @@ def start_simulation(sim_id,model_data,conf_data,train_data_X,train_data_y,test_
     print_flask('Containner with id:'+container_made.id + " was made")
 
     #Copy dataset files from path given to containner
-    #After read convert to "normalized" file format to .npz
     print(conf_data)
-    file_test = numpy_to_pickle(test_data_X,test_data_y,conf_data,'test')
+    file_test = read_file(path_test)
     tar_test = get_tarstream(file_test,"dataset_test.npz")
     success = container_made.put_archive(dest_path, tar_test)
     print_flask('Put test tar:'+str(success))
 
-    file_train = numpy_to_pickle(train_data_X,train_data_y,conf_data,'train')
+    file_train = read_file(path_train)
     tar_train = get_tarstream(file_train,"dataset_train.npz")
     success = container_made.put_archive(dest_path, tar_train)
     print_flask('Put train tar:'+str(success))
 
-    file_val = numpy_to_pickle(val_data_X,val_data_y,conf_data,'validation')
+    file_val = read_file(path_val)
     tar_train = get_tarstream(file_val,"dataset_val.npz")
     success = container_made.put_archive(dest_path, tar_train)
     print_flask('Put val tar:'+str(success))

@@ -18,5 +18,7 @@
     "from_logits" : true,
     "validation_split" : 0.3,
     "learning_rate" : 0.01,
-    "k-fold_validation" : 0
+    "k-fold_validation" : 2,
+    "k-fold_ids" : [112312225459790, 112312225459797],
+    "metrics" : ["BinaryAccuracy","Mean"]
 }
