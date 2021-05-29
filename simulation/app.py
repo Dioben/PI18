@@ -9,6 +9,7 @@ from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import model_from_json
 from sklearn.model_selection import KFold
+import pandas as pd
 import re
 import os
 import urllib.request
@@ -61,6 +62,27 @@ def load_database(path_given,conf_json,type_file='train'):
           label_name=LABEL_COLUMN,
           num_epochs=1,
           ignore_errors=True)
+    elif 'json' in file_arr[1]:
+        print('File is json')
+        with open(path_given,'rb') as file_read:
+            if type_file == "train":
+                feature_name = conf_json['train_feature_name']
+                label_name = conf_json['train_label_name']
+            elif type_file == 'test':
+                feature_name = conf_json['test_feature_name']
+                label_name = conf_json['test_label_name']
+            elif type_file == 'validation':
+                feature_name = conf_json['val_feature_name']
+                label_name = conf_json['val_label_name']
+            df = pd.read_json(file_read)
+            #If it's a json file it's expect of conf to have this extra
+            target = df.pop(label_name)
+            print(type(df.values))
+            print(type(target.values))
+            features = df.values
+            labels =  target.values
+            print('dataset make')
+            dataset = tf.data.Dataset.from_tensor_slices((features, labels))
     elif 'npz' in file_arr[1]:
         print('File is npz')
         with np.load(path_given) as numpy_data:
