@@ -5,14 +5,14 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'css/multiple-select.min.css' %}">
+        <!-- Font Awesome  --> <link rel="stylesheet" href="{% static 'fa/css/all.min.css' %}">
         <link rel="stylesheet" href="{% static 'css/layout.css' %}">
-        <script src="{% static 'scripts/layout.js' %}"></script>
-        <script src="{% static 'script.js' %}"></script>
-        <!-- Font Awesome  -->
-        <link rel="stylesheet" href="{% static 'fa/css/all.min.css' %}">
         <title >{% block title %}Neural Net Tracker{% endblock %}</title>
     </head>
     <body>
+        <script src="{% static 'script.js' %}"></script>
+
         <nav class="navbar navbar-expand py-0" style="background-color: #0078d4; color: white">
             <div class="container-fluid">
                 <a class="navbar-brand" style="color: white; font-weight: bolder;" href="/simulations/">Neural Net Tracker</a>
@@ -58,11 +58,9 @@
                 </main>
             </div>
         </div>
-    <!-- JQuery and Bootstrap core
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="{% static 'scripts/jquery-3.4.1.min.js' %}"></script>
-    <script src="{% static 'scripts/popper.js' %}"></script>
-    <script src="{% static 'scripts/bootstrap.js' %}"></script>
+        <script src="{% static 'scripts/jquery-3.6.0.min.js' %}"></script>
+        <script src="{% static 'scripts/multiple-select.min.js' %}"></script>
+        <script src="{% static 'scripts/popper.js' %}"></script>
+        <script src="{% static 'scripts/bootstrap.js' %}"></script>
     </body>
 </html>

@@ -9,74 +9,114 @@
             <div id="content1">
                 {% include 'simulationInfo/simulationInfoContent1.html' %}
             </div>
-        </div>
-    </div>
-    <div style="margin-top: 5px;">
-        <nav>
-            <div class="nav nav-tabs nav-fill" id="tab" role="tablist">
-                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
-                <button class="nav-link" id="network-tab" data-bs-toggle="tab" data-bs-target="#network" type="button" role="tab" aria-controls="network" aria-selected="false">Network</button>
-            </div>
-        </nav>
-        <div class="tab-content" id="tabContent" style="border: 1px solid #DCDCDE; border-top: none; min-height: 50vh; background-color: white; padding: 8px">
-            <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
-                <div class="input-group">
-                    <span class="input-group-text">Values:</span>
-                    <div class="input-group-text form-switch" style="background-color: white">
-                        <input id="grafanaAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                        <label for="grafanaAccuracySwitch" class="form-check-label ms-1">Accuracy</label>
+            <div style="margin-top: 5px;">
+                <nav>
+                    <div class="nav nav-tabs nav-fill" id="tab" role="tablist">
+                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
+                        <button class="nav-link" id="network-tab" data-bs-toggle="tab" data-bs-target="#network" type="button" role="tab" aria-controls="network" aria-selected="false">Network</button>
                     </div>
-                    <div class="input-group-text form-switch" style="background-color: white">
-                        <input id="grafanaLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                        <label for="grafanaLossSwitch" class="form-check-label ms-1">Loss</label>
+                </nav>
+                <div class="tab-content" id="tabContent" style="border: 1px solid #DCDCDE; border-top: none; min-height: 50vh; background-color: white; padding: 8px">
+                    <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                        <div id="content2">
+                            {% include 'simulationInfo/simulationInfoContent2.html' %}
+                        </div>
                     </div>
-                    <div class="input-group-text form-switch" style="background-color: white">
-                        <input id="grafanaValidationAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                        <label for="grafanaValidationAccuracySwitch" class="form-check-label ms-1">Validation accuracy</label>
-                    </div>
-                    <div class="input-group-text form-switch" style="background-color: white">
-                        <input id="grafanaValidationLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                        <label for="grafanaValidationLossSwitch" class="form-check-label ms-1">Validation loss</label>
-                    </div>
-                </div>
-                {% with simulation.updates.0 as first  %}
-                    {% with simulation.updates|last as last %}
-                        <iframe width="100%" height="400" frameborder="0" id="grafanaIFrame"></iframe>
+                    <div class="tab-pane fade" id="network" role="tabpanel" aria-labelledby="network-tab">
+                        <h6>Epoch Values:</h6>
+                        <div class="input-group">
+                            <span class="input-group-text">Values:</span>
+                            <div class="input-group-text form-switch" style="background-color: white">
+                                <input id="grafanaEpochValuesAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                <label for="grafanaEpochValuesAccuracySwitch" class="form-check-label ms-1">Accuracy</label>
+                            </div>
+                            <div class="input-group-text form-switch" style="background-color: white">
+                                <input id="grafanaEpochValuesLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                <label for="grafanaEpochValuesLossSwitch" class="form-check-label ms-1">Loss</label>
+                            </div>
+                            <div class="input-group-text form-switch" style="background-color: white">
+                                <input id="grafanaEpochValuesValidationAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                <label for="grafanaEpochValuesValidationAccuracySwitch" class="form-check-label ms-1">Validation accuracy</label>
+                            </div>
+                            <div class="input-group-text form-switch" style="background-color: white">
+                                <input id="grafanaEpochValuesValidationLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                <label for="grafanaEpochValuesValidationLossSwitch" class="form-check-label ms-1">Validation loss</label>
+                            </div>
+                        </div>
+                        <iframe width="100%" height="400" frameborder="0" id="grafanaEpochValuesIFrame"></iframe>
                         <script type="text/javascript">
-                            function reloadGrafana() {
-                                let grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&from={{ first.time|add:-30 }}&to={{ last.time|add:30 }}&var-sim_id={{ simulation.id }}&panelId=2";
-                                if ($("#grafanaAccuracySwitch").prop("checked")) {
+                            function reloadGrafanaEpochValues() {
+                                let grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&panelId=2";
+                                if ($("#grafanaEpochValuesAccuracySwitch").prop("checked")) {
                                     grafanaUrl += "&var-values=1";
                                 }
-                                if ($("#grafanaLossSwitch").prop("checked")) {
+                                if ($("#grafanaEpochValuesLossSwitch").prop("checked")) {
                                     grafanaUrl += "&var-values=2";
                                 }
-                                if ($("#grafanaValidationAccuracySwitch").prop("checked")) {
+                                if ($("#grafanaEpochValuesValidationAccuracySwitch").prop("checked")) {
                                     grafanaUrl += "&var-values=3";
                                 }
-                                if ($("#grafanaValidationLossSwitch").prop("checked")) {
+                                if ($("#grafanaEpochValuesValidationLossSwitch").prop("checked")) {
                                     grafanaUrl += "&var-values=4";
                                 }
-                                console.log(grafanaUrl);
-                                $("#grafanaIFrame").prop("src", grafanaUrl);
+                                $("#grafanaEpochValuesIFrame").prop("src", grafanaUrl);
                             }
-
                             window.addEventListener('load', function() {
-                                reloadGrafana();
-                                $("#grafanaAccuracySwitch").change(reloadGrafana);
-                                $("#grafanaLossSwitch").change(reloadGrafana);
-                                $("#grafanaValidationAccuracySwitch").change(reloadGrafana);
-                                $("#grafanaValidationLossSwitch").change(reloadGrafana);
+                                reloadGrafanaEpochValues();
+                                $("#grafanaEpochValuesAccuracySwitch").change(reloadGrafanaEpochValues);
+                                $("#grafanaEpochValuesLossSwitch").change(reloadGrafanaEpochValues);
+                                $("#grafanaEpochValuesValidationAccuracySwitch").change(reloadGrafanaEpochValues);
+                                $("#grafanaEpochValuesValidationLossSwitch").change(reloadGrafanaEpochValues);
                             }, false);
                         </script>
-                    {% endwith %}
-                {% endwith %}
-                <div id="content2">
-                    {% include 'simulationInfo/simulationInfoContent2.html' %}
+                        <h6 style="margin-top: 8px">Weights Graphing:</h6>
+                        <div class="input-group">
+                            <label for="grafanaWeightsGraphingLayerInput" class="input-group-text">Layer:</label>
+                            <input class="form-control" id="grafanaWeightsGraphingLayerInput" type="number" min="0" max="{{ simulation.layers|add:-1 }}" value="0">
+                        </div>
+                        <iframe width="100%" height="400" frameborder="0" id="grafanaWeightsGraphingIFrame"></iframe>
+                        <script type="text/javascript">
+                            function reloadGrafanaWeightsGraphing() {
+                                let grafanaUrl = "http://localhost:3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&panelId=2";
+                                grafanaUrl += "&var-layer=" + $('#grafanaWeightsGraphingLayerInput').val();
+                                $("#grafanaWeightsGraphingIFrame").prop("src", grafanaUrl);
+                            }
+                            window.addEventListener('load', function() {
+                                $("#grafanaWeightsGraphingLayerInput").keyup(function() {
+                                    let input = $('#grafanaWeightsGraphingLayerInput')
+                                    if (input.val() >= input.prop('min') && input.val() <= input.prop('max'))
+                                        reloadGrafanaWeightsGraphing();
+                                });
+                                reloadGrafanaWeightsGraphing();
+                            }, false);
+                        </script>
+                        {% if simulation.metrics|length != 0 %}
+                            <h6 style="margin-top: 8px">Extra Metrics Dash:</h6>
+                            <div class="input-group">
+                                <label for="grafanaExtraMetricsDashMetricSelect" class="input-group-text">Metric:</label>
+                                <select id="grafanaExtraMetricsDashMetricSelect" class="form-select">
+                                    {% for metric in simulation.metrics %}
+                                        <option value="{{ metric }}">{{ metric }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <iframe width="100%" height="400" frameborder="0" id="grafanaExtraMetricsDashIFrame"></iframe>
+                            <script type="text/javascript">
+                                function reloadGrafanaExtraMetricsDashGraphing() {
+                                    let grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/extra-metrics-dash?orgId=1&var-sim_id={{ simulation.id }}&panelId=2";
+                                    grafanaUrl += "&var-metric=" + $("#grafanaExtraMetricsDashMetricSelect").val();
+                                    $("#grafanaExtraMetricsDashIFrame").prop("src", grafanaUrl);
+                                }
+                                window.addEventListener('load', function() {
+                                    $("#grafanaExtraMetricsDashMetricSelect").change(reloadGrafanaExtraMetricsDashGraphing());
+                                    reloadGrafanaExtraMetricsDashGraphing();
+                                }, false);
+                            </script>
+                        {% endif %}
+
+                        <div id="content3"></div>
+                    </div>
                 </div>
-            </div>
-            <div class="tab-pane fade" id="network" role="tabpanel" aria-labelledby="network-tab">
-                <div id="content3"></div>
             </div>
         </div>
     </div>

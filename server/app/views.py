@@ -84,6 +84,9 @@ def simulation_create(request):
     if request.method == 'POST':
         response = simulations(request)
         if type(response) is HttpResponse:
+            if response.status_code == 400:
+                return render(request, 'simulationCreate.html',
+                              {'fileForm': UploadModelFileForm(request.POST), 'configForm': ConfSimForm(request.POST)})
             return response
         return redirect('/simulations/' + str(response.id.int))
     return render(request, 'simulationCreate.html', {'fileForm': UploadModelFileForm(), 'configForm': ConfSimForm()})
@@ -201,8 +204,35 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                          epoch_interval=confForm.cleaned_data["logging_interval"],
                          goal_epochs=confForm.cleaned_data["max_epochs"],
                          learning_rate=confForm.cleaned_data["learning_rate"],
-                         metrics=[])
+                         metrics=confForm.cleaned_data["metrics"])
         sim.save()
+
+        k_fold_ids = []
+        if 'tag' in confForm.cleaned_data:
+            tagged = Tagged(tag=confForm.cleaned_data['tag'],
+                            sim=sim,
+                            tagger=request.user)
+            tagged.save()
+            if confForm.cleaned_data['k_fold_validation'] > 0:
+                for i in range(int(confForm.cleaned_data['k_fold_validation'])):
+                    ksim = Simulation(owner=request.user,
+                                      isdone=False,
+                                      isrunning=True,
+                                      model=modeltext,
+                                      name=str(confForm.cleaned_data["name"])+" ("+str(i+2)+")",
+                                      layers=len(modeljson['config']['layers']),
+                                      biases=bytes(biastext, 'utf-8'),
+                                      epoch_interval=confForm.cleaned_data["logging_interval"],
+                                      goal_epochs=confForm.cleaned_data["max_epochs"],
+                                      learning_rate=confForm.cleaned_data["learning_rate"],
+                                      metrics=confForm.cleaned_data["metrics"])
+                    ksim.save()
+                    ktagged = Tagged(tag=confForm.cleaned_data['tag'],
+                                     sim=ksim,
+                                     tagger=request.user,
+                                     iskfold=True)
+                    ktagged.save()
+                    k_fold_ids.append(ksim.id.int)
 
         trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.npz'
         if "test_dataset" in request.FILES:
@@ -240,17 +270,17 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                 "test_label_name": "y_test",
                 "val_feature_name": "x_val",
                 "val_label_name": "y_val",
-                "optimizer": "rmsprop",
-                "loss_function": "SparseCategoricalCrossentropy",
+                "optimizer": confForm.cleaned_data['optimizer'],
+                "loss_function": confForm.cleaned_data['loss_function'],
                 "from_logits": True,
                 "validation_split": 0.3,
                 "learning_rate": sim.learning_rate,
-                "k-fold_validation": 0,
+                "k-fold_validation": confForm.cleaned_data['k_fold_validation'],
+                "k-fold_ids": k_fold_ids,
+                "metrics": confForm.cleaned_data['metrics'],
             },
             "model": json.loads(sim.model)
         }
-        # print(postdata)
-        # resp = requests.post("http://127.0.0.1:7000/simulations", json=postdata)
         resp = requests.post("http://tracker-deployer:7000/simulations", json=postdata)
         if resp.ok:
             return sim
