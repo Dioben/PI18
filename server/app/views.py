@@ -106,7 +106,7 @@ def simulation_info(request, id):
     t_params = {
         'simulation': response,
         'notification': notification,
-        'updates': Update.objects.filter(sim_id=id)
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
     }
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
 
@@ -125,7 +125,7 @@ def simulation_info_content1(request, id):
     t_params = {
         'simulation': response,
         'notification': notification,
-        'updates': Update.objects.filter(sim_id=id)
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
     }
     return render(request, 'simulationInfo/simulationInfoContent1.html', t_params)
 
@@ -138,7 +138,7 @@ def simulation_info_content2(request, id):
         return response
     t_params = {
         'simulation': response,
-        'updates': Update.objects.filter(sim_id=id)
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
     }
     return render(request, 'simulationInfo/simulationInfoContent2.html', t_params)
 
