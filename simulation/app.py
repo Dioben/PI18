@@ -162,10 +162,16 @@ def get_metrics_tensorflow(conf_json):
     metrics_lst_json = conf_json['metrics']
     metrics_lst_class = []
     for metrics_json in metrics_lst_json:
+        #We already add accuracy and leave which one to be decided by framework
+        if metrics_json in ['BinaryAccuracy', 'Accuracy', 'TopKCategoricalAccuracy' 'CategoricalAccuracy', 'SparseCategoricalAccuracy']:
+            print('skipped a acc metric')
+            continue
+        print(metrics_json)
         metrics_class = tf.keras.metrics.get(metrics_json)
         metrics_lst_class.append(metrics_class)
-    if metrics_lst_json == []:
-        metrics_lst_class.append('accuracy')
+    
+    #Default one
+    metrics_lst_class.append('accuracy')
     return metrics_lst_class
 
 optimizer_choosen = get_optimizer_tensorflow(conf_json,LEARNING_RATE)
