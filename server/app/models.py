@@ -21,6 +21,7 @@ class Simulation(models.Model):
     epoch_interval = models.IntegerField(validators=[MinValueValidator(1)])
     goal_epochs = models.IntegerField()
     metrics = ArrayField(models.CharField(max_length=60))
+    error_text = models.CharField(max_length=500, blank=True, default="")
     def get_current_epoch(self):
         updateSet = Update.objects.filter(sim=self.id)
         if len(updateSet) > 0:
