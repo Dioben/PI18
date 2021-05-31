@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 4,
-  "iteration": 1622214893707,
+  "iteration": 1622497736666,
   "links": [],
   "panels": [
     {
@@ -152,7 +152,7 @@
       "version": 1
     }
   ],
-  "refresh": "30s",
+  "refresh": "",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
