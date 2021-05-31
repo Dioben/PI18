@@ -20,9 +20,13 @@ class Simulation(models.Model):
     layers = models.IntegerField()
     epoch_interval = models.IntegerField(validators=[MinValueValidator(1)])
     goal_epochs = models.IntegerField()
-
+    metrics = ArrayField(models.CharField(max_length=60))
+    error_text = models.CharField(max_length=500, blank=True, default="")
     def get_current_epoch(self):
-        return Update.objects.filter(sim=self.id).latest('time')
+        updateSet = Update.objects.filter(sim=self.id)
+        if len(updateSet) > 0:
+            return updateSet.latest('time')
+        return None
     current_epoch = property(get_current_epoch)
 
     #insert more stats/goals here
@@ -55,7 +59,17 @@ class Tagged(models.Model):
     tag = models.CharField(max_length=200)
     sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
     tagger = models.ForeignKey(User,on_delete=models.CASCADE)
+    iskfold = models.BooleanField(default=False)
     class Meta:
         unique_together = (('tag','sim'),)
         db_table = "Tags"
         indexes = [models.Index(fields=['tag']),models.Index(fields=['tagger']),models.Index(fields=["sim"])]
+
+class ExtraMetrics(TimescaleModel):
+    epoch = models.IntegerField()
+    sim = models.ForeignKey(Simulation, on_delete=models.CASCADE)
+    value = models.FloatField()
+    metric = models.CharField(max_length=60)
+    class Meta:
+        db_table = "extra_metrics"
+        indexes =[ models.Index(fields=['sim','epoch']),models.Index(fields=['sim','metric'])]

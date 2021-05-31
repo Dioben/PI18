@@ -1,3 +1,4 @@
+import requests
 from flask import Flask, request
 from flask import jsonify
 from celery import Celery
@@ -8,6 +9,9 @@ import json
 import sys
 import docker
 import uuid
+import re
+import os
+import pickle
 
 app = Flask(__name__)
 client = docker.from_env()
@@ -80,13 +84,75 @@ def get_tarstream(file_data,file_name):
     pw_tarstream.seek(0)
     return pw_tarstream
 
+def read_file(path):
+    print('reading data from file:',path)
+    file_obj = open(path,'rb')
+    file_data = file_obj.read()
+    file_obj.close()
+    return file_data
+
+
+
+def download_dataset(url,filename):
+    local_filename = "./dataset/"
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        fname = re.findall('filename=(.+)', r.headers.get('content-disposition'))
+        local_filename = local_filename + fname[0].split('"')[1]
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    print("done ", local_filename)
+    return local_filename
+
+
+
 @celery.task()
 def make_simualtion(sim_id,model_data,conf_data):
     print_flask('Making new sim of id:'+str(sim_id))
-    #Path where to put all data simlation needs
-    #TODO:Replace this with /files after updating image in docker hub
-    dest_path = '/app'
+    #Check config for k-fold validation, get data -> numpy and then use stratifield k-fold
+    #Get data -> numpy
+    if conf_data["dataset_url"]:
+        #download
+        path_train = download_dataset(conf_data["dataset_train"], "dataset_train")
+        path_test = download_dataset(conf_data["dataset_test"], "dataset_test")
+        path_val = download_dataset(conf_data["dataset_val"], "dataset_val")
+    else:
+        path_test = conf_data["dataset_test"]
+        path_train = conf_data["dataset_train"]
+        path_val = conf_data["dataset_val"]
+
+    #K-fold or not
+    k_fold_number = int(conf_data['k-fold_validation'])
+    if k_fold_number > 1:
+        print_flask('K-fold for '+str(k_fold_number))
+        #For each fold that will be made make a new simulation with an index provided to simulation
+        sim_idx_lst = conf_data['k-fold_ids']
+        for i in range(k_fold_number):
+            start_simulation(sim_idx_lst[i],model_data,conf_data,path_train,path_val,path_test,i)
+    else:
+        start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test)
+    
+    #Disabled for testing purposes, but its tested
+    #cleanup_data(path_train,path_val,path_test)
+    return None
+
+def cleanup_data(path_train,path_val,path_test):
+    print_flask('Cleanup after sim creation')
+    if os.path.exists(path_train):
+        os.remove(path_train)
+    if os.path.exists(path_val):
+        os.remove(path_val)
+    if os.path.exists(path_test):
+        os.remove(path_test)
+
+def start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test,k_fold_idx = None):
+    if k_fold_idx != None:
+        print_flask(str(conf_data))
+        print_flask('K fold index:'+str(k_fold_idx))
+        conf_data['k-fold_index'] = k_fold_idx
     #For all files needed tar them and put them in container
+    dest_path = '/app'
     tar_model = get_tarstream(json.dumps(model_data).encode('utf8'),"model.json")
     print_flask(str(tar_model))
     tar_conf = get_tarstream(json.dumps(conf_data).encode('utf8'),"conf.json")
@@ -95,37 +161,22 @@ def make_simualtion(sim_id,model_data,conf_data):
     container_made = client.containers.create("dioben/nntrackerua-simulation",name=str(sim_id),detach=True)
     print_flask('Containner with id:'+container_made.id + " was made")
 
-    if conf_data['dataset_url'] is True:
-        #TODO:Replace this section, container is stoped at the moment
-        #Not sure where to put this, maybe in dockerfile
-        print_flask("Preparing to download dataset...")
-        helper_script = "curl smt.com"
-        container_made.exec_run(helper_script)
-    else:
-        #Copy dataset files from path given to containner
-        path_test = conf_data["dataset_test"]
-        file_obj_test = open(path_test,'rb')
-        file_test = file_obj_test.read()
-        file_obj_test.close()
-        tar_test = get_tarstream(file_test,"dataset_test.npz")
-        success = container_made.put_archive(dest_path, tar_test)
-        print_flask('Put test tar:'+str(success))
+    #Copy dataset files from path given to containner
+    print(conf_data)
+    file_test = read_file(path_test)
+    tar_test = get_tarstream(file_test,"dataset_test.npz")
+    success = container_made.put_archive(dest_path, tar_test)
+    print_flask('Put test tar:'+str(success))
 
-        path_train = conf_data["dataset_train"]
-        file_obj_train = open(path_train,'rb')
-        file_train = file_obj_train.read()
-        file_obj_train.close()
-        tar_train = get_tarstream(file_train,"dataset_train.npz")
-        success = container_made.put_archive(dest_path, tar_train)
-        print_flask('Put train tar:'+str(success))
+    file_train = read_file(path_train)
+    tar_train = get_tarstream(file_train,"dataset_train.npz")
+    success = container_made.put_archive(dest_path, tar_train)
+    print_flask('Put train tar:'+str(success))
 
-        path_train = conf_data["dataset_val"]
-        file_obj_train = open(path_train,'rb')
-        file_train = file_obj_train.read()
-        file_obj_train.close()
-        tar_train = get_tarstream(file_train,"dataset_val.npz")
-        success = container_made.put_archive(dest_path, tar_train)
-        print_flask('Put val tar:'+str(success))
+    file_val = read_file(path_val)
+    tar_train = get_tarstream(file_val,"dataset_val.npz")
+    success = container_made.put_archive(dest_path, tar_train)
+    print_flask('Put val tar:'+str(success))
 
     success = container_made.put_archive(dest_path, tar_model)
     print_flask('Put model tar:'+str(success))
@@ -138,7 +189,6 @@ def make_simualtion(sim_id,model_data,conf_data):
     container_made.start()
     print_flask('Started script')
 
-    return None
 
 @celery.task()
 def delete_simulation(simulation_id):

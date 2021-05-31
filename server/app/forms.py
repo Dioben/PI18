@@ -89,7 +89,106 @@ class ConfSimForm(forms.Form):
             }
         )
     )
-
+    metrics = forms.MultipleChoiceField(
+        widget=forms.SelectMultiple(),
+        choices=(
+            ('AUC', 'AUC'),
+            ('Accuracy', 'Accuracy'),
+            ('BinaryAccuracy', 'BinaryAccuracy'),
+            ('BinaryCrossentropy', 'BinaryCrossentropy'),
+            ('CategoricalAccuracy', 'CategoricalAccuracy'),
+            ('CategoricalCrossentropy', 'CategoricalCrossentropy'),
+            ('CategoricalHinge', 'CategoricalHinge'),
+            ('CosineSimilarity', 'CosineSimilarity'),
+            ('FalseNegatives', 'FalseNegatives'),
+            ('FalsePositives', 'FalsePositives'),
+            ('Hinge', 'Hinge'),
+            ('KLDivergence', 'KLDivergence'),
+            ('LogCoshError', 'LogCoshError'),
+            ('Mean', 'Mean'),
+            ('MeanAbsoluteError', 'MeanAbsoluteError'),
+            ('MeanAbsolutePercentageError', 'MeanAbsolutePercentageError'),
+            ('MeanIoU', 'MeanIoU'),
+            ('MeanRelativeError', 'MeanRelativeError'),
+            ('MeanSquaredError', 'MeanSquaredError'),
+            ('MeanSquaredLogarithmicError', 'MeanSquaredLogarithmicError'),
+            ('MeanTensor', 'MeanTensor'),
+            ('Poisson', 'Poisson'),
+            ('Precision', 'Precision'),
+            ('PrecisionAtRecall', 'PrecisionAtRecall'),
+            ('Recall', 'Recall'),
+            ('RecallAtPrecision', 'RecallAtPrecision'),
+            ('RootMeanSquaredError', 'RootMeanSquaredError'),
+            ('SensitivityAtSpecificity', 'SensitivityAtSpecificity'),
+            ('SparseCategoricalAccuracy', 'SparseCategoricalAccuracy'),
+            ('SparseCategoricalCrossentropy', 'SparseCategoricalCrossentropy'),
+            ('SparseTopKCategoricalAccuracy', 'SparseTopKCategoricalAccuracy'),
+            ('SpecificityAtSensitivity', 'SpecificityAtSensitivity'),
+            ('SquaredHinge', 'SquaredHinge'),
+            ('Sum', 'Sum'),
+            ('TopKCategoricalAccuracy', 'TopKCategoricalAccuracy'),
+            ('TrueNegatives', 'TrueNegatives'),
+            ('TruePositives', 'TruePositives'),
+        ),
+        required=False
+    )
+    optimizer = forms.ChoiceField(
+        widget=forms.Select(
+            attrs={
+                'class': 'form-select'
+            }),
+        choices=(
+            ('Adadelta', 'Adadelta'),
+            ('Adagrad', 'Adagrad'),
+            ('Adam', 'Adam'),
+            ('Adamax', 'Adamax'),
+            ('Ftrl', 'Ftrl'),
+            ('Nadam', 'Nadam'),
+            ('RMSprop', 'RMSprop'),
+            ('SGD', 'SGD'),
+        )
+    )
+    loss_function = forms.ChoiceField(
+        widget=forms.Select(
+            attrs={
+                'class': 'form-select'
+            }),
+        choices=(
+            ('BinaryCrossentropy', 'BinaryCrossentropy'),
+            ('CategoricalCrossentropy', 'CategoricalCrossentropy'),
+            ('CategoricalHinge', 'CategoricalHinge'),
+            ('CosineSimilarity', 'CosineSimilarity'),
+            ('Hinge', 'Hinge'),
+            ('Huber', 'Huber'),
+            ('KLDivergence', 'KLDivergence'),
+            ('LogCosh', 'LogCosh'),
+            ('MeanAbsoluteError', 'MeanAbsoluteError'),
+            ('MeanAbsolutePercentageError', 'MeanAbsolutePercentageError'),
+            ('MeanSquaredError', 'MeanSquaredError'),
+            ('MeanSquaredLogarithmicError', 'MeanSquaredLogarithmicError'),
+            ('Poisson', 'Poisson'),
+            ('Reduction', 'Reduction'),
+            ('SparseCategoricalCrossentropy', 'SparseCategoricalCrossentropy'),
+            ('SquaredHinge', 'SquaredHinge'),
+        )
+    )
+    k_fold_validation = forms.IntegerField(
+        validators=[MinValueValidator(0)],
+        widget=forms.NumberInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    tag = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control'
+            }
+        ),
+        required=False
+    )
 
     def clean_logging_interval(self):
         cleaned_data = super().clean()
@@ -97,6 +196,13 @@ class ConfSimForm(forms.Form):
         if clean_logging_interval > cleaned_data.get("max_epochs"):
             raise ValidationError("Logging interval is larger than total runtime")
         return clean_logging_interval
+
+    def clean_k_fold_validation(self):
+        cleaned_data = super().clean()
+        clean_k_fold_validation = cleaned_data.get("k_fold_validation")
+        if clean_k_fold_validation > 0 and str(cleaned_data.get("tag")).strip() == '':
+            raise ValidationError("K-Fold Validation bigger is bigger than 0 and tag was not set")
+        return clean_k_fold_validation
 
 
 class CustomAuthenticationForm(auth_forms.AuthenticationForm):

@@ -1,0 +1,11 @@
+{
+    "id" : "328343541630968741754302655531352331184",
+    "dataset_train" : "https://drive.google.com/uc?export=download&id=1AsnQrKX80VuL4lCmKXnv9wbt9IwYmmsz",
+    "dataset_test" : "https://drive.google.com/uc?export=download&id=1rFn_K2SXn5BZtE4yJAaxRs3e65-eJv0K",
+    "dataset_val" : "https://drive.google.com/uc?export=download&id=1Kyi7EWYxtdgDpop36WCZ9RDzuWTPUd1r",
+    "dataset_url" : true,
+    "batch_size" : 32,
+    "epochs" : 1,
+    "label_collumn" : "smt",
+    "k-fold_validation" : 2
+}

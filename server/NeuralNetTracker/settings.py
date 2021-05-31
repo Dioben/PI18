@@ -39,8 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.postgres',
     'app.apps.AppConfig',
-    'mathfilters'
-
+    'mathfilters',
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -51,7 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'NeuralNetTracker.urls'
@@ -85,7 +86,7 @@ DATABASES = {
         'NAME': 'nntracker',
         'USER': 'root',
         'PASSWORD': 'postgres',
-        # 'HOST': '127.0.0.1',
+        #'HOST': '127.0.0.1',
         'HOST': 'timescaledb',
         'PORT': '5432',
     }
@@ -132,10 +133,19 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'app/static')
 
 
-
-
 FILE_UPLOAD_HANDLERS = [
     'django.core.files.uploadhandler.TemporaryFileUploadHandler',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# DJANGO REST FRAMEWORK config
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny'
+    ]
+}
+
+# CORS (Cross-Origin Resource Sharing) config
+CORS_ORIGIN_ALLOW_ALL = True

@@ -3,15 +3,17 @@ import sys
 
 from django.contrib import auth
 from django.shortcuts import render, redirect
-
-# Create your views here.
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+# Create your views here.
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import requests
 from app.forms import UploadModelFileForm, UploadDataSetFileForm, ConfSimForm, CustomUserCreationForm
 from app.models import *
+from app.serializers import SimulationSerializer, UpdateSerializer
 
 
 def index(request):
@@ -43,6 +45,105 @@ def signup(request):
     return render(request, 'signup.html', {'form': form})
 
 
+@csrf_exempt
+def users(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        if 'give' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'remove' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'enable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'disable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'delete' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.delete()
+            return HttpResponseRedirect(request.path)
+        else:
+            users = User.objects.all().exclude(id=request.user.id)
+            t_parms = {
+                'users': users
+            }
+            return render(request, 'users.html', t_parms)
+
+    return render(request, 'login.html')
+
+
+@csrf_exempt
+def userinfo(request, id):
+    if request.user.is_authenticated and request.user.is_staff:
+        if 'give' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'remove' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_staff = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'enable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = True
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'disable' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.is_active = False
+            user.save()
+            return HttpResponseRedirect(request.path)
+        elif 'delete' in request.POST:
+            id = request.POST.get('user_id')
+            u = User.objects.filter(id=id)
+            user = u[0]
+            user.delete()
+            return HttpResponseRedirect(request.path)
+        else:
+            usera = User.objects.filter(id=id)
+            print(Simulation.objects.filter(owner=usera[0]).count())
+            print(len(Simulation.objects.filter(owner=usera[0])))
+            t_parms = {
+                'usera': usera[0],
+                'simulations': Simulation.objects.filter(owner=usera[0]),
+                'simulations_total': Simulation.objects.filter(owner=usera[0]).count(),
+                'simulations_run': Simulation.objects.filter(owner=usera[0], isrunning=True).count(),
+                'simulations_done': Simulation.objects.filter(owner=usera[0], isdone=True).count(),
+            }
+            return render(request, 'userInfo.html', t_parms)
+    return render(request, 'login.html')
+
+
 def simulation_list(request):
     notification = None
     if 'notification' in request.session:
@@ -58,8 +159,25 @@ def simulation_list(request):
         'simulations': response,
         'notification': notification,
     }
-    return render(request, 'simulations.html', t_parms)
+    return render(request, 'simulations/simulations.html', t_parms)
 
+
+def simulation_list_content(request):
+    notification = None
+    if 'notification' in request.session:
+        notification = request.session['notification']
+        del request.session['notification']
+        request.session.modified = True
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
+    response = simulations(request)
+    if type(response) == HttpResponse:
+        return response
+    t_parms = {
+        'simulations': response,
+        'notification': notification,
+    }
+    return render(request, 'simulations/simulationsContent.html', t_parms)
 
 def simulation_create(request):
     if not request.user.is_authenticated:  # you could use is_active here for email verification i think
@@ -67,6 +185,9 @@ def simulation_create(request):
     if request.method == 'POST':
         response = simulations(request)
         if type(response) is HttpResponse:
+            if response.status_code == 400:
+                return render(request, 'simulationCreate.html',
+                              {'fileForm': UploadModelFileForm(request.POST), 'configForm': ConfSimForm(request.POST)})
             return response
         return redirect('/simulations/' + str(response.id.int))
     return render(request, 'simulationCreate.html', {'fileForm': UploadModelFileForm(), 'configForm': ConfSimForm()})
@@ -86,9 +207,54 @@ def simulation_info(request, id):
     t_params = {
         'simulation': response,
         'notification': notification,
-        'updates': Update.objects.filter(sim_id=id)
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
     }
-    return render(request, 'simulationInfo.html', t_params)
+    return render(request, 'simulationInfo/simulationInfo.html', t_params)
+
+
+def simulation_info_content1(request, id):
+    notification = None
+    if 'notification' in request.session:
+        notification = request.session['notification']
+        del request.session['notification']
+        request.session.modified = True
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
+    response = get_simulation(request, id)
+    if type(response) == HttpResponse:
+        return response
+    t_params = {
+        'simulation': response,
+        'notification': notification,
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
+    }
+    return render(request, 'simulationInfo/simulationInfoContent1.html', t_params)
+
+
+def simulation_info_content2(request, id):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
+    response = get_simulation(request, id)
+    if type(response) == HttpResponse:
+        return response
+    t_params = {
+        'simulation': response,
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
+    }
+    return render(request, 'simulationInfo/simulationInfoContent2.html', t_params)
+
+
+def simulation_info_context(request, id):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
+    response = get_simulation(request, id)
+    if type(response) == HttpResponse:
+        return response
+    t_params = {
+        'simulation': SimulationSerializer(response).data,
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
+    }
+    return HttpResponse(json.dumps(t_params), 200)
 
 
 def simulation_command(request, id, command):
@@ -99,13 +265,13 @@ def simulation_command(request, id, command):
         if sim.exists():
             sim = sim.get()
             if not sim.isrunning:
-                request.session['notification'] = "Simulation \""+simName+"\" has been paused."
+                request.session['notification'] = "Simulation \"" + simName + "\" has been paused."
                 request.session.modified = True
                 return redirect(request.META.get('HTTP_REFERER'))
-            request.session['notification'] = "Simulation \""+simName+"\" has been resumed."
+            request.session['notification'] = "Simulation \"" + simName + "\" has been resumed."
             request.session.modified = True
             return redirect(request.META.get('HTTP_REFERER'))
-        request.session['notification'] = "Simulation \""+simName+"\" has been deleted."
+        request.session['notification'] = "Simulation \"" + simName + "\" has been deleted."
         request.session.modified = True
         return redirect('/simulations/')
     return response
@@ -138,8 +304,36 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                          biases=bytes(biastext, 'utf-8'),
                          epoch_interval=confForm.cleaned_data["logging_interval"],
                          goal_epochs=confForm.cleaned_data["max_epochs"],
-                         learning_rate=confForm.cleaned_data["learning_rate"])
+                         learning_rate=confForm.cleaned_data["learning_rate"],
+                         metrics=confForm.cleaned_data["metrics"])
         sim.save()
+
+        k_fold_ids = []
+        if 'tag' in confForm.cleaned_data:
+            tagged = Tagged(tag=confForm.cleaned_data['tag'],
+                            sim=sim,
+                            tagger=request.user)
+            tagged.save()
+            if confForm.cleaned_data['k_fold_validation'] > 0:
+                for i in range(int(confForm.cleaned_data['k_fold_validation'])):
+                    ksim = Simulation(owner=request.user,
+                                      isdone=False,
+                                      isrunning=True,
+                                      model=modeltext,
+                                      name=str(confForm.cleaned_data["name"])+" ("+str(i+2)+")",
+                                      layers=len(modeljson['config']['layers']),
+                                      biases=bytes(biastext, 'utf-8'),
+                                      epoch_interval=confForm.cleaned_data["logging_interval"],
+                                      goal_epochs=confForm.cleaned_data["max_epochs"],
+                                      learning_rate=confForm.cleaned_data["learning_rate"],
+                                      metrics=confForm.cleaned_data["metrics"])
+                    ksim.save()
+                    ktagged = Tagged(tag=confForm.cleaned_data['tag'],
+                                     sim=ksim,
+                                     tagger=request.user,
+                                     iskfold=True)
+                    ktagged.save()
+                    k_fold_ids.append(ksim.id.int)
 
         trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.npz'
         if "test_dataset" in request.FILES:
@@ -177,16 +371,17 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                 "test_label_name": "y_test",
                 "val_feature_name": "x_val",
                 "val_label_name": "y_val",
-                "optimizer": "rmsprop",
-                "loss_function": "SparseCategoricalCrossentropy",
+                "optimizer": confForm.cleaned_data['optimizer'],
+                "loss_function": confForm.cleaned_data['loss_function'],
                 "from_logits": True,
                 "validation_split": 0.3,
                 "learning_rate": sim.learning_rate,
+                "k-fold_validation": confForm.cleaned_data['k_fold_validation'],
+                "k-fold_ids": k_fold_ids,
+                "metrics": confForm.cleaned_data['metrics'],
             },
             "model": json.loads(sim.model)
         }
-        # print(postdata)
-        # resp = requests.post("http://127.0.0.1:7000/simulations", json=postdata)
         resp = requests.post("http://tracker-deployer:7000/simulations", json=postdata)
         if resp.ok:
             return sim

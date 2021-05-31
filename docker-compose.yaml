@@ -26,6 +26,9 @@ services:
         environment:
             - GF_SECURITY_ADMIN_USER=admin
             - GF_SECURITY_ADMIN_PASSWORD=grafana
+            - GF_INSTALL_PLUGINS=natel-plotly-panel
+            - GF_SECURITY_ALLOW_EMBEDDING=true
+            - GF_AUTH_ANONYMOUS_ENABLED=true
         depends_on:
            db:
             condition: service_healthy
