@@ -87,7 +87,7 @@ def update_data_sent(json_file):
             curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
 
         for metric in metrics.keys():
-            curr.execute(sqlWeights, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
+            curr.execute(sqlExtraMetrics, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
 
         curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(), val_loss, val_accuracy))
         conn.commit()
@@ -135,7 +135,7 @@ def finish_data_sent(json_file):
             curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
 
         for metric in metrics.keys():
-            curr.execute(sqlWeights, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
+            curr.execute(sqlExtraMetrics, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
 
         curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(),val_loss, val_accuracy))
         curr.execute(sqlUpdate,(simid,))
