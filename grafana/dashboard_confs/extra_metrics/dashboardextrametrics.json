@@ -12,11 +12,12 @@
       }
     ]
   },
+  "description": "extra metrics dashboard",
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 4,
-  "iteration": 1622497736666,
+  "id": 5,
+  "iteration": 1622499225887,
   "links": [],
   "panels": [
     {
@@ -47,49 +48,48 @@
           "xaxis": {
             "rangemode": "nonnegative",
             "showgrid": true,
-            "title": "layer_index",
-            "type": "",
+            "title": "Epoch",
+            "type": "auto",
             "zeroline": false
           },
           "yaxis": {
-            "rangemode": "nonnegative",
+            "rangemode": "normal",
             "showgrid": true,
-            "title": "Epoch",
+            "title": "Metric",
             "type": "linear",
             "zeroline": false
           },
           "zaxis": {
             "rangemode": "normal",
             "showgrid": true,
-            "title": "Weight",
-            "type": "",
+            "type": "linear",
             "zeroline": false
           }
         },
         "loadFromCDN": false,
         "settings": {
           "displayModeBar": false,
-          "type": "scatter3d"
+          "type": "scatter"
         },
         "showAnnotations": true,
         "traces": [
           {
             "mapping": {
-              "color": "epoch",
+              "color": "metric",
               "size": null,
               "text": null,
-              "x": "array_index",
-              "y": "epoch",
-              "z": "w"
+              "x": "epoch",
+              "y": "value",
+              "z": null
             },
-            "name": "main trace",
+            "name": "Value",
             "settings": {
               "color_option": "ramp",
               "line": {
                 "color": "#005f81",
                 "dash": "solid",
                 "shape": "linear",
-                "width": 6
+                "width": 4
               },
               "marker": {
                 "color": "#33B5E5",
@@ -99,7 +99,7 @@
                   "width": 0
                 },
                 "showscale": false,
-                "size": 5,
+                "size": 10,
                 "sizemin": 3,
                 "sizemode": "diameter",
                 "sizeref": 0.2,
@@ -108,20 +108,20 @@
             },
             "show": {
               "line": true,
-              "lines": false,
+              "lines": true,
               "markers": true
             }
           }
         ]
       },
-      "pluginVersion": "7.5.6",
+      "pluginVersion": "7.5.7",
       "targets": [
         {
           "format": "time_series",
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  \"time\" AS \"time\",\n  epoch,\n  w,\n  array_index\n  \n  \nFROM weights,unnest(weight) with ordinality as a(w,array_index)\nWHERE\n  $__timeFilter(\"time\") and layer_index= $layer and sim_id= '$sim_id'\nORDER BY 1",
+          "rawSql": "SELECT\n  \"time\" AS \"time\",\n  epoch,\n  value\nFROM extra_metrics\nWHERE\n  $__timeFilter(\"time\") and\n  sim_id = '$sim_id' and\n  metric = '$metric'\n  \nORDER BY 1",
           "refId": "A",
           "select": [
             [
@@ -133,7 +133,7 @@
               }
             ]
           ],
-          "table": "weights",
+          "table": "extra_metrics",
           "timeColumn": "\"time\"",
           "timeColumnType": "timestamptz",
           "where": [
@@ -145,14 +145,12 @@
           ]
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Panel Title",
       "type": "natel-plotly-panel",
       "version": 1
     }
   ],
-  "refresh": "",
+  "refresh": "30s",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
@@ -161,30 +159,8 @@
       {
         "current": {
           "selected": false,
-          "text": "2",
-          "value": "2"
-        },
-        "description": "layer index",
-        "error": null,
-        "hide": 0,
-        "label": "layer",
-        "name": "layer",
-        "options": [
-          {
-            "selected": true,
-            "text": "2",
-            "value": "2"
-          }
-        ],
-        "query": "2",
-        "skipUrlSync": false,
-        "type": "textbox"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "95e23c35-24ed-445f-81cb-850024a994ec",
-          "value": "95e23c35-24ed-445f-81cb-850024a994ec"
+          "text": "",
+          "value": ""
         },
         "description": "Simulation ID",
         "error": null,
@@ -194,23 +170,45 @@
         "options": [
           {
             "selected": true,
-            "text": "95e23c35-24ed-445f-81cb-850024a994ec",
-            "value": "95e23c35-24ed-445f-81cb-850024a994ec"
+            "text": "",
+            "value": ""
           }
         ],
-        "query": "95e23c35-24ed-445f-81cb-850024a994ec",
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "description": "name of metric",
+        "error": null,
+        "hide": 0,
+        "label": "Metric",
+        "name": "metric",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
         "skipUrlSync": false,
         "type": "textbox"
       }
     ]
   },
   "time": {
-    "from": "now-30d",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "weights graphing",
-  "uid": "kbM_Fx3Mz",
+  "title": "extra_metrics dash",
+  "uid": "8Fu66GeMz",
   "version": 2
-}
+} 

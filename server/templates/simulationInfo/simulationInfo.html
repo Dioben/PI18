@@ -188,9 +188,9 @@
 
             {% if simulation.metrics|length != 0 %}
                 function reloadGrafanaExtraMetricsDashGraphing() {
-                    let grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/extra-metrics-dash?orgId=1&var-sim_id={{ simulation.id }}&panelId=2";
+                    let grafanaUrl = "http://localhost:3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&var-sim_id={{ simulation.id }}&panelId=2";
                     if (firstUpdate !== undefined && lastUpdate !== undefined)
-                        grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/extra-metrics-dash?orgId=1&var-sim_id={{ simulation.id }}"+
+                        grafanaUrl = "http://localhost:3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&var-sim_id={{ simulation.id }}"+
                             "&from="+(firstUpdate.time-30)+"&to="+(lastUpdate.time+30)+"&panelId=2";
                     grafanaUrl += "&var-metric=" + $("#grafanaExtraMetricsDashMetricSelect").val();
                     $("#grafanaExtraMetricsDashIFrame").prop("src", grafanaUrl);
