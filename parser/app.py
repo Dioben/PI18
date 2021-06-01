@@ -49,6 +49,16 @@ def finish_simulation():
     result = finish_data_sent.delay(simulation_data)
     return 'All good'
 
+@app.route('/send_error', methods=['POST'])
+def send_error_simulation():
+    logger.info("/send_error called")
+    print("/send_error called", file=sys.stderr)
+    simulation_data = request.get_json(force=True)
+    print(type(simulation_data), file=sys.stderr)
+
+    result = send_error.delay(simulation_data)
+    return 'All good'
+
 def make_celery(app):
     celery = Celery(
         app.import_name,
@@ -142,6 +152,23 @@ def finish_data_sent(json_file):
         conn.commit()
     except Exception as error:
         print("Error executing queries on /finish task with error: ", error, file=sys.stderr)
+        print("Error type: ", type(error), file=sys.stderr)
+
+    curr.close()
+    return None
+
+@celery.task()
+def send_error(json_file):
+    curr = conn.cursor()
+
+    try:
+        simid = uuid.UUID(int=int(json_file["id"]))
+        error_text = json_file["error"]
+        sqlUpdate = "UPDATE simulations SET error_text=%s WHERE id=%s"
+        curr.execute(sqlUpdate,(error_text, simid))
+        conn.commit()
+    except Exception as error:
+        print("Error executing queries on /send_error task with error: ", error, file=sys.stderr)
         print("Error type: ", type(error), file=sys.stderr)
 
     curr.close()
