@@ -1,5 +1,5 @@
 {
-    "id" : "112312225459766",
+    "id" : "112312225459769",
     "dataset_train" : "./dataset/dataset_train.npz",
     "dataset_test" : "./dataset/dataset_test.npz",
     "dataset_val" : "./dataset/dataset_val.npz",
@@ -18,7 +18,10 @@
     "from_logits" : true,
     "validation_split" : 0.3,
     "learning_rate" : 0.01,
-    "k-fold_validation" : 2,
+    "k-fold_validation" : 0,
     "k-fold_ids" : [112312225459790, 112312225459797],
-    "metrics" : ["Recall"]
+    "metrics" : [
+        "AUC",
+        "KLDivergence",
+        "LogCoshError"]
 }
