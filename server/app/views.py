@@ -158,6 +158,7 @@ def simulation_list(request):
     t_parms = {
         'simulations': response,
         'notification': notification,
+        'tags': Tagged.objects.filter(sim__in=response),
     }
     return render(request, 'simulations/simulations.html', t_parms)
 
@@ -176,6 +177,7 @@ def simulation_list_content(request):
     t_parms = {
         'simulations': response,
         'notification': notification,
+        'tags': Tagged.objects.filter(sim__in=response),
     }
     return render(request, 'simulations/simulationsContent.html', t_parms)
 
@@ -207,7 +209,8 @@ def simulation_info(request, id):
     t_params = {
         'simulation': response,
         'notification': notification,
-        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)],
+        'tags': Tagged.objects.filter(sim=response),
     }
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
 
@@ -226,7 +229,8 @@ def simulation_info_content1(request, id):
     t_params = {
         'simulation': response,
         'notification': notification,
-        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)],
+        'tags': Tagged.objects.filter(sim=response),
     }
     return render(request, 'simulationInfo/simulationInfoContent1.html', t_params)
 

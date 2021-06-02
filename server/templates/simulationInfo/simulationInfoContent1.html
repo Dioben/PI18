@@ -24,6 +24,22 @@
                 </div>
                 <button class="btn btn-danger btn-sm" style="height: 32px" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa fa-trash fa-sm"></i> Delete</button>
             </div>
+            <div class="d-flex">
+                {% for tag in tags %}
+                    {% if tag.sim == simulation %}
+                        <div id="{{ tag.sim.id }}TAG{{ tag.id }}" style="border-radius: 10%; color: white; font-size: small; margin-right: 3px; border: 0;">
+                            <span style="padding: 1px 0 1px 2px">{{ tag.tag }}</span>
+                            <button style="height: 100%; padding: 1px 2px; background: transparent; border: 0; border-left: 1px white solid; color: white"><i class="fa fa-times fa-sm"></i></button>
+                        </div>
+                        <script>
+                            document.getElementById("{{ tag.sim.id }}TAG{{ tag.id }}").style.backgroundColor = string2color("{{ tag.tag }}");
+                        </script>
+                    {% endif %}
+                {% endfor %}
+                <button class="btn btn-primary p-0 ms-1" style="border-radius: 100%; height: 21px; width: 21px; line-height: 19px">
+                    <i class="fa fa-plus fa-sm"></i>
+                </button>
+            </div>
             <div>
                 <div class="d-flex justify-content-between">
                     <small>Progress:</small>
