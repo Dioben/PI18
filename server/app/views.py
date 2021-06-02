@@ -312,7 +312,8 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
         if 'tag' in confForm.cleaned_data:
             tagged = Tagged(tag=confForm.cleaned_data['tag'],
                             sim=sim,
-                            tagger=request.user)
+                            tagger=request.user,
+                            iskfold=(confForm.cleaned_data['k_fold_validation'] > 0),)
             tagged.save()
             if confForm.cleaned_data['k_fold_validation'] > 0:
                 for i in range(int(confForm.cleaned_data['k_fold_validation'])):
