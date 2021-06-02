@@ -215,7 +215,6 @@ def simulation_info(request, id):
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
 
 
-@csrf_exempt
 def simulation_info_content1(request, id):
     if not request.user.is_authenticated:
         return HttpResponse("Please Log In", 403)
