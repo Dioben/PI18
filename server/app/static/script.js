@@ -1,6 +1,8 @@
 function string2color(str) {
     let hash = 0, i, chr;
-    if (str.length === 0) return hash;
+    if (str.length === 0) return "black";
+    let regex = / \([0-9]*\)$/g;
+    if (str.match(regex)) str = str.replace(regex, "");
     for (i = 0; i < str.length; i++) {
         chr   = str.charCodeAt(i);
         hash  = ((hash << 5) - hash) + chr;

@@ -1,8 +1,9 @@
 {
-    "id" : "112312225459766",
-    "dataset_train" : "./dataset/dataset_train.json",
-    "dataset_test" : "./dataset/dataset_test.json",
-    "dataset_val" : "./dataset/dataset_val.json",
+
+    "id" : "112312225459769",
+    "dataset_train" : "./dataset/dataset_train.csv",
+    "dataset_test" : "./dataset/dataset_test.csv",
+    "dataset_val" : "./dataset/dataset_val.csv",
     "dataset_url" : false,
     "batch_size" : 32,
     "epochs" : 1,
@@ -19,5 +20,7 @@
     "learning_rate" : 0.01,
     "k-fold_validation" : 2,
     "k-fold_ids" : [112312225459790, 112312225459797],
-    "metrics" : ["KLDivergence","Hinge"]
+    "metrics" : [
+        "KLDivergence",
+        "LogCoshError"]
 }

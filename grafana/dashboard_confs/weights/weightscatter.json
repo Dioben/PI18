@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 3,
-  "iteration": 1621874712293,
+  "id": 4,
+  "iteration": 1622497736666,
   "links": [],
   "panels": [
     {
@@ -152,6 +152,7 @@
       "version": 1
     }
   ],
+  "refresh": "",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
@@ -211,5 +212,5 @@
   "timezone": "",
   "title": "weights graphing",
   "uid": "kbM_Fx3Mz",
-  "version": 7
-} 
+  "version": 2
+}
