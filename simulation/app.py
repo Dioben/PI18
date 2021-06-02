@@ -54,14 +54,24 @@ def load_database(path_given,conf_json,type_file='train'):
     file_extension = file_arr[1]
 
     if 'csv' in file_arr[1]:
-      #If it's a csv it's expect of conf to have this extra
-      LABEL_COLUMN = conf_json['label_collumn']
-      dataset = tf.data.experimental.make_csv_dataset(
-          path_given,
-          batch_size=BATCH_SIZE,
-          label_name=LABEL_COLUMN,
-          num_epochs=1,
-          ignore_errors=True)
+        if type_file == "train":
+            feature_name = conf_json['train_feature_name']
+            label_name = conf_json['train_label_name']
+        elif type_file == 'test':
+            feature_name = conf_json['test_feature_name']
+            label_name = conf_json['test_label_name']
+        elif type_file == 'validation':
+            feature_name = conf_json['val_feature_name']
+            label_name = conf_json['val_label_name']
+        df = pd.read_csv(path_given)
+        target = df.pop(label_name)
+        features = df.values.tolist()
+        labels = target.values.tolist()
+        print('dataset make')
+        dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+
+        #If it's a csv it's expect of conf to have this extra
+
     elif 'json' in file_arr[1]:
         print('File is json')
         with open(path_given,'rb') as file_read:
