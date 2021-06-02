@@ -77,10 +77,12 @@ def load_database(path_given,conf_json,type_file='train'):
             df = pd.read_json(file_read)
             #If it's a json file it's expect of conf to have this extra
             target = df.pop(label_name)
-            print(type(df.values))
-            print(type(target.values))
-            features = df.values
-            labels =  target.values
+            features = df.values.tolist()
+            labels =  target.values.tolist()
+            print(labels[0])
+            print(features[0])
+            print(type(features))
+            print(type(labels))
             print('dataset make')
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
     elif 'npz' in file_arr[1]:
@@ -267,6 +269,6 @@ print('Learning rate:',LEARNING_RATE)
 model.fit(dataset_train, batch_size=BATCH_SIZE, epochs=EPOCHS
           , callbacks= [DataAggregateCallback()], validation_data=dataset_val)
 model.evaluate(dataset_test, batch_size=BATCH_SIZE, verbose=0)
-urlDelete = 'http://deployer:7000/simulations/' + conf_json["id"]
-res = requests.delete(urlDelete)
-print('Delete status:', res, file=sys.stderr)
+# urlDelete = 'http://deployer:7000/simulations/' + conf_json["id"]
+# res = requests.delete(urlDelete)
+# print('Delete status:', res, file=sys.stderr)
