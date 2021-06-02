@@ -12,12 +12,11 @@
       }
     ]
   },
-  "description": "extra metrics dashboard",
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 4,
-  "iteration": 1622651789537,
+  "id": 10,
+  "iteration": 1622643119764,
   "links": [],
   "panels": [
     {
@@ -36,7 +35,7 @@
       "pconfig": {
         "fixScale": "",
         "layout": {
-          "dragmode": "zoom",
+          "dragmode": "lasso",
           "font": {
             "family": "\"Open Sans\", Helvetica, Arial, sans-serif"
           },
@@ -49,14 +48,14 @@
             "rangemode": "nonnegative",
             "showgrid": true,
             "title": "Epoch",
-            "type": "auto",
+            "type": "linear",
             "zeroline": false
           },
           "yaxis": {
             "rangemode": "normal",
             "showgrid": true,
             "title": "Metric",
-            "type": "linear",
+            "type": "",
             "zeroline": false
           },
           "zaxis": {
@@ -75,16 +74,16 @@
         "traces": [
           {
             "mapping": {
-              "color": "metric",
+              "color": "epoch",
               "size": null,
-              "text": null,
+              "text": "value",
               "x": "epoch",
               "y": "value",
               "z": null
             },
-            "name": "Value",
+            "name": "Metric",
             "settings": {
-              "color_option": "ramp",
+              "color_option": "solid",
               "line": {
                 "color": "#005f81",
                 "dash": "solid",
@@ -121,21 +120,21 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  \"time\" AS \"time\",\n  epoch,\n  value\nFROM extra_metrics\nWHERE\n  $__timeFilter(\"time\") and\n  sim_id = '$sim_id' and\n  metric = '$metric'\n  \nORDER BY 1",
+          "rawSql": "SELECT\n  1 AS \"time\",\n  epoch,\n  $operation(value) as value\nFROM extra_metrics\nWHERE\n  $__timeFilter(\"time\") and\n  sim_id in (SELECT sim_id FROM \"Tags\" where tag = '$tagname') and\n  metric = '$metric'\ngroup BY epoch\nORDER BY 1",
           "refId": "A",
           "select": [
             [
               {
                 "params": [
-                  "epoch"
+                  "loss"
                 ],
                 "type": "column"
               }
             ]
           ],
-          "table": "extra_metrics",
+          "table": "epoch_values",
           "timeColumn": "\"time\"",
-          "timeColumnType": "timestamptz",
+          "timeColumnType": "timestamp",
           "where": [
             {
               "name": "$__timeFilter",
@@ -145,12 +144,14 @@
           ]
         }
       ],
+      "timeFrom": null,
+      "timeShift": null,
       "title": "Panel Title",
       "type": "natel-plotly-panel",
       "version": 1
     }
   ],
-  "refresh": "30s",
+  "refresh": "1m",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
@@ -158,57 +159,79 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "",
-          "value": ""
+          "selected": true,
+          "text": "max",
+          "value": "max"
         },
-        "description": "Simulation ID",
+        "description": "performed operation",
         "error": null,
         "hide": 0,
-        "label": "simulation id",
-        "name": "sim_id",
+        "label": "Operation",
+        "name": "operation",
         "options": [
           {
             "selected": true,
-            "text": "",
-            "value": ""
+            "text": "max",
+            "value": "max"
           }
         ],
-        "query": "",
+        "query": "max",
         "skipUrlSync": false,
         "type": "textbox"
       },
       {
         "current": {
-          "selected": false,
-          "text": "",
-          "value": ""
+          "selected": true,
+          "text": "the xd tag",
+          "value": "the xd tag"
         },
-        "description": "name of metric",
+        "description": "name of tag",
         "error": null,
         "hide": 0,
-        "label": "Metric",
+        "label": "Tag name",
+        "name": "tagname",
+        "options": [
+          {
+            "selected": true,
+            "text": "the xd tag",
+            "value": "the xd tag"
+          }
+        ],
+        "query": "the xd tag",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "hinge",
+          "value": "hinge"
+        },
+        "description": "name of queried metric",
+        "error": null,
+        "hide": 0,
+        "label": "metric",
         "name": "metric",
         "options": [
           {
             "selected": true,
-            "text": "",
-            "value": ""
+            "text": "hinge",
+            "value": "hinge"
           }
         ],
-        "query": "",
+        "query": "hinge",
         "skipUrlSync": false,
         "type": "textbox"
       }
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-7d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "extra_metrics dash",
-  "uid": "8Fu66GeMz",
+  "title": "group_comp_metrics_dashboard",
+  "uid": "j_NyND6Gz",
   "version": 2
 }
