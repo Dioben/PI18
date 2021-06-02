@@ -39,12 +39,12 @@
     </div>
 
     <script>
-        window.addEventListener('load', function() {
+        docReady(function () {
             setInterval(function() {
                 $.get("{% url 'SimulationListContent' %}", function (data) {
                     $('#content').html(data)
                 })
             }, 30000);
-        }, false);
+        });
     </script>
 {% endblock %}

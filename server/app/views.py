@@ -145,13 +145,13 @@ def userinfo(request, id):
 
 
 def simulation_list(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
         del request.session['notification']
         request.session.modified = True
-    if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
     response = simulations(request)
     if type(response) == HttpResponse:
         return response
@@ -164,13 +164,13 @@ def simulation_list(request):
 
 
 def simulation_list_content(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
         del request.session['notification']
         request.session.modified = True
-    if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
     response = simulations(request)
     if type(response) == HttpResponse:
         return response
@@ -196,24 +196,13 @@ def simulation_create(request):
 
 
 def simulation_info(request, id):
-    if 'deleteTag' in request.POST:
-        tag_id = request.POST.get('tag_id')
-        t = Tagged.objects.get(id=tag_id)
-        t.delete()
-        return HttpResponseRedirect(request.path)
-    if 'addtag' in request.POST:
-        sim_id=request.POST.get('simulation_id')
-        tag_name = request.POST.get('tagname')
-        tag=Tagged(tag=tag_name,sim=Simulation.objects.get(id=sim_id),tagger=request.user,iskfold=False)
-        tag.save()
-        return HttpResponseRedirect(request.path)
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
         del request.session['notification']
         request.session.modified = True
-    if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
@@ -226,14 +215,26 @@ def simulation_info(request, id):
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
 
 
+@csrf_exempt
 def simulation_info_content1(request, id):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
+    if 'deleteTag' in request.POST:
+        tag_id = request.POST.get('tag_id')
+        t = Tagged.objects.get(id=tag_id)
+        t.delete()
+        return HttpResponseRedirect(request.path)
+    if 'addTag' in request.POST:
+        sim_id = request.POST.get('simulation_id')
+        tag_name = request.POST.get('tagname')
+        tag = Tagged(tag=tag_name, sim=Simulation.objects.get(id=sim_id), tagger=request.user, iskfold=False)
+        tag.save()
+        return HttpResponseRedirect(request.path)
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
         del request.session['notification']
         request.session.modified = True
-    if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response

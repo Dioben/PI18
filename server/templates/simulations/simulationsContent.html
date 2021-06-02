@@ -45,13 +45,13 @@
                         {% endif %}
                         <button id="deleteButton{{ simulation.pk }}" class="btn p-0 ms-2" style="color: red"><i class="fa fa-trash fa-sm"></i></button>
                         <script>
-                            window.addEventListener('load', function() {
+                            docReady(function () {
                                 $('#deleteButton{{ simulation.pk }}').click(function() {
                                     $('#deleteModalSimName').text('{{ simulation.name }}');
                                     $('#deleteModalForm').prop('action', "/simulations/command/{{ simulation.pk.int }}/STOP");
                                     $('#deleteModal').modal('show');
                                 });
-                            }, false);
+                            });
                         </script>
                     </div>
                     <div class="d-flex">
@@ -97,9 +97,9 @@
 
 {% if notification != None %}
     <script type="text/javascript">
-        window.addEventListener('load', function() {
+        docReady(function () {
             $('#notification').text('{{ notification }}'.replaceAll('&quot;', '\"'));
             $('#notificationModal').modal('show');
-        }, false);
+        });
     </script>
 {% endif %}
