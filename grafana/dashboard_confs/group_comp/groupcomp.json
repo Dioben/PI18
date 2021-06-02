@@ -1,0 +1,389 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "A dashboard for comparing main metrics in groups",
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 6,
+  "iteration": 1622642085294,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "pconfig": {
+        "fixScale": "",
+        "layout": {
+          "dragmode": "zoom",
+          "font": {
+            "family": "\"Open Sans\", Helvetica, Arial, sans-serif"
+          },
+          "hovermode": "closest",
+          "legend": {
+            "orientation": "h"
+          },
+          "showlegend": false,
+          "xaxis": {
+            "rangemode": "nonnegative",
+            "showgrid": true,
+            "title": "Epoch",
+            "type": "linear",
+            "zeroline": false
+          },
+          "yaxis": {
+            "range": [
+              -1,
+              100
+            ],
+            "rangemode": "between",
+            "showgrid": true,
+            "title": "Value",
+            "type": "",
+            "zeroline": false
+          },
+          "zaxis": {
+            "rangemode": "normal",
+            "showgrid": true,
+            "type": "linear",
+            "zeroline": false
+          }
+        },
+        "loadFromCDN": false,
+        "settings": {
+          "displayModeBar": false,
+          "type": "scatter"
+        },
+        "showAnnotations": true,
+        "traces": [
+          {
+            "mapping": {
+              "color": "accuracy",
+              "size": null,
+              "text": "accuracy",
+              "x": "epoch",
+              "y": "accuracy",
+              "z": null
+            },
+            "name": "Accuracy",
+            "settings": {
+              "color_option": "solid",
+              "line": {
+                "color": "#005f81",
+                "dash": "solid",
+                "shape": "linear",
+                "width": 4
+              },
+              "marker": {
+                "color": "#33B5E5",
+                "colorscale": "YlOrRd",
+                "line": {
+                  "color": "#DDD",
+                  "width": 0
+                },
+                "showscale": false,
+                "size": 10,
+                "sizemin": 3,
+                "sizemode": "diameter",
+                "sizeref": 0.2,
+                "symbol": "circle"
+              }
+            },
+            "show": {
+              "line": true,
+              "lines": true,
+              "markers": true
+            }
+          },
+          {
+            "mapping": {
+              "color": "accuracy",
+              "size": null,
+              "text": "loss",
+              "x": "epoch",
+              "y": "loss",
+              "z": null
+            },
+            "name": "Loss",
+            "settings": {
+              "color_option": "solid",
+              "line": {
+                "color": "#E02F44",
+                "dash": "solid",
+                "shape": "linear",
+                "width": 4
+              },
+              "marker": {
+                "color": "#C4162A",
+                "colorscale": "YlOrRd",
+                "line": {
+                  "color": "#DDD",
+                  "width": 0
+                },
+                "showscale": false,
+                "size": 10,
+                "sizemin": 3,
+                "sizemode": "diameter",
+                "sizeref": 0.2,
+                "symbol": "circle"
+              }
+            },
+            "show": {
+              "line": true,
+              "lines": true,
+              "markers": true
+            }
+          },
+          {
+            "mapping": {
+              "color": "val_accuracy",
+              "size": null,
+              "text": "val_accuracy",
+              "x": "epoch",
+              "y": "val_accuracy",
+              "z": null
+            },
+            "name": "Validation Accuracy",
+            "settings": {
+              "color_option": "solid",
+              "line": {
+                "color": "rgb(29, 224, 180)",
+                "dash": "solid",
+                "shape": "linear",
+                "width": 4
+              },
+              "marker": {
+                "color": "rgb(12, 115, 94)",
+                "colorscale": "YlOrRd",
+                "line": {
+                  "color": "#DDD",
+                  "width": 0
+                },
+                "showscale": false,
+                "size": 10,
+                "sizemin": 3,
+                "sizemode": "diameter",
+                "sizeref": 0.2,
+                "symbol": "circle"
+              }
+            },
+            "show": {
+              "line": true,
+              "lines": true,
+              "markers": true
+            }
+          },
+          {
+            "mapping": {
+              "color": "accuracy",
+              "size": null,
+              "text": "val_loss",
+              "x": "epoch",
+              "y": "val_loss",
+              "z": null
+            },
+            "name": "Validation Loss",
+            "settings": {
+              "color_option": "solid",
+              "line": {
+                "color": "rgb(156, 10, 106)",
+                "dash": "solid",
+                "shape": "linear",
+                "width": 4
+              },
+              "marker": {
+                "color": "rgb(133, 5, 88)",
+                "colorscale": "YlOrRd",
+                "line": {
+                  "color": "#DDD",
+                  "width": 0
+                },
+                "showscale": false,
+                "size": 10,
+                "sizemin": 3,
+                "sizemode": "diameter",
+                "sizeref": 0.2,
+                "symbol": "circle"
+              }
+            },
+            "show": {
+              "line": true,
+              "lines": true,
+              "markers": true
+            }
+          }
+        ]
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  1 AS \"time\",\n  epoch,\n  case when E'${values:csv}E' like '%1%' then $operation(accuracy) else -10000 end as accuracy,\n  case when E'${values:csv}E' like '%2%' then $operation(loss) else -10000 end as loss,\n  case when E'${values:csv}E' like '%3%' then $operation(val_accuracy) else -10000 end as val_accuracy,\n  case when E'${values:csv}E' like '%4%' then $operation(val_loss) else -10000 end as val_loss\nFROM epoch_values\nWHERE\n  $__timeFilter(\"time\") AND\n  sim_id in (SELECT sim_id FROM \"Tags\" where tag = '$tagname')\ngroup BY epoch\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "loss"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "epoch_values",
+          "timeColumn": "\"time\"",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Panel Title",
+      "type": "natel-plotly-panel",
+      "version": 1
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "max",
+          "value": "max"
+        },
+        "description": "what kind of aggregator",
+        "error": null,
+        "hide": 0,
+        "label": "operation",
+        "name": "operation",
+        "options": [
+          {
+            "selected": true,
+            "text": "max",
+            "value": "max"
+          }
+        ],
+        "query": "max",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "the xd tag",
+          "value": "the xd tag"
+        },
+        "description": "tag name",
+        "error": null,
+        "hide": 0,
+        "label": "tagname",
+        "name": "tagname",
+        "options": [
+          {
+            "selected": true,
+            "text": "the xd tag",
+            "value": "the xd tag"
+          }
+        ],
+        "query": "the xd tag",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "tags": [],
+          "text": [
+            "accuracy",
+            "loss",
+            "validation accuracy",
+            "validation loss"
+          ],
+          "value": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        "description": "values to display",
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "Values",
+        "multi": true,
+        "name": "values",
+        "options": [
+          {
+            "selected": true,
+            "text": "accuracy",
+            "value": "1"
+          },
+          {
+            "selected": true,
+            "text": "loss",
+            "value": "2"
+          },
+          {
+            "selected": true,
+            "text": "validation accuracy",
+            "value": "3"
+          },
+          {
+            "selected": true,
+            "text": "validation loss",
+            "value": "4"
+          }
+        ],
+        "query": "accuracy : 1, loss : 2,validation accuracy : 3, validation loss : 4",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "2021-05-23T01:49:28.479Z",
+    "to": "2021-06-06T01:49:28.479Z"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "group comparison dashboard",
+  "uid": "KH6gzIeMz",
+  "version": 1
+}
