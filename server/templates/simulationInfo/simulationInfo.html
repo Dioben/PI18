@@ -112,10 +112,9 @@
             {% if simulation.current_epoch %}
                 lastEpoch = {{ simulation.current_epoch.epoch }};
             {% endif %}
-            let firstUpdate, lastUpdate;
+            let firstUpdate;
             {% if updates|length > 0 %}
                 firstUpdate = {{ updates|first|safe }};
-                lastUpdate = {{ updates|last|safe }};
             {% endif %}
 
 
@@ -126,7 +125,6 @@
                     success: function(data) {
                         data = JSON.parse(data);
                         firstUpdate = data.updates[0]
-                        lastUpdate = data.updates[data.updates.length-1]
                         if (data.simulation.current_epoch == null) return;
                         let currentEpoch = data.simulation.current_epoch.epoch
                         if (currentEpoch > lastEpoch) {
@@ -146,10 +144,10 @@
 
 
             function reloadGrafanaEpochValues() {
-                let grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&panelId=2";
-                if (firstUpdate !== undefined && lastUpdate !== undefined)
-                    grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}"+
-                        "&from="+(firstUpdate.time-30)+"&to="+(lastUpdate.time+30)+"&panelId=2";
+                if (firstUpdate !== undefined)
+                    let grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                else
+                    let grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
                 if ($("#grafanaEpochValuesAccuracySwitch").prop("checked")) {
                     grafanaUrl += "&var-values=1";
                 }
@@ -173,10 +171,10 @@
 
 
             function reloadGrafanaWeightsGraphing() {
-                let grafanaUrl = "http://localhost:3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from={{ first.time|add:-30 }}&to=now&panelId=2";
-                if (firstUpdate !== undefined && lastUpdate !== undefined)
-                    grafanaUrl = "http://localhost:3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}"+
-                        "&from="+(firstUpdate.time-30)+"&to="+(lastUpdate.time+30)+"&panelId=2";
+                if (firstUpdate !== undefined)
+                    let grafanaUrl = "http://localhost:3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                else
+                    let grafanaUrl = "http://localhost:3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
                 grafanaUrl += "&var-layer=" + $('#grafanaWeightsGraphingLayerInput').val();
                 $("#grafanaWeightsGraphingIFrame").prop("src", grafanaUrl);
                 $("#grafanaWeightsGraphingLayerNumber").text($('#grafanaWeightsGraphingLayerInput').val());
@@ -188,10 +186,10 @@
 
             {% if simulation.metrics|length != 0 %}
                 function reloadGrafanaExtraMetricsDashGraphing() {
-                    let grafanaUrl = "http://localhost:3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&var-sim_id={{ simulation.id }}&panelId=2";
-                    if (firstUpdate !== undefined && lastUpdate !== undefined)
-                        grafanaUrl = "http://localhost:3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&var-sim_id={{ simulation.id }}"+
-                            "&from="+(firstUpdate.time-30)+"&to="+(lastUpdate.time+30)+"&panelId=2";
+                    if (firstUpdate !== undefined)
+                        let grafanaUrl = "http://localhost:3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                    else
+                        let grafanaUrl = "http://localhost:3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
                     grafanaUrl += "&var-metric=" + $("#grafanaExtraMetricsDashMetricSelect").val();
                     $("#grafanaExtraMetricsDashIFrame").prop("src", grafanaUrl);
                 }
