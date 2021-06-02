@@ -57,7 +57,7 @@
                     <div class="d-flex">
                         {% for tag in tags %}
                             {% if tag.sim == simulation %}
-                                <span id="{{ tag.sim.id }}TAG{{ tag.id }}" style="border-radius: 10%; color: white; padding: 1px 2px; font-size: small; margin-right: 3px">{{ tag.tag }}</span>
+                                <span id="{{ tag.sim.id }}TAG{{ tag.id }}" style="border-radius: 10%; color: white; padding: 1px 6px 1px 6px; font-size: small; margin-right: 3px">{{ tag.tag }}</span>
                                 <script>
                                     document.getElementById("{{ tag.sim.id }}TAG{{ tag.id }}").style.backgroundColor = string2color("{{ tag.tag }}");
                                 </script>
