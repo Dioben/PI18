@@ -196,7 +196,17 @@ def simulation_create(request):
 
 
 def simulation_info(request, id):
-
+    if 'deleteTag' in request.POST:
+        tag_id = request.POST.get('tag_id')
+        t = Tagged.objects.get(id=tag_id)
+        t.delete()
+        return HttpResponseRedirect(request.path)
+    if 'addtag' in request.POST:
+        sim_id=request.POST.get('simulation_id')
+        tag_name = request.POST.get('tagname')
+        tag=Tagged(tag=tag_name,sim=Simulation.objects.get(id=sim_id),tagger=request.user,iskfold=False)
+        tag.save()
+        return HttpResponseRedirect(request.path)
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']

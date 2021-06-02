@@ -24,21 +24,24 @@
                 </div>
                 <button class="btn btn-danger btn-sm" style="height: 32px" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa fa-trash fa-sm"></i> Delete</button>
             </div>
-        <form action="" method="post">
+
             <div class="d-flex">
-                {% for tag in tags %}
+            {% for tag in tags %}
+             <form action="{% url 'SimulationList' %}{{ simulation.id.int }}/" method="post">
+                    {% csrf_token %}
                         <div id="{{ tag.sim.id }}TAG{{ tag.id }}" style="border-radius: 10%; color: white; font-size: small; margin-right: 3px; border: 0;">
                             <span style="padding: 1px 0 1px 2px">{{ tag.tag }}</span>
                             {% if tag.iskfold %}
                             {% else %}
+                                <input type="hidden" name="tag_id" value="{{tag.id}}" />
                                 <button name="deleteTag" value="deleteTag" style="height: 100%; padding: 1px 2px; background: transparent; border: 0; border-left: 1px white solid; color: white"><i class="fa fa-times fa-sm"></i></button>
                             {% endif %}
                         </div>
-                    </form>
-                        <script>
+                    <script>
                             document.getElementById("{{ tag.sim.id }}TAG{{ tag.id }}").style.backgroundColor = string2color("{{ tag.tag }}");
-                        </script>
-                {% endfor %}
+                    </script>
+                </form>
+            {% endfor %}
                 <button id="bbt_add_tag" class="btn btn-primary p-0 ms-1" style="border-radius: 100%; height: 21px; width: 21px; line-height: 19px">
                     <i class="fa fa-plus fa-sm"></i>
                 </button>
@@ -79,15 +82,17 @@
   <!-- Modal content -->
   <div class="modal-content">
     <span class="close">&times;</span>
-   <form action="" method="post">
+   <form action="{% url 'SimulationList' %}{{ simulation.id.int }}/" method="post">
+       {% csrf_token %}
     <div class="input-group mb-3">
       <div class="input-group-prepend">
         <span class="input-group-text" id="basic-addon3">Tag Name</span>
       </div>
+        <input type="hidden" name="simulation_id" value="{{simulation.id}}" />
       <input type="text" name="tagname" class="form-control" id="basic-url" aria-describedby="basic-addon3">
     </div>
       <hr>
-    <button name="addtag" value="addtag" type="button"  class="btn btn-primary">Add Tag</button>
+    <button  type="submit" name="addtag" value="addtag" type="button"  class="btn btn-primary">Add Tag</button>
    </form>
   </div>
 </div>
