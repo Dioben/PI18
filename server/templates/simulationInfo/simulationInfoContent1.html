@@ -28,7 +28,11 @@
                 {% for tag in tags %}
                         <div id="{{ tag.sim.id }}TAG{{ tag.id }}" style="border-radius: 10%; color: white; font-size: small; margin-right: 3px; border: 0;">
                             <span style="padding: 1px 0 1px 2px">{{ tag.tag }}</span>
-                            <button style="height: 100%; padding: 1px 2px; background: transparent; border: 0; border-left: 1px white solid; color: white"><i class="fa fa-times fa-sm"></i></button>
+                            {% if tag.iskfold %}
+                            {% else %}
+
+                                <button style="height: 100%; padding: 1px 2px; background: transparent; border: 0; border-left: 1px white solid; color: white"><i class="fa fa-times fa-sm"></i></button>
+                            {% endif %}
                         </div>
                         <script>
                             document.getElementById("{{ tag.sim.id }}TAG{{ tag.id }}").style.backgroundColor = string2color("{{ tag.tag }}");
@@ -46,7 +50,10 @@
                     {% elif simulation.isrunning %}
                         <form method="post" class="m-0" action="/simulations/command/{{ simulation.id.int }}/PAUSE">
                             {% csrf_token %}
-                            <button type="submit" class="btn p-0 me-1"><i class="fas fa-pause"></i></button>
+                            <form action="" method="post">
+                                <input type="hidden" name="simulation_id" value="{{simulation.id}}" />
+                            <button type="submit" name="deleteTag" value="deleteTag" class="btn p-0 me-1"><i class="fas fa-pause"></i></button>
+                            </form>
                         </form>
                     {% else %}
                         <form method="post" class="m-0" action="/simulations/command/{{ simulation.id.int }}/START">
