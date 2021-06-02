@@ -196,6 +196,7 @@ def simulation_create(request):
 
 
 def simulation_info(request, id):
+
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
