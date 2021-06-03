@@ -69,6 +69,7 @@ def make_celery(app):
 
     return celery
 
+
 app.config.update(
     broker_url = 'redis://redis:6379',
     result_backend = 'redis://redis:6379',
@@ -81,31 +82,58 @@ app.config.update(
 )
 celery = make_celery(app)
 
+
+def check_connection():
+    global conn
+    if conn.closed:
+        print("Connection was closed ", file=sys.stderr)
+        print("Reconnecting... ", file=sys.stderr)
+        try:
+            conn = psycopg2.connect(
+                host="timescaledb",
+                database="nntracker",
+                user="root",
+                password="postgres",
+                port="5432",
+                connect_timeout=4
+            )
+        except Exception as error:
+            print("Error connecting to db: ", error, file=sys.stderr)
+            print("Error type: ", type(error), file=sys.stderr)
+
+
 @celery.task()
 def update_data_sent(json_file):
-    curr = conn.cursor()
-    try:
-        logger.info('update starting')
-        simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics = process_data(json_file)
+    for _ in range(2):
+        check_connection()
 
-        sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
-        sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss, val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
-        sqlExtraMetrics = "INSERT INTO Extra_metrics(epoch,sim_id,value,metric,time) VALUES(%s,%s,%s,%s,%s)"
+        try:
+            curr = conn.cursor()
+            logger.info('update starting')
+            simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics = process_data(json_file)
 
-        for w in weights.keys():
-            index = w
-            curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
+            sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
+            sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss, val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
+            sqlExtraMetrics = "INSERT INTO Extra_metrics(epoch,sim_id,value,metric,time) VALUES(%s,%s,%s,%s,%s)"
 
-        for metric in metrics.keys():
-            curr.execute(sqlExtraMetrics, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
+            for w in weights.keys():
+                index = w
+                curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
 
-        curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(), val_loss, val_accuracy))
-        conn.commit()
-    except Exception as error:
-        print("Error executing queries on /update task with error: ", error, file=sys.stderr)
-        print("Error type: ", type(error), file=sys.stderr)
-    curr.close()
+            for metric in metrics.keys():
+                curr.execute(sqlExtraMetrics, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
+
+            curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(), val_loss, val_accuracy))
+            conn.commit()
+            curr.close()
+            break
+        except Exception as error:
+            print("Error executing queries on /update task with error: ", error, file=sys.stderr)
+            print("Error type: ", type(error), file=sys.stderr)
+            print("If it is the first time this error message is shown a retry is being done ", type(error), file=sys.stderr)
+
     return None
+
 
 def process_data(data_dict):
     logger.info(type(data_dict['weights']))
@@ -132,44 +160,51 @@ def process_data(data_dict):
 
 @celery.task()
 def finish_data_sent(json_file):
-    curr = conn.cursor()
-    try:
-        simid, epoch, weights, loss, accuracy,val_loss, val_accuracy, metrics = process_data(json_file)
-        sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
-        sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss,val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
-        sqlUpdate = "UPDATE simulations SET isdone=TRUE, isrunning=FALSE WHERE id=%s"
-        sqlExtraMetrics = "INSERT INTO Extra_metrics(epoch,sim_id,value,metric,time) VALUES(%s,%s,%s,%s,%s)"
+    for _ in range(2):
+        check_connection()
 
-        for w in weights.keys():
-            index = w
-            curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
+        try:
+            curr = conn.cursor()
+            simid, epoch, weights, loss, accuracy,val_loss, val_accuracy, metrics = process_data(json_file)
+            sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
+            sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss,val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
+            sqlUpdate = "UPDATE simulations SET isdone=TRUE, isrunning=FALSE WHERE id=%s"
+            sqlExtraMetrics = "INSERT INTO Extra_metrics(epoch,sim_id,value,metric,time) VALUES(%s,%s,%s,%s,%s)"
 
-        for metric in metrics.keys():
-            curr.execute(sqlExtraMetrics, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
+            for w in weights.keys():
+                index = w
+                curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
 
-        curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(),val_loss, val_accuracy))
-        curr.execute(sqlUpdate,(simid,))
-        conn.commit()
-    except Exception as error:
-        print("Error executing queries on /finish task with error: ", error, file=sys.stderr)
-        print("Error type: ", type(error), file=sys.stderr)
+            for metric in metrics.keys():
+                curr.execute(sqlExtraMetrics, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
 
-    curr.close()
+            curr.execute(sqlEpoch, (epoch, simid, loss, accuracy, datetime.datetime.now(),val_loss, val_accuracy))
+            curr.execute(sqlUpdate,(simid,))
+            conn.commit()
+            curr.close()
+            break
+        except Exception as error:
+            print("Error executing queries on /finish task with error: ", error, file=sys.stderr)
+            print("Error type: ", type(error), file=sys.stderr)
+
     return None
 
 @celery.task()
 def send_error(json_file):
-    curr = conn.cursor()
+    for _ in range(2):
+        check_connection()
 
-    try:
-        simid = uuid.UUID(int=int(json_file["id"]))
-        error_text = json_file["error"]
-        sqlUpdate = "UPDATE simulations SET error_text=%s WHERE id=%s"
-        curr.execute(sqlUpdate,(error_text, simid))
-        conn.commit()
-    except Exception as error:
-        print("Error executing queries on /send_error task with error: ", error, file=sys.stderr)
-        print("Error type: ", type(error), file=sys.stderr)
+        try:
+            curr = conn.cursor()
+            simid = uuid.UUID(int=int(json_file["id"]))
+            error_text = json_file["error"]
+            sqlUpdate = "UPDATE simulations SET error_text=%s WHERE id=%s"
+            curr.execute(sqlUpdate,(error_text, simid))
+            conn.commit()
+            curr.close()
+            break
+        except Exception as error:
+            print("Error executing queries on /send_error task with error: ", error, file=sys.stderr)
+            print("Error type: ", type(error), file=sys.stderr)
 
-    curr.close()
     return None
