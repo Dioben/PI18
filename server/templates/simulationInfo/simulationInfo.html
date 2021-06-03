@@ -106,8 +106,78 @@
         </div>
     </div>
 
+    <div class="modal fade" id="deleteTagModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body d-flex justify-content-center my-3">
+                    Are you sure you want to remove the tag "<span id="deleteTagModalTagName"></span>"?
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <input id="deleteTagIdInput" type="hidden"/>
+                    <button id="deleteTagSubmitButton" type="button" class="btn btn-primary">Yes</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addTagModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body my-3">
+                    <h6 class="mb-2">Add new tag:</h6>
+                    <form id="addTagForm"> {# Only used for validation #}
+                        <input id="addTagValidationFakeSubmit" type="submit" style="display: none"> {# Only used for validation #}
+                        <div class="input-group">
+                            <label class="input-group-text" for="addTagNameInput">Name:</label>
+                            <input id="addTagNameInput" type="text" class="form-control" pattern="^.*\S.*$" required>
+                        </div>
+                    </form>
+                    <span id="addTagError" class=""></span>
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <button id="addTagSubmitButton" type="button" class="btn btn-primary">Add</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script>
-        window.addEventListener('load', function() {
+        docReady(function () {
+            $("#deleteTagSubmitButton").click(function () {
+                $.post("{% url 'SimulationInfoContent1' id=simulation.id.int %}",
+                    {"deleteTag":true, "tag_id":$("#deleteTagIdInput").val(),},
+                    function (data) {
+                        $('#content1').html(data);
+                        $("#deleteTagModal").modal("hide");
+                    }
+                )
+            });
+
+            $("#addTagSubmitButton").click(addTag);
+
+            $("#addTagForm").submit(function (e) {
+                e.preventDefault();
+                addTag();
+            });
+
+            function addTag() {
+                if (!$("#addTagForm")[0].checkValidity())
+                    $("#addTagValidationFakeSubmit").click();
+                else
+                    $.post("{% url 'SimulationInfoContent1' id=simulation.id.int %}",
+                        {"addTag":true, "simulation_id":"{{ simulation.id }}", "tagname":$("#addTagNameInput").val().trim()},
+                        function (data) {
+                            $('#content1').html(data);
+                            $("#addTagModal").modal("hide");
+                            $("#addTagNameInput").val("");
+                        }
+                    )
+            }
+
+
             let lastEpoch = -1;
             {% if simulation.current_epoch %}
                 lastEpoch = {{ simulation.current_epoch.epoch }};
@@ -197,7 +267,7 @@
                 $("#grafanaExtraMetricsDashRefreshButton").click(reloadGrafanaExtraMetricsDashGraphing);
                 reloadGrafanaExtraMetricsDashGraphing();
             {% endif %}
-        }, false);
+        });
     </script>
 {% endblock %}
 

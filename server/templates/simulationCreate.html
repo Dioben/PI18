@@ -54,7 +54,7 @@
                             <label for="{{ configForm.metrics.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ configForm.metrics.label }}</label>
                             {{ configForm.metrics }}
                             <script>
-                                window.addEventListener('load', function() {
+                                docReady(function () {
                                     $('#{{ configForm.metrics.id_for_label }}').multipleSelect({
                                         filter: true
                                     });
@@ -62,7 +62,7 @@
                                         .prop('style', 'height: 38px !important; width: 100%; line-height: 38px; color: black;');
                                     $('.ms-choice').prop('class', 'ms-choice form-select')
                                     $('.icon-caret').hide();
-                                }, false);
+                                });
                             </script>
                         </div>
                         <div class="mb-3 d-flex">

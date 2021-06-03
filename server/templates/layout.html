@@ -15,7 +15,7 @@
 
         <nav class="navbar navbar-expand py-0" style="background-color: #0078d4; color: white">
             <div class="container-fluid">
-                <a class="navbar-brand" style="color: white; font-weight: bolder;" href="/simulations/">Neural Net Tracker</a>
+                <a class="navbar-brand ms-2" style="color: white; font-weight: bolder;" href="/simulations/">Neural Net Tracker</a>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
                         <a class="nav-link" href="#" style="color: white; text-decoration: none" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -34,27 +34,67 @@
             </div>
         </nav>
         <div class="container-fluid pe-0">
-            <div class="row min-vh-100 flex-column flex-md-row">
-                <aside class="col-12 col-md-2 p-0 bg-light flex-shrink-1">
-                    <nav class="navbar navbar-expand navbar-light bg-light flex-md-column flex-row align-items-start py-2">
-                        <div class="collapse navbar-collapse ">
-                            <ul class="flex-md-column flex-row navbar-nav w-100 justify-content-between">
-                                <li class="nav-item">
-                                    <a class="nav-link pl-0" href="{% url 'SimulationList' %}"><i class="fas fa-code-branch"></i><span class="d-none d-md-inline"> Simulations</span></a>
-                                </li>
-                                {% if user.is_staff  %}
-                                    <li class="nav-item">
-                                        <a class="nav-link pl-0" href="{% url 'Users' %}"><i class="fas fa-users"></i><span class="d-none d-md-inline"> Users</span></a>
-                                    </li>
-                                {% endif %}
-                                <li class="nav-item">
-                                    <a class="nav-link pl-0" href="#"><i class="fas fa-sliders-h"></i><span class="d-none d-md-inline"> Settings</span></a>
-                                </li>
-                            </ul>
-                        </div>
-                    </nav>
+            <!-- This style is done so mobile side menu shows correctly -->
+            <style>
+                #allButHeader {
+                    min-height: 0;
+                }
+                #allButHeader aside ul li {
+                    min-width: 0;
+                }
+                @media (min-width: 576px) {
+                    #allButHeader {
+                        min-height: calc(100vh - 40px);
+                    }
+                    #allButHeader aside ul li {
+                        min-width: 100%;
+                    }
+                }
+                #allButHeader aside ul li :hover, #allButHeader aside ul li :active {
+                    background-color: hsl(206, 100%, 50%) !important;
+                    color: hsl(0, 0%, 95%) !important;
+                }
+            </style>
+            <div id="allButHeader" class="row d-flex">
+                <!-- Navbar based on: https://dev.to/codeply/bootstrap-5-sidebar-examples-38pb -->
+                <aside class="col-12 col-sm-3 col-md-2 px-0 d-flex" style="background-color: hsl(206, 35%, 90%);">
+                    <ul class="nav flex-sm-column flex-row flex-nowrap flex-shrink-1 flex-sm-grow-0 flex-grow-1 mb-sm-auto mb-0 justify-content-center align-items-center align-items-sm-start w-100" id="menu">
+                        <li class="nav-item">
+                            <a class="nav-link px-3 px-sm-2 px-lg-3 mx-1 mx-sm-0 " href="{% url 'SimulationList' %}"
+                               {% if "simulations" in request.path %}
+                               style="color: hsl(0, 0%, 35%); background-color: hsl(206, 35%, 98%);"
+                               {% else %}
+                               style="color: hsl(0, 0%, 25%);"
+                               {% endif %}
+                            >
+                                <i class="fas fa-code-branch" style="width: 20px; text-align: center;"></i><span class="ms-1 d-none d-sm-inline">Simulations</span>
+                            </a>
+                        </li>
+                        {% if user.is_staff  %}
+                            <li class="nav-item">
+                                <a class="nav-link px-3 px-sm-2 px-lg-3 mx-1 mx-sm-0" href="{% url 'Users' %}"
+                               {% if "users" in request.path %}
+                               style="color: hsl(0, 0%, 35%); background-color: hsl(206, 35%, 98%);"
+                               {% else %}
+                               style="color: hsl(0, 0%, 25%);"
+                               {% endif %}>
+                                    <i class="fas fa-users" style="width: 20px; text-align: center;"></i><span class="ms-1 d-none d-sm-inline">Users</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link px-3 px-sm-2 px-lg-3 mx-1 mx-sm-0" href="#"
+                               {% if "settings" in request.path %}
+                               style="color: hsl(0, 0%, 35%); background-color: hsl(206, 35%, 98%);"
+                               {% else %}
+                               style="color: hsl(0, 0%, 25%);"
+                               {% endif %}>
+                                <i class="fas fa-sliders-h" style="width: 20px; text-align: center;"></i><span class="ms-1 d-none d-sm-inline">Settings</span>
+                            </a>
+                        </li>
+                    </ul>
                 </aside>
-                <main class="col bg-faded py-3 flex-grow-1">
+                <main class="col flex-grow-1">
                     <div class="container">
                         {% block content %}
 
