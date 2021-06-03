@@ -206,11 +206,15 @@ def simulation_info(request, id):
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
+    responseList = simulations(request)
+    if type(responseList) == HttpResponse:
+        return responseList
     t_params = {
         'simulation': response,
         'notification': notification,
         'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)],
         'tags': Tagged.objects.filter(sim=response),
+        'simulationList': responseList,
     }
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
 
