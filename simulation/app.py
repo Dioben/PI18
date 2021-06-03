@@ -253,7 +253,11 @@ def main(model_json,conf_json):
 
                 res_dic["logs"] = logs
 
-                res_dic["sim_id"] = conf_json["id"]
+                if 'k-fold_index' in conf_json:                
+                    k_fold_idx = int(conf_json["k-fold_index"])
+                    res_dic["sim_id"] = conf_json["k-fold_ids"][k_fold_idx]
+                else:
+                    res_dic["sim_id"] = conf_json["id"]
 
                 res_dic["epoch"] = epoch
 
