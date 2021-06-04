@@ -223,6 +223,54 @@ class SimCreationForm(forms.Form):
         return clean_tag
 
 
+class ConfigFileSimCreationForm(forms.Form):
+    config = forms.FileField(
+        label='Config',
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control',
+                'id': 'file_id_config'
+            }
+        )
+    )
+    model = forms.FileField(
+        label='Model',
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control',
+                'id': 'file_id_model'
+            }
+        )
+    )
+    train_dataset = forms.FileField(
+        label='Training dataset',
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control',
+                'id': 'file_id_train_dataset'
+            }
+        )
+    )
+    test_dataset = forms.FileField(
+        label='Test dataset',
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control',
+                'id': 'file_id_test_dataset'
+            }
+        )
+    )
+    val_dataset = forms.FileField(
+        label='Validation dataset',
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control',
+                'id': 'file_id_val_dataset'
+            }
+        )
+    )
+
+
 class CustomAuthenticationForm(auth_forms.AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super(CustomAuthenticationForm, self).__init__(*args, **kwargs)

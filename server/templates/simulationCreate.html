@@ -12,53 +12,86 @@
                 <div style="border-top: 1px solid #DCDCDE"></div>
                 <div style="padding: 24px 16px">
                     <h5 class="mb-3">Create simulation:</h5>
-                    <form action="/simulations/create/" method="post" style="margin-bottom: 0" enctype="multipart/form-data">
+                    <div class="form-check form-switch mb-3">
+                        <input id="fieldOrFileSwitch" class="form-check-input" type="checkbox">
+                        <label class="form-check-label" for="fieldOrFileSwitch">Use config file</label>
+                    </div>
+                    <script>
+                        docReady(function () {
+                            let fieldOrFileSwitch = $('#fieldOrFileSwitch');
+                            let fieldForm = $('#fieldForm');
+                            let fileForm = $('#fileForm');
+                            fieldOrFileSwitch.click(function() {
+                                if (fieldOrFileSwitch.is(':checked')) {
+                                    fileForm.show()
+                                    fieldForm.hide()
+                                }
+                                else {
+                                    fieldForm.show()
+                                    fileForm.hide()
+                                }
+                            });
+                            if (fieldOrFileSwitch.is(':checked')) {
+                                fileForm.show()
+                                fieldForm.hide()
+                            }
+                            else {
+                                fieldForm.show()
+                                fileForm.hide()
+                            }
+                        });
+                    </script>
+                    <form id="fieldForm" action="/simulations/create/" method="post" style="margin-bottom: 0; display: none;" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="mb-3">
-                            {{ form.name.label_tag }}
-                            {{ form.name }}
-                            {% for error in form.name.errors %}
+                            {{ fieldForm.name.label_tag }}
+                            {{ fieldForm.name }}
+                            {% for error in fieldForm.name.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ form.batch_size.label_tag }}
-                            {{ form.batch_size }}
-                            {% for error in form.batch_size.errors %}
+                            {{ fieldForm.batch_size.label_tag }}
+                            {{ fieldForm.batch_size }}
+                            {% for error in fieldForm.batch_size.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ form.max_epochs.label_tag }}
-                            {{ form.max_epochs }}
-                            {% for error in form.max_epochs.errors %}
+                            {{ fieldForm.max_epochs.label_tag }}
+                            {{ fieldForm.max_epochs }}
+                            {% for error in fieldForm.max_epochs.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ form.logging_interval.label_tag }}
-                            {{ form.logging_interval }}
-                            {% for error in form.logging_interval.errors %}
+                            {{ fieldForm.logging_interval.label_tag }}
+                            {{ fieldForm.logging_interval }}
+                            {% for error in fieldForm.logging_interval.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ form.learning_rate.label_tag }}
-                            {{ form.learning_rate }}
-                            {% for error in form.learning_rate.errors %}
+                            {{ fieldForm.learning_rate.label_tag }}
+                            {{ fieldForm.learning_rate }}
+                            {% for error in fieldForm.learning_rate.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ form.metrics.label_tag }}
-                            {{ form.metrics }}
-                            {% for error in form.metrics.errors %}
+                            {{ fieldForm.metrics.label_tag }}
+                            {{ fieldForm.metrics }}
+                            {% for error in fieldForm.metrics.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                             <script>
                                 docReady(function () {
-                                    $('#{{ form.metrics.id_for_label }}').multipleSelect({
-                                        filter: true
+                                    $('#{{ fieldForm.metrics.id_for_label }}').multipleSelect({
+                                        filter: true,
+                                        onFilter: function (text) {
+                                            if ($('.ms-select-all').css("display") !== "none")
+                                                $('.ms-drop ul li').prop('style', 'height: 38px !important; line-height: 38px;');
+                                        }
                                     });
                                     $('.ms-parent, .ms-choice, .ms-choice span, .ms-search, .ms-search input, .ms-drop ul li')
                                         .prop('style', 'height: 38px !important; width: 100%; line-height: 38px; color: black;');
@@ -68,30 +101,30 @@
                             </script>
                         </div>
                         <div class="mb-3">
-                            {{ form.optimizer.label_tag }}
-                            {{ form.optimizer }}
-                            {% for error in form.optimizer.errors %}
+                            {{ fieldForm.optimizer.label_tag }}
+                            {{ fieldForm.optimizer }}
+                            {% for error in fieldForm.optimizer.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ form.loss_function.label_tag }}
-                            {{ form.loss_function }}
-                            {% for error in form.loss_function.errors %}
+                            {{ fieldForm.loss_function.label_tag }}
+                            {{ fieldForm.loss_function }}
+                            {% for error in fieldForm.loss_function.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="form-check form-switch mb-3">
-                            {{ form.is_k_fold }}
-                            <label class="form-check-label" for="{{ form.is_k_fold.id_for_label }}">{{ form.is_k_fold.label }}</label>
-                            {% for error in form.is_k_fold.errors %}
+                            {{ fieldForm.is_k_fold }}
+                            <label class="form-check-label" for="{{ fieldForm.is_k_fold.id_for_label }}">{{ fieldForm.is_k_fold.label }}</label>
+                            {% for error in fieldForm.is_k_fold.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <script>
                             docReady(function () {
-                                let isKFoldSwitch = $('#{{ form.is_k_fold.id_for_label }}');
-                                let kFoldCollapse = $('#isKFoldCollapse');
+                                let isKFoldSwitch = $('#{{ fieldForm.is_k_fold.id_for_label }}');
+                                let kFoldCollapse = $('#fieldIsKFoldCollapse');
                                 isKFoldSwitch.click(function() {
                                     if (isKFoldSwitch.is(':checked'))
                                         kFoldCollapse.slideDown(100)
@@ -104,48 +137,91 @@
                                     kFoldCollapse.hide()
                             });
                         </script>
-                        <div class="card card-body mb-3" id="isKFoldCollapse">
+                        <div class="card card-body mb-3" id="fieldIsKFoldCollapse">
                             <div class="mb-3">
-                                {{ form.k_fold_validation.label_tag }}
-                                {{ form.k_fold_validation }}
-                                {% for error in form.k_fold_validation.errors %}
+                                {{ fieldForm.k_fold_validation.label_tag }}
+                                {{ fieldForm.k_fold_validation }}
+                                {% for error in fieldForm.k_fold_validation.errors %}
                                     <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                                 {% endfor %}
                             </div>
                             <div>
-                                {{ form.tag.label_tag }}
-                                {{ form.tag }}
-                                {% for error in form.tag.errors %}
+                                {{ fieldForm.tag.label_tag }}
+                                {{ fieldForm.tag }}
+                                {% for error in fieldForm.tag.errors %}
                                     <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                                 {% endfor %}
                             </div>
                         </div>
                         <div class="mb-3" style="border-top: 1px solid #DCDCDE"></div>
                         <div class="mb-3">
-                            {{ form.model.label_tag }}
-                            {{ form.model }}
-                            {% for error in form.model.errors %}
+                            {{ fieldForm.model.label_tag }}
+                            {{ fieldForm.model }}
+                            {% for error in fieldForm.model.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ form.train_dataset.label_tag }}
-                            {{ form.train_dataset }}
-                            {% for error in form.train_dataset.errors %}
+                            {{ fieldForm.train_dataset.label_tag }}
+                            {{ fieldForm.train_dataset }}
+                            {% for error in fieldForm.train_dataset.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ form.test_dataset.label_tag }}
-                            {{ form.test_dataset }}
-                            {% for error in form.test_dataset.errors %}
+                            {{ fieldForm.test_dataset.label_tag }}
+                            {{ fieldForm.test_dataset }}
+                            {% for error in fieldForm.test_dataset.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ form.val_dataset.label_tag }}
-                            {{ form.val_dataset }}
-                            {% for error in form.val_dataset.errors %}
+                            {{ fieldForm.val_dataset.label_tag }}
+                            {{ fieldForm.val_dataset }}
+                            {% for error in fieldForm.val_dataset.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Create</button>
+                        </div>
+                    </form>
+
+                    <form id="fileForm" action="/simulations/create/" method="post" style="margin-bottom: 0; display: none;" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ fileForm.config.label_tag }}
+                            {{ fileForm.config }}
+                            {% for error in fileForm.config.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3" style="border-top: 1px solid #DCDCDE"></div>
+                        <div class="mb-3">
+                            {{ fileForm.model.label_tag }}
+                            {{ fileForm.model }}
+                            {% for error in fileForm.model.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ fileForm.train_dataset.label_tag }}
+                            {{ fileForm.train_dataset }}
+                            {% for error in fileForm.train_dataset.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ fileForm.test_dataset.label_tag }}
+                            {{ fileForm.test_dataset }}
+                            {% for error in fileForm.test_dataset.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ fileForm.val_dataset.label_tag }}
+                            {{ fileForm.val_dataset }}
+                            {% for error in fileForm.val_dataset.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>

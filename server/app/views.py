@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import requests
-from app.forms import SimCreationForm, CustomUserCreationForm
+from app.forms import SimCreationForm, CustomUserCreationForm, ConfigFileSimCreationForm
 from app.models import *
 from app.serializers import SimulationSerializer, UpdateSerializer
 
@@ -189,10 +189,11 @@ def simulation_create(request):
         response = simulations(request)
         if type(response) is HttpResponse:
             if response.status_code == 400:
-                return render(request, 'simulationCreate.html', {'form': SimCreationForm(request.POST)})
+                return render(request, 'simulationCreate.html',
+                              {'fieldForm': SimCreationForm(request.POST), 'fileForm': ConfigFileSimCreationForm(request.POST)})
             return response
         return redirect('/simulations/' + str(response.id.int))
-    return render(request, 'simulationCreate.html', {'form': SimCreationForm()})
+    return render(request, 'simulationCreate.html', {'fieldForm': SimCreationForm(), 'fileForm': ConfigFileSimCreationForm()})
 
 
 def simulation_info(request, id):
@@ -292,15 +293,15 @@ def simulation_command(request, id, command):
     return response
 
 
-def post_sim(request):  # TODO: add a version that allows file upload for Dataset
-    form = SimCreationForm(request.POST, request.FILES)
-    if form.is_valid():
+def post_sim(request):
+    fieldForm = SimCreationForm(request.POST, request.FILES)
+    fileForm = ConfigFileSimCreationForm(request.POST, request.FILES)
+    if fieldForm.is_valid():
         model = request.FILES['model']
         modeltext = b''
         for chunk in model.chunks():
             modeltext += chunk
         modeljson = json.loads(modeltext)
-        # TODO: This is probably not what Silva wants
         biastext = "["
         for layer in modeljson['config']:
             if 'bias_initializer' in layer:
@@ -310,34 +311,34 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
         biastext += "]"
 
         k_fold_ids = []
-        if not form.cleaned_data['is_k_fold']:
+        if not fieldForm.cleaned_data['is_k_fold']:
             sim = Simulation(owner=request.user,
                              isdone=False,
                              isrunning=True,
                              model=modeltext,
-                             name=form.cleaned_data["name"],
+                             name=fieldForm.cleaned_data["name"],
                              layers=len(modeljson['config']['layers']),
                              biases=bytes(biastext, 'utf-8'),
-                             epoch_interval=form.cleaned_data["logging_interval"],
-                             goal_epochs=form.cleaned_data["max_epochs"],
-                             learning_rate=form.cleaned_data["learning_rate"],
-                             metrics=form.cleaned_data["metrics"])
+                             epoch_interval=fieldForm.cleaned_data["logging_interval"],
+                             goal_epochs=fieldForm.cleaned_data["max_epochs"],
+                             learning_rate=fieldForm.cleaned_data["learning_rate"],
+                             metrics=fieldForm.cleaned_data["metrics"])
             sim.save()
         else:
-            for i in range(int(form.cleaned_data['k_fold_validation'])):
+            for i in range(int(fieldForm.cleaned_data['k_fold_validation'])):
                 sim = Simulation(owner=request.user,
                                  isdone=False,
                                  isrunning=True,
                                  model=modeltext,
-                                 name=str(form.cleaned_data["name"]) + " (" + str(i + 1) + ")",
+                                 name=str(fieldForm.cleaned_data["name"]) + " (" + str(i + 1) + ")",
                                  layers=len(modeljson['config']['layers']),
                                  biases=bytes(biastext, 'utf-8'),
-                                 epoch_interval=form.cleaned_data["logging_interval"],
-                                 goal_epochs=form.cleaned_data["max_epochs"],
-                                 learning_rate=form.cleaned_data["learning_rate"],
-                                 metrics=form.cleaned_data["metrics"])
+                                 epoch_interval=fieldForm.cleaned_data["logging_interval"],
+                                 goal_epochs=fieldForm.cleaned_data["max_epochs"],
+                                 learning_rate=fieldForm.cleaned_data["learning_rate"],
+                                 metrics=fieldForm.cleaned_data["metrics"])
                 sim.save()
-                tagged = Tagged(tag=form.cleaned_data['tag'],
+                tagged = Tagged(tag=fieldForm.cleaned_data['tag'],
                                 sim=sim,
                                 tagger=request.user,
                                 iskfold=True)
@@ -364,12 +365,12 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
 
         postdata = {
             "conf": {
-                "id": "" if form.cleaned_data['is_k_fold'] else str(sim.id.int),
+                "id": str(sim.id.int),
                 "dataset_train": trainset,
                 "dataset_test": testset,
                 "dataset_val": valset,
                 "dataset_url": False,
-                "batch_size": form.cleaned_data['batch_size'],
+                "batch_size": fieldForm.cleaned_data['batch_size'],
                 "epochs": sim.goal_epochs,
                 "epoch_period": sim.epoch_interval,
                 "train_feature_name": "x_train",
@@ -378,14 +379,117 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                 "test_label_name": "y_test",
                 "val_feature_name": "x_val",
                 "val_label_name": "y_val",
-                "optimizer": form.cleaned_data['optimizer'],
-                "loss_function": form.cleaned_data['loss_function'],
+                "optimizer": fieldForm.cleaned_data['optimizer'],
+                "loss_function": fieldForm.cleaned_data['loss_function'],
                 "from_logits": True,
-                "validation_split": 0.3,
                 "learning_rate": sim.learning_rate,
-                "k-fold_validation": 0 if form.cleaned_data['k_fold_validation'] is None else form.cleaned_data['k_fold_validation'],
+                "k-fold_validation": 0 if fieldForm.cleaned_data['k_fold_validation'] is None else fieldForm.cleaned_data['k_fold_validation'],
                 "k-fold_ids": k_fold_ids,
-                "metrics": form.cleaned_data['metrics'],
+                "metrics": sim.metrics,
+            },
+            "model": json.loads(sim.model)
+        }
+        resp = requests.post("http://tracker-deployer:7000/simulations", json=postdata)
+        if resp.ok:
+            return sim
+        sim.delete()
+        return HttpResponse("Failed to reach deployer", status=500)
+    elif fileForm.is_valid():
+        model = request.FILES['model']
+        modeltext = b''
+        for chunk in model.chunks():
+            modeltext += chunk
+        modeljson = json.loads(modeltext)
+        biastext = "["
+        for layer in modeljson['config']:
+            if 'bias_initializer' in layer:
+                biastext += f"{{{layer['bias_initializer']}}},"
+            else:
+                biastext += f"{{ }},"
+        biastext += "]"
+
+        config = request.FILES['config']
+        configtext = b''
+        for chunk in config.chunks():
+            configtext += chunk
+        configjson = json.loads(configtext)
+
+        k_fold_ids = []
+        if configjson['k-fold_validation'] < 2:
+            sim = Simulation(owner=request.user,
+                             isdone=False,
+                             isrunning=True,
+                             model=modeltext,
+                             name=configjson["name"],
+                             layers=len(modeljson['config']['layers']),
+                             biases=bytes(biastext, 'utf-8'),
+                             epoch_interval=configjson['epoch_period'],
+                             goal_epochs=configjson['total_epochs'],
+                             learning_rate=configjson["learning_rate"],
+                             metrics=configjson["extra-metrics"])
+            sim.save()
+        else:
+            for i in range(int(configjson['k-fold_validation'])):
+                sim = Simulation(owner=request.user,
+                                 isdone=False,
+                                 isrunning=True,
+                                 model=modeltext,
+                                 name=str(configjson["name"]) + " (" + str(i + 1) + ")",
+                                 layers=len(modeljson['config']['layers']),
+                                 biases=bytes(biastext, 'utf-8'),
+                                 epoch_interval=configjson['epoch_period'],
+                                 goal_epochs=configjson['total_epochs'],
+                                 learning_rate=configjson["learning_rate"],
+                                 metrics=configjson["extra-metrics"])
+                sim.save()
+                tagged = Tagged(tag=configjson['k-fold_tag'],
+                                sim=sim,
+                                tagger=request.user,
+                                iskfold=True)
+                tagged.save()
+                k_fold_ids.append(sim.id.int)
+
+        trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.npz'
+        f = open(trainset, 'wb+')
+        for chunk in request.FILES['train_dataset'].chunks():
+            f.write(chunk)
+        f.close()
+
+        testset = '/all_datasets/' + str(sim.id) + '-dataset_test.npz'
+        f = open(testset, 'wb+')
+        for chunk in request.FILES['test_dataset'].chunks():
+            f.write(chunk)
+        f.close()
+
+        valset = '/all_datasets/' + str(sim.id) + '-dataset_val.npz'
+        f = open(valset, 'wb+')
+        for chunk in request.FILES['val_dataset'].chunks():
+            f.write(chunk)
+        f.close()
+
+        postdata = {
+            "conf": {
+                "id": str(sim.id.int),
+                "dataset_train": trainset,
+                "dataset_test": testset,
+                "dataset_val": valset,
+                "dataset_url": False,
+                "batch_size": configjson['batch_size'],
+                "epochs": sim.goal_epochs,
+                "epoch_period": sim.epoch_interval,
+                "train_feature_name": "x_train",
+                "train_label_name": "y_train",
+                "test_feature_name": "x_test",
+                "test_label_name": "y_test",
+                "val_feature_name": "x_val",
+                "val_label_name": "y_val",
+                "optimizer": configjson['optimizer'],
+                "loss_function": configjson['loss_function'],
+                "from_logits": True,
+                "learning_rate": sim.learning_rate,
+                "k-fold_validation": configjson['k-fold_validation'],
+                "k-fold_ids": k_fold_ids,
+                "metrics": sim.metrics,
             },
             "model": json.loads(sim.model)
         }
