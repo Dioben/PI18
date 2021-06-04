@@ -6,26 +6,18 @@ from django.utils.translation import gettext, gettext_lazy as _
 from app.models import User
 
 
-class UploadModelFileForm(forms.Form):
-    # title = forms.CharField(max_length=50)
+class SimCreationForm(forms.Form):
     model = forms.FileField(
-        label='Select a Model',
+        label='Model',
         widget=forms.FileInput(
             attrs={
                 'class': 'form-control'
             }
         )
     )
-
-
-class UploadDataSetFileForm(forms.Form):
-    # title = forms.CharField(max_length=50)
-    dataset = forms.FileField(label='Select a DataSet')
-
-
-class ConfSimForm(forms.Form):
     name = forms.CharField(
         max_length=100,
+        label='Name',
         widget=forms.TextInput(
             attrs={
                 'autofocus': True,
@@ -35,6 +27,7 @@ class ConfSimForm(forms.Form):
     )
     max_epochs = forms.IntegerField(
         validators=[MinValueValidator(1)],
+        label='Total epochs',
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -52,6 +45,7 @@ class ConfSimForm(forms.Form):
     )
     batch_size = forms.IntegerField(
         validators=[MinValueValidator(1)],
+        label='Batch size',
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control'
@@ -60,6 +54,7 @@ class ConfSimForm(forms.Form):
     )
     learning_rate = forms.FloatField(
         validators=[MinValueValidator(0.00001)],
+        label='Learning rate',
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -67,6 +62,7 @@ class ConfSimForm(forms.Form):
         )
     )
     train_dataset = forms.FileField(
+        label='Training dataset',
         widget=forms.FileInput(
             attrs={
                 'class': 'form-control'
@@ -74,8 +70,7 @@ class ConfSimForm(forms.Form):
         )
     )
     test_dataset = forms.FileField(
-        required=False,
-        help_text="If absent we will use the training dataset",
+        label='Test dataset',
         widget=forms.FileInput(
             attrs={
                 'class': 'form-control'
@@ -83,6 +78,7 @@ class ConfSimForm(forms.Form):
         )
     )
     val_dataset = forms.FileField(
+        label='Validation dataset',
         widget=forms.FileInput(
             attrs={
                 'class': 'form-control'
@@ -90,6 +86,7 @@ class ConfSimForm(forms.Form):
         )
     )
     metrics = forms.MultipleChoiceField(
+        label='Extra metrics',
         widget=forms.SelectMultiple(),
         choices=(
             ('AUC', 'AUC'),
@@ -133,6 +130,7 @@ class ConfSimForm(forms.Form):
         required=False
     )
     optimizer = forms.ChoiceField(
+        label='Optimizer',
         widget=forms.Select(
             attrs={
                 'class': 'form-select'
@@ -149,6 +147,7 @@ class ConfSimForm(forms.Form):
         )
     )
     loss_function = forms.ChoiceField(
+        label='Loss function',
         widget=forms.Select(
             attrs={
                 'class': 'form-select'
@@ -172,8 +171,19 @@ class ConfSimForm(forms.Form):
             ('SquaredHinge', 'SquaredHinge'),
         )
     )
+    is_k_fold = forms.BooleanField(
+        label='K-Fold cross-validation',
+        required=False,
+        widget=forms.CheckboxInput(
+            attrs={
+                'class': 'form-check-input',
+            }
+        )
+    )
     k_fold_validation = forms.IntegerField(
-        validators=[MinValueValidator(0)],
+        label='K-Fold splits',
+        validators=[MinValueValidator(2)],
+        required=False,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control'
@@ -181,13 +191,14 @@ class ConfSimForm(forms.Form):
         )
     )
     tag = forms.CharField(
+        label='K-Fold tag',
         max_length=200,
+        required=False,
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control'
             }
-        ),
-        required=False
+        )
     )
 
     def clean_logging_interval(self):
@@ -200,9 +211,16 @@ class ConfSimForm(forms.Form):
     def clean_k_fold_validation(self):
         cleaned_data = super().clean()
         clean_k_fold_validation = cleaned_data.get("k_fold_validation")
-        if clean_k_fold_validation > 0 and str(cleaned_data.get("tag")).strip() == '':
-            raise ValidationError("K-Fold Validation bigger is bigger than 0 and tag was not set")
+        if cleaned_data.get("is_k_fold") and clean_k_fold_validation is None:
+            raise ValidationError("K-Fold needs to have splits set")
         return clean_k_fold_validation
+
+    def clean_tag(self):
+        cleaned_data = super().clean()
+        clean_tag = cleaned_data.get("tag")
+        if cleaned_data.get("is_k_fold") and (clean_tag is None or str(clean_tag).strip() == ''):
+            raise ValidationError("K-Fold needs to have tag set")
+        return clean_tag
 
 
 class CustomAuthenticationForm(auth_forms.AuthenticationForm):

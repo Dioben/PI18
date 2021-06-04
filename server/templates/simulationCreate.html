@@ -11,51 +11,53 @@
                 </div>
                 <div style="border-top: 1px solid #DCDCDE"></div>
                 <div style="padding: 24px 16px">
-                    <h5>Create simulation:</h5>
+                    <h5 class="mb-3">Create simulation:</h5>
                     <form action="/simulations/create/" method="post" style="margin-bottom: 0" enctype="multipart/form-data">
                         {% csrf_token %}
-                        <div class="mb-3 d-flex">
-                            <label for="{{ fileForm.model.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ fileForm.model.label }}</label>
-                            {{ fileForm.model }}
+                        <div class="mb-3">
+                            {{ form.name.label_tag }}
+                            {{ form.name }}
+                            {% for error in form.name.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        <div class="form-floating mb-3">
-                            {{ configForm.name }}
-                            {{ configForm.name.label_tag }}
+                        <div class="mb-3">
+                            {{ form.batch_size.label_tag }}
+                            {{ form.batch_size }}
+                            {% for error in form.batch_size.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        <div class="form-floating mb-3">
-                            {{ configForm.batch_size }}
-                            {{ configForm.batch_size.label_tag }}
+                        <div class="mb-3">
+                            {{ form.max_epochs.label_tag }}
+                            {{ form.max_epochs }}
+                            {% for error in form.max_epochs.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        <div class="form-floating mb-3">
-                            {{ configForm.max_epochs }}
-                            {{ configForm.max_epochs.label_tag }}
+                        <div class="mb-3">
+                            {{ form.logging_interval.label_tag }}
+                            {{ form.logging_interval }}
+                            {% for error in form.logging_interval.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        <div class="form-floating mb-3">
-                            {{ configForm.logging_interval }}
-                            {{ configForm.logging_interval.label_tag }}
+                        <div class="mb-3">
+                            {{ form.learning_rate.label_tag }}
+                            {{ form.learning_rate }}
+                            {% for error in form.learning_rate.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        <div class="form-floating mb-3">
-                            {{ configForm.learning_rate }}
-                            {{ configForm.learning_rate.label_tag }}
-                        </div>
-                        <div class="mb-3 d-flex">
-                            <label for="{{ configForm.train_dataset.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ configForm.train_dataset.label }}</label>
-                            {{ configForm.train_dataset }}
-                        </div>
-                        <div class="mb-3 d-flex">
-                            <label for="{{ configForm.test_dataset.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ configForm.test_dataset.label }}</label>
-                            {{ configForm.test_dataset }}
-                        </div>
-                        <div class="mb-3 d-flex">
-                            <label for="{{ configForm.val_dataset.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ configForm.val_dataset.label }}</label>
-                            {{ configForm.val_dataset }}
-                        </div>
-                        <div class="mb-3 d-flex">
-                            <label for="{{ configForm.metrics.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ configForm.metrics.label }}</label>
-                            {{ configForm.metrics }}
+                        <div class="mb-3">
+                            {{ form.metrics.label_tag }}
+                            {{ form.metrics }}
+                            {% for error in form.metrics.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
                             <script>
                                 docReady(function () {
-                                    $('#{{ configForm.metrics.id_for_label }}').multipleSelect({
+                                    $('#{{ form.metrics.id_for_label }}').multipleSelect({
                                         filter: true
                                     });
                                     $('.ms-parent, .ms-choice, .ms-choice span, .ms-search, .ms-search input, .ms-drop ul li')
@@ -65,21 +67,87 @@
                                 });
                             </script>
                         </div>
-                        <div class="mb-3 d-flex">
-                            <label for="{{ configForm.optimizer.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ configForm.optimizer.label }}</label>
-                            {{ configForm.optimizer }}
+                        <div class="mb-3">
+                            {{ form.optimizer.label_tag }}
+                            {{ form.optimizer }}
+                            {% for error in form.optimizer.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        <div class="mb-3 d-flex">
-                            <label for="{{ configForm.loss_function.id_for_label }}" class="form-label mb-0" style="white-space: nowrap; margin-right: 10px; height: 38px; line-height: 38px; text-align: center; ">{{ configForm.loss_function.label }}</label>
-                            {{ configForm.loss_function }}
+                        <div class="mb-3">
+                            {{ form.loss_function.label_tag }}
+                            {{ form.loss_function }}
+                            {% for error in form.loss_function.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        <div class="form-floating mb-3">
-                            {{ configForm.k_fold_validation }}
-                            {{ configForm.k_fold_validation.label_tag }}
+                        <div class="form-check form-switch mb-3">
+                            {{ form.is_k_fold }}
+                            <label class="form-check-label" for="{{ form.is_k_fold.id_for_label }}">{{ form.is_k_fold.label }}</label>
+                            {% for error in form.is_k_fold.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
                         </div>
-                        <div class="form-floating mb-3">
-                            {{ configForm.tag }}
-                            {{ configForm.tag.label_tag }}
+                        <script>
+                            docReady(function () {
+                                let isKFoldSwitch = $('#{{ form.is_k_fold.id_for_label }}');
+                                let kFoldCollapse = $('#isKFoldCollapse');
+                                isKFoldSwitch.click(function() {
+                                    if (isKFoldSwitch.is(':checked'))
+                                        kFoldCollapse.slideDown(100)
+                                    else
+                                        kFoldCollapse.slideUp(100)
+                                });
+                                if (isKFoldSwitch.is(':checked'))
+                                    kFoldCollapse.show()
+                                else
+                                    kFoldCollapse.hide()
+                            });
+                        </script>
+                        <div class="card card-body mb-3" id="isKFoldCollapse">
+                            <div class="mb-3">
+                                {{ form.k_fold_validation.label_tag }}
+                                {{ form.k_fold_validation }}
+                                {% for error in form.k_fold_validation.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div>
+                                {{ form.tag.label_tag }}
+                                {{ form.tag }}
+                                {% for error in form.tag.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mb-3" style="border-top: 1px solid #DCDCDE"></div>
+                        <div class="mb-3">
+                            {{ form.model.label_tag }}
+                            {{ form.model }}
+                            {% for error in form.model.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.train_dataset.label_tag }}
+                            {{ form.train_dataset }}
+                            {% for error in form.train_dataset.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.test_dataset.label_tag }}
+                            {{ form.test_dataset }}
+                            {% for error in form.test_dataset.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.val_dataset.label_tag }}
+                            {{ form.val_dataset }}
+                            {% for error in form.val_dataset.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Create</button>
