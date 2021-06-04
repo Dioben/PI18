@@ -210,11 +210,11 @@ def simulation_info(request, id):
 
         if general:
             HEADER.append('GeneralInfo')
-            extra_metrics = ExtraMetrics.objects.get(sim=sim)
+            extra_metrics = ExtraMetrics.objects.filter(sim=sim)
 
         if weight:
             HEADER.append('Weights')
-            weights = Weights.objects.filter()
+            weights = Weights.objects.filter(sim=sim)
 
         zipped_file = BytesIO()
         # Construir File
@@ -251,21 +251,24 @@ def simulation_info(request, id):
                                   'Goal Epoch',
                                   'Metrics',
                                   'Error Text',
-                                  extra_metrics.metric,
                                   ]
+                    dic={'Name': sim.name,
+                         'Owner': sim.owner,
+                         'Learning Rate': sim.learning_rate,
+                         'Model': sim.model,
+                         'Biases': sim.biases,
+                         'Layers': sim.layers,
+                         'Epoch Interval': sim.epoch_interval,
+                         'Goal Epoch': sim.goal_epochs,
+                         'Metrics': sim.metrics,
+                         'Error Text': sim.error_text,
+                         }
+                    for metric in extra_metrics:
+                        fieldnames.append("Extra Metric - " + metric.metric)
+                        dic["Extra Metric - " + metric.metric]=metric.value
                     writer = csv.DictWriter(csv_data, fieldnames=fieldnames)
                     writer.writeheader()
-                    writer.writerow({'Name': sim.name,
-                                     'Owner': sim.owner,
-                                     'Learning Rate': sim.learning_rate,
-                                     'Model': sim.model,
-                                     'Biases': sim.biases,
-                                     'Layers': sim.layers,
-                                     'Epoch Interval': sim.epoch_interval,
-                                     'Goal Epoch': sim.goal_epochs,
-                                     'Metrics': sim.metrics,
-                                     'Error Text': sim.error_text,
-                                     extra_metrics.metric: extra_metrics.value})
+                    writer.writerow(dic)
                     for r in rs:
                         writer.writerow(r)
                     csv_data.seek(0)
