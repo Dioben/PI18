@@ -1,5 +1,9 @@
+import csv
 import json
 import sys
+import zipfile
+from datetime import datetime
+from io import StringIO, BytesIO
 
 from django.contrib import auth
 from django.shortcuts import render, redirect
@@ -181,6 +185,7 @@ def simulation_list_content(request):
     }
     return render(request, 'simulations/simulationsContent.html', t_parms)
 
+
 def simulation_create(request):
     if not request.user.is_authenticated:  # you could use is_active here for email verification i think
         return HttpResponse("Please Log In", 403)
@@ -196,6 +201,32 @@ def simulation_create(request):
 
 
 def simulation_info(request, id):
+    if 'downloadData' in request.POST:
+        id = request.POST.get('simulationIdInput')
+        u = Simulation.objects.get(id=id)
+        HEADER = ['GeneralInfo', 'b', 'c']
+        zipped_file = BytesIO()
+
+        # Construir File
+        with zipfile.ZipFile(zipped_file, 'a', zipfile.ZIP_DEFLATED) as zipped:
+            for h in HEADER:  # determines which csv file to write
+                rs = StringIO()
+                csv_data = StringIO()
+                if h == 'GeneralInfo':
+                    fieldnames = ['Name']
+                    writer = csv.DictWriter(csv_data, fieldnames=fieldnames)
+                    writer.writeheader()
+                    writer.writerow({'Name': u.name })
+                    for r in rs:
+                        writer.writerow(r)
+                    csv_data.seek(0)
+                    zipped.writestr("{}.csv".format(h), csv_data.read())
+
+        zipped_file.seek(0)
+        response = HttpResponse(zipped_file, content_type='application/octet-stream')
+        response['Content-Disposition'] = 'attachment; filename=' + u.name + 'Data.zip'
+        return response
+
     if not request.user.is_authenticated:
         return HttpResponse("Please Log In", 403)
     notification = None
@@ -328,7 +359,7 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
             tagged = Tagged(tag=confForm.cleaned_data['tag'],
                             sim=sim,
                             tagger=request.user,
-                            iskfold=(confForm.cleaned_data['k_fold_validation'] > 0),)
+                            iskfold=(confForm.cleaned_data['k_fold_validation'] > 0), )
             tagged.save()
             if confForm.cleaned_data['k_fold_validation'] > 0:
                 for i in range(int(confForm.cleaned_data['k_fold_validation'])):
@@ -336,7 +367,7 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                                       isdone=False,
                                       isrunning=True,
                                       model=modeltext,
-                                      name=str(confForm.cleaned_data["name"])+" ("+str(i+2)+")",
+                                      name=str(confForm.cleaned_data["name"]) + " (" + str(i + 2) + ")",
                                       layers=len(modeljson['config']['layers']),
                                       biases=bytes(biastext, 'utf-8'),
                                       epoch_interval=confForm.cleaned_data["logging_interval"],

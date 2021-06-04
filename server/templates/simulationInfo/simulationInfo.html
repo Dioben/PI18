@@ -9,11 +9,52 @@
             <div id="content1">
                 {% include 'simulationInfo/simulationInfoContent1.html' %}
             </div>
-            {% if simulation.isdone %}
             <div style="padding-top: 5px;">
                 <button style="color:#fff;" data-bs-toggle="modal" data-bs-target="#Do" id="dowmloadDataModal" type="button" class="btn btn-info">Dowmload Simulation Data</button>
             </div>
-            {% endif %}
+            <form method="post" action="{% url 'SimulationList' %}{{ simulation.id.int }}/">
+                {% csrf_token %}
+                    <input name="simulationIdInput" value={{simulation.id}} type="hidden"/>
+                    <button id="downloadData"  name="downloadData" value="downloadData" type="submit" class="btn btn-primary">Start Download Test</button>
+            </form>
+            <div>
+                <div>
+                  Select Data to Download:"
+                </div>
+                <div class="modal-body d-flex justify-content-center my-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox"  id="generalInfoCheckbox" value="optiongeneralInfo">
+                        <label class="form-check-label" for="generalInfoCheckbox">
+                          General Info
+                        </label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox"  id="epochValuesCheckbox" value="optionepochValue">
+                        <label class="form-check-label" for="epochValuesCheckbox">
+                          Epoch Values
+                        </label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="extraMetricsCheckbox" value="optionextraMetrics">
+                        <label class="form-check-label" for="extraMetricsCheckbox">
+                          Extra Metrics
+                        </label>
+                      </div>
+                      <select class="custom-select custom-select-lg mb-3">
+                        <option selected>Weights</option>
+                        <option value="all">All Layers</option>
+                        <option value="none">None</option>
+                      </select>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <form method="post" action="{% url 'SimulationList' %}{{ simulation.id.int }}/">
+                        {% csrf_token %}
+                    <input id="simulationIdInput" value={{simulation.id}} type="hidden"/>
+                    <button id="downloadData"  name="downloadData" value="downloadData" type="button" class="btn btn-primary">Start Download Test</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                    </form>
+                </div>
+            </div>
             <div style="margin-top: 5px;">
                 {% comment %}<nav>
                     <div class="nav nav-tabs nav-fill" id="tab" role="tablist">
