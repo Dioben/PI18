@@ -93,12 +93,12 @@ def read_file(path):
 
 
 
-def download_dataset(url,filename):
-    local_filename = "./dataset/"
+def download_dataset(url,filename,simid):
+    local_filename = "../all_datasets/"
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         fname = re.findall('filename=(.+)', r.headers.get('content-disposition'))
-        local_filename = local_filename + fname[0].split('"')[1]
+        local_filename = local_filename + str(simid) + "-" + filename + "." + fname[0].split('"')[1].split(".")[-1]
         with open(local_filename, 'wb') as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
@@ -114,9 +114,9 @@ def make_simualtion(sim_id,model_data,conf_data):
     #Get data -> numpy
     if conf_data["dataset_url"]:
         #download
-        path_train = download_dataset(conf_data["dataset_train"], "dataset_train")
-        path_test = download_dataset(conf_data["dataset_test"], "dataset_test")
-        path_val = download_dataset(conf_data["dataset_val"], "dataset_val")
+        path_train = download_dataset(conf_data["dataset_train"], "dataset_train", conf_data["id"])
+        path_test = download_dataset(conf_data["dataset_test"], "dataset_test", conf_data["id"])
+        path_val = download_dataset(conf_data["dataset_val"], "dataset_val", conf_data["id"])
     else:
         path_test = conf_data["dataset_test"]
         path_train = conf_data["dataset_train"]
