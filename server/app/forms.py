@@ -107,10 +107,7 @@ class SimCreationForm(forms.Form):
     )
     optimizer = forms.ChoiceField(
         label='Optimizer',
-        widget=forms.Select(
-            attrs={
-                'class': 'form-select'
-            }),
+        widget=forms.Select(),
         choices=(
             ('Adadelta', 'Adadelta'),
             ('Adagrad', 'Adagrad'),
@@ -124,10 +121,7 @@ class SimCreationForm(forms.Form):
     )
     loss_function = forms.ChoiceField(
         label='Loss function',
-        widget=forms.Select(
-            attrs={
-                'class': 'form-select'
-            }),
+        widget=forms.Select(),
         choices=(
             ('BinaryCrossentropy', 'BinaryCrossentropy'),
             ('CategoricalCrossentropy', 'CategoricalCrossentropy'),
@@ -244,10 +238,7 @@ class SimCreationForm(forms.Form):
     )
     dataset_format = forms.ChoiceField(
         label='Format used by the datasets',
-        widget=forms.Select(
-            attrs={
-                'class': 'form-select'
-            }),
+        widget=forms.Select(),
         choices=(
             ('npz', '.npz'),
             ('csv', '.csv'),

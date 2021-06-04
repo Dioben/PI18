@@ -78,27 +78,12 @@
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3 multipleSelectContainer">
                             {{ fieldForm.metrics.label_tag }}
                             {{ fieldForm.metrics }}
                             {% for error in fieldForm.metrics.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
-                            <script>
-                                docReady(function () {
-                                    $('#{{ fieldForm.metrics.id_for_label }}').multipleSelect({
-                                        filter: true,
-                                        onFilter: function (text) {
-                                            if ($('.ms-select-all').css("display") !== "none")
-                                                $('.ms-drop ul li').prop('style', 'height: 38px !important; line-height: 38px;');
-                                        }
-                                    });
-                                    $('.ms-parent, .ms-choice, .ms-choice span, .ms-search, .ms-search input, .ms-drop ul li')
-                                        .prop('style', 'height: 38px !important; width: 100%; line-height: 38px; color: black;');
-                                    $('.ms-choice').prop('class', 'ms-choice form-select')
-                                    $('.icon-caret').hide();
-                                });
-                            </script>
                         </div>
                         <div class="mb-3">
                             {{ fieldForm.optimizer.label_tag }}
@@ -398,4 +383,26 @@
             </div>
         </div>
     </div>
+
+    <script>
+        docReady(function () {
+            $('select').multipleSelect({
+                filter: true,
+                onFilter: function (text) {
+                    if ($('.ms-select-all').css("display") !== "none") {
+                        $('.ms-drop ul li').prop('style', 'height: 38px !important; line-height: 28px;');
+                        $('.multipleSelectContainer .ms-parent .ms-drop ul li label span').prop('style', 'height: 38px !important; line-height: 38px;');
+                    }
+                }
+            });
+            $('.ms-parent, .ms-choice, .ms-choice span, .ms-search, .ms-search input')
+                .prop('style', 'height: 38px !important; width: 100%; line-height: 38px; color: black;');
+            $('.ms-drop ul li').prop('style', 'height: 38px !important; line-height: 28px;');
+            $('.ms-choice span').prop('style', 'padding-left: 12px');
+            $('.multipleSelectContainer .ms-parent .ms-drop ul li label span').prop('style', 'height: 38px !important; line-height: 38px;');
+            $('.ms-search').prop('style', 'height: 42px !important; width: 100%;')
+            $('.ms-choice').prop('class', 'ms-choice form-select')
+            $('.icon-caret').hide();
+        });
+    </script>
 {% endblock %}
