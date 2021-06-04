@@ -70,7 +70,7 @@ def main(model_json,conf_json):
             print('File is pickled Dataframe')
             print('File is of extension:',file_arr[1])
             df = pd.read_pickle(path_given)
-            label_name = conf_json['label_collumn']
+            label_name = conf_json['label_column']
             target = df.pop(label_name)
             features = df.values.tolist()
             labels = target.values.tolist()
