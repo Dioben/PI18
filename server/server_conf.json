@@ -1,6 +1,8 @@
 {
     "name" : "FileSim",
-    "dataset_url" : false,
+    "dataset_train" : "https://drive.google.com/uc?export=download&id=1AsnQrKX80VuL4lCmKXnv9wbt9IwYmmsz",
+    "dataset_test" : "https://drive.google.com/uc?export=download&id=1rFn_K2SXn5BZtE4yJAaxRs3e65-eJv0K",
+    "dataset_val" : "https://drive.google.com/uc?export=download&id=1Kyi7EWYxtdgDpop36WCZ9RDzuWTPUd1r",
     "batch_size" : 32,
     "total_epochs" : 1,
     "epoch_period" : 1,
@@ -18,5 +20,6 @@
     "k-fold_tag" : "File",
     "extra-metrics" : [
         "KLDivergence",
-        "LogCoshError"]
+        "LogCoshError"],
+    "label_column" : "label"
 }

@@ -297,7 +297,9 @@ def post_sim(request):
     fieldForm = SimCreationForm(request.POST, request.FILES)
     fileForm = ConfigFileSimCreationForm(request.POST, request.FILES)
     if fieldForm.is_valid():
-        model = request.FILES['model']
+        cleaned_data = fieldForm.cleaned_data
+
+        model = cleaned_data['model']
         modeltext = b''
         for chunk in model.chunks():
             modeltext += chunk
@@ -310,58 +312,72 @@ def post_sim(request):
                 biastext += f"{{ }},"
         biastext += "]"
 
+        if not cleaned_data['use_url_datasets']:
+            trainext = cleaned_data['train_dataset'].name.split('.')[-1]
+            testext = cleaned_data['test_dataset'].name.split('.')[-1]
+            valext = cleaned_data['val_dataset'].name.split('.')[-1]
+            if trainext != testext or testext != valext or trainext != valext:
+                return HttpResponse("Bad request", status=400)
+            if trainext != cleaned_data['dataset_format']:
+                return HttpResponse("Bad request", status=400)
+
         k_fold_ids = []
-        if not fieldForm.cleaned_data['is_k_fold']:
+        if not cleaned_data['is_k_fold']:
             sim = Simulation(owner=request.user,
                              isdone=False,
                              isrunning=True,
                              model=modeltext,
-                             name=fieldForm.cleaned_data["name"],
+                             name=cleaned_data["name"],
                              layers=len(modeljson['config']['layers']),
                              biases=bytes(biastext, 'utf-8'),
-                             epoch_interval=fieldForm.cleaned_data["logging_interval"],
-                             goal_epochs=fieldForm.cleaned_data["max_epochs"],
-                             learning_rate=fieldForm.cleaned_data["learning_rate"],
-                             metrics=fieldForm.cleaned_data["metrics"])
+                             epoch_interval=cleaned_data["logging_interval"],
+                             goal_epochs=cleaned_data["max_epochs"],
+                             learning_rate=cleaned_data["learning_rate"],
+                             metrics=cleaned_data["metrics"])
             sim.save()
         else:
-            for i in range(int(fieldForm.cleaned_data['k_fold_validation'])):
+            for i in range(int(cleaned_data['k_fold_validation'])):
                 sim = Simulation(owner=request.user,
                                  isdone=False,
                                  isrunning=True,
                                  model=modeltext,
-                                 name=str(fieldForm.cleaned_data["name"]) + " (" + str(i + 1) + ")",
+                                 name=str(cleaned_data["name"]) + " (" + str(i + 1) + ")",
                                  layers=len(modeljson['config']['layers']),
                                  biases=bytes(biastext, 'utf-8'),
-                                 epoch_interval=fieldForm.cleaned_data["logging_interval"],
-                                 goal_epochs=fieldForm.cleaned_data["max_epochs"],
-                                 learning_rate=fieldForm.cleaned_data["learning_rate"],
-                                 metrics=fieldForm.cleaned_data["metrics"])
+                                 epoch_interval=cleaned_data["logging_interval"],
+                                 goal_epochs=cleaned_data["max_epochs"],
+                                 learning_rate=cleaned_data["learning_rate"],
+                                 metrics=cleaned_data["metrics"])
                 sim.save()
-                tagged = Tagged(tag=fieldForm.cleaned_data['tag'],
+                tagged = Tagged(tag=cleaned_data['tag'],
                                 sim=sim,
                                 tagger=request.user,
                                 iskfold=True)
                 tagged.save()
                 k_fold_ids.append(sim.id.int)
 
-        trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.npz'
-        f = open(trainset, 'wb+')
-        for chunk in request.FILES['train_dataset'].chunks():
-            f.write(chunk)
-        f.close()
+        if not cleaned_data['use_url_datasets']:
+            trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.' + trainext
+            f = open(trainset, 'wb+')
+            for chunk in cleaned_data['train_dataset'].chunks():
+                f.write(chunk)
+            f.close()
 
-        testset = '/all_datasets/' + str(sim.id) + '-dataset_test.npz'
-        f = open(testset, 'wb+')
-        for chunk in request.FILES['test_dataset'].chunks():
-            f.write(chunk)
-        f.close()
+            testset = '/all_datasets/' + str(sim.id) + '-dataset_test.' + testext
+            f = open(testset, 'wb+')
+            for chunk in cleaned_data['test_dataset'].chunks():
+                f.write(chunk)
+            f.close()
 
-        valset = '/all_datasets/' + str(sim.id) + '-dataset_val.npz'
-        f = open(valset, 'wb+')
-        for chunk in request.FILES['val_dataset'].chunks():
-            f.write(chunk)
-        f.close()
+            valset = '/all_datasets/' + str(sim.id) + '-dataset_val.' + valext
+            f = open(valset, 'wb+')
+            for chunk in cleaned_data['val_dataset'].chunks():
+                f.write(chunk)
+            f.close()
+        else:
+            trainset = cleaned_data['url_train_dataset']
+            testset = cleaned_data['url_test_dataset']
+            valset = cleaned_data['url_val_dataset']
 
         postdata = {
             "conf": {
@@ -369,23 +385,24 @@ def post_sim(request):
                 "dataset_train": trainset,
                 "dataset_test": testset,
                 "dataset_val": valset,
-                "dataset_url": False,
-                "batch_size": fieldForm.cleaned_data['batch_size'],
+                "dataset_url": cleaned_data['use_url_datasets'],
+                "batch_size": cleaned_data['batch_size'],
                 "epochs": sim.goal_epochs,
                 "epoch_period": sim.epoch_interval,
-                "train_feature_name": "x_train",
-                "train_label_name": "y_train",
-                "test_feature_name": "x_test",
-                "test_label_name": "y_test",
-                "val_feature_name": "x_val",
-                "val_label_name": "y_val",
-                "optimizer": fieldForm.cleaned_data['optimizer'],
-                "loss_function": fieldForm.cleaned_data['loss_function'],
+                "train_feature_name": cleaned_data['train_feature_name'] if cleaned_data['train_feature_name'] else '',
+                "train_label_name": cleaned_data['train_label_name'] if cleaned_data['train_label_name'] else '',
+                "test_feature_name": cleaned_data['test_feature_name'] if cleaned_data['test_feature_name'] else '',
+                "test_label_name": cleaned_data['test_label_name'] if cleaned_data['test_label_name'] else '',
+                "val_feature_name": cleaned_data['val_feature_name'] if cleaned_data['val_feature_name'] else '',
+                "val_label_name": cleaned_data['val_label_name'] if cleaned_data['val_label_name'] else '',
+                "optimizer": cleaned_data['optimizer'],
+                "loss_function": cleaned_data['loss_function'],
                 "from_logits": True,
                 "learning_rate": sim.learning_rate,
-                "k-fold_validation": 0 if fieldForm.cleaned_data['k_fold_validation'] is None else fieldForm.cleaned_data['k_fold_validation'],
+                "k-fold_validation": 0 if not cleaned_data['k_fold_validation'] else cleaned_data['k_fold_validation'],
                 "k-fold_ids": k_fold_ids,
                 "metrics": sim.metrics,
+                "label_column": cleaned_data['label_column'] if cleaned_data['label_column'] else ''
             },
             "model": json.loads(sim.model)
         }
@@ -395,7 +412,9 @@ def post_sim(request):
         sim.delete()
         return HttpResponse("Failed to reach deployer", status=500)
     elif fileForm.is_valid():
-        model = request.FILES['model']
+        cleaned_data = fileForm.cleaned_data
+
+        model = cleaned_data['model']
         modeltext = b''
         for chunk in model.chunks():
             modeltext += chunk
@@ -408,11 +427,32 @@ def post_sim(request):
                 biastext += f"{{ }},"
         biastext += "]"
 
-        config = request.FILES['config']
+        config = cleaned_data['config']
         configtext = b''
         for chunk in config.chunks():
             configtext += chunk
         configjson = json.loads(configtext)
+
+        if not cleaned_data['use_url_datasets']:
+            trainext = cleaned_data['train_dataset'].name.split('.')[-1]
+            testext = cleaned_data['test_dataset'].name.split('.')[-1]
+            valext = cleaned_data['val_dataset'].name.split('.')[-1]
+            if trainext != testext or testext != valext or trainext != valext:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'csv' and 'label_column' not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "train_feature_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "train_label_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "test_feature_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "test_label_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "val_feature_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "val_label_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
 
         k_fold_ids = []
         if configjson['k-fold_validation'] < 2:
@@ -449,23 +489,28 @@ def post_sim(request):
                 tagged.save()
                 k_fold_ids.append(sim.id.int)
 
-        trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.npz'
-        f = open(trainset, 'wb+')
-        for chunk in request.FILES['train_dataset'].chunks():
-            f.write(chunk)
-        f.close()
+        if not cleaned_data['use_url_datasets']:
+            trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.' + trainext
+            f = open(trainset, 'wb+')
+            for chunk in cleaned_data['train_dataset'].chunks():
+                f.write(chunk)
+            f.close()
 
-        testset = '/all_datasets/' + str(sim.id) + '-dataset_test.npz'
-        f = open(testset, 'wb+')
-        for chunk in request.FILES['test_dataset'].chunks():
-            f.write(chunk)
-        f.close()
+            testset = '/all_datasets/' + str(sim.id) + '-dataset_test.' + testext
+            f = open(testset, 'wb+')
+            for chunk in cleaned_data['test_dataset'].chunks():
+                f.write(chunk)
+            f.close()
 
-        valset = '/all_datasets/' + str(sim.id) + '-dataset_val.npz'
-        f = open(valset, 'wb+')
-        for chunk in request.FILES['val_dataset'].chunks():
-            f.write(chunk)
-        f.close()
+            valset = '/all_datasets/' + str(sim.id) + '-dataset_val.' + valext
+            f = open(valset, 'wb+')
+            for chunk in cleaned_data['val_dataset'].chunks():
+                f.write(chunk)
+            f.close()
+        else:
+            trainset = configjson['dataset_train']
+            testset = configjson['dataset_test']
+            valset = configjson['dataset_val']
 
         postdata = {
             "conf": {
@@ -473,16 +518,16 @@ def post_sim(request):
                 "dataset_train": trainset,
                 "dataset_test": testset,
                 "dataset_val": valset,
-                "dataset_url": False,
+                "dataset_url": cleaned_data['use_url_datasets'],
                 "batch_size": configjson['batch_size'],
                 "epochs": sim.goal_epochs,
                 "epoch_period": sim.epoch_interval,
-                "train_feature_name": "x_train",
-                "train_label_name": "y_train",
-                "test_feature_name": "x_test",
-                "test_label_name": "y_test",
-                "val_feature_name": "x_val",
-                "val_label_name": "y_val",
+                "train_feature_name": configjson['train_feature_name'] if configjson['train_feature_name'] else '',
+                "train_label_name": configjson['train_label_name'] if configjson['train_label_name'] else '',
+                "test_feature_name": configjson['test_feature_name'] if configjson['test_feature_name'] else '',
+                "test_label_name": configjson['test_label_name'] if configjson['test_label_name'] else '',
+                "val_feature_name": configjson['val_feature_name'] if configjson['val_feature_name'] else '',
+                "val_label_name": configjson['val_label_name'] if configjson['val_label_name'] else '',
                 "optimizer": configjson['optimizer'],
                 "loss_function": configjson['loss_function'],
                 "from_logits": True,
@@ -490,6 +535,7 @@ def post_sim(request):
                 "k-fold_validation": configjson['k-fold_validation'],
                 "k-fold_ids": k_fold_ids,
                 "metrics": sim.metrics,
+                "label_column": configjson['label_column'] if configjson['label_column'] else ''
             },
             "model": json.loads(sim.model)
         }

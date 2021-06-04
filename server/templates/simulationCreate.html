@@ -161,26 +161,166 @@
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="mb-3">
-                            {{ fieldForm.train_dataset.label_tag }}
-                            {{ fieldForm.train_dataset }}
-                            {% for error in fieldForm.train_dataset.errors %}
+                        <div class="form-check form-switch mb-3">
+                            {{ fieldForm.use_url_datasets }}
+                            <label class="form-check-label" for="{{ fieldForm.use_url_datasets.id_for_label }}">{{ fieldForm.use_url_datasets.label }}</label>
+                            {% for error in fieldForm.use_url_datasets.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="mb-3">
-                            {{ fieldForm.test_dataset.label_tag }}
-                            {{ fieldForm.test_dataset }}
-                            {% for error in fieldForm.test_dataset.errors %}
-                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                            {% endfor %}
+                        <script>
+                            docReady(function () {
+                                let fieldOrFileSwitch = $('#{{ fieldForm.use_url_datasets.id_for_label }}');
+                                let fieldForm = $('#fieldFileDatasets');
+                                let fileForm = $('#fieldUrlDatasets');
+                                fieldOrFileSwitch.click(function() {
+                                    if (fieldOrFileSwitch.is(':checked')) {
+                                        fileForm.show()
+                                        fieldForm.hide()
+                                    }
+                                    else {
+                                        fieldForm.show()
+                                        fileForm.hide()
+                                    }
+                                });
+                                if (fieldOrFileSwitch.is(':checked')) {
+                                    fileForm.show()
+                                    fieldForm.hide()
+                                }
+                                else {
+                                    fieldForm.show()
+                                    fileForm.hide()
+                                }
+                            });
+                        </script>
+                        <div id="fieldFileDatasets">
+                            <div class="mb-3">
+                                {{ fieldForm.train_dataset.label_tag }}
+                                {{ fieldForm.train_dataset }}
+                                {% for error in fieldForm.train_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.test_dataset.label_tag }}
+                                {{ fieldForm.test_dataset }}
+                                {% for error in fieldForm.test_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.val_dataset.label_tag }}
+                                {{ fieldForm.val_dataset }}
+                                {% for error in fieldForm.val_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div>
+                                {{ fieldForm.dataset_format.label_tag }}
+                                {{ fieldForm.dataset_format }}
+                                {% for error in fieldForm.dataset_format.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <script>
+                                docReady(function () {
+                                    let Select = $('#{{ fieldForm.dataset_format.id_for_label }}');
+                                    let CSVCollapse = $('#fieldCSVCollapse');
+                                    let NPZCollapse = $('#fieldNPZCollapse');
+                                    if (Select.val() === 'csv') {
+                                        NPZCollapse.hide()
+                                        CSVCollapse.show()
+                                    } else if (Select.val() === 'npz') {
+                                        CSVCollapse.hide()
+                                        NPZCollapse.show()
+                                    }
+                                    Select.change(function () {
+                                        if (Select.val() === 'csv') {
+                                            NPZCollapse.hide()
+                                            CSVCollapse.show()
+                                        } else if (Select.val() === 'npz') {
+                                            CSVCollapse.hide()
+                                            NPZCollapse.show()
+                                        }
+                                    })
+                                });
+                            </script>
+                            <div class="card card-body mb-3" id="fieldCSVCollapse">
+                                <div class="mb-3">
+                                    {{ fieldForm.label_column.label_tag }}
+                                    {{ fieldForm.label_column }}
+                                    {% for error in fieldForm.label_column.errors %}
+                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="card card-body mb-3" id="fieldNPZCollapse">
+                                <div class="mb-3">
+                                    {{ fieldForm.train_feature_name.label_tag }}
+                                    {{ fieldForm.train_feature_name }}
+                                    {% for error in fieldForm.train_feature_name.errors %}
+                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    {{ fieldForm.train_label_name.label_tag }}
+                                    {{ fieldForm.train_label_name }}
+                                    {% for error in fieldForm.train_label_name.errors %}
+                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    {{ fieldForm.test_feature_name.label_tag }}
+                                    {{ fieldForm.test_feature_name }}
+                                    {% for error in fieldForm.test_feature_name.errors %}
+                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    {{ fieldForm.test_label_name.label_tag }}
+                                    {{ fieldForm.test_label_name }}
+                                    {% for error in fieldForm.test_label_name.errors %}
+                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    {{ fieldForm.val_feature_name.label_tag }}
+                                    {{ fieldForm.val_feature_name }}
+                                    {% for error in fieldForm.val_feature_name.errors %}
+                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    {{ fieldForm.val_label_name.label_tag }}
+                                    {{ fieldForm.val_label_name }}
+                                    {% for error in fieldForm.val_label_name.errors %}
+                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            {{ fieldForm.val_dataset.label_tag }}
-                            {{ fieldForm.val_dataset }}
-                            {% for error in fieldForm.val_dataset.errors %}
-                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                            {% endfor %}
+                        <div id="fieldUrlDatasets">
+                            <div class="mb-3">
+                                {{ fieldForm.url_train_dataset.label_tag }}
+                                {{ fieldForm.url_train_dataset }}
+                                {% for error in fieldForm.url_train_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.url_test_dataset.label_tag }}
+                                {{ fieldForm.url_test_dataset }}
+                                {% for error in fieldForm.url_test_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.url_val_dataset.label_tag }}
+                                {{ fieldForm.url_val_dataset }}
+                                {% for error in fieldForm.url_val_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Create</button>
@@ -204,26 +344,51 @@
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="mb-3">
-                            {{ fileForm.train_dataset.label_tag }}
-                            {{ fileForm.train_dataset }}
-                            {% for error in fileForm.train_dataset.errors %}
+                        <div class="form-check form-switch mb-3">
+                            {{ fileForm.use_url_datasets }}
+                            <label class="form-check-label" for="{{ fileForm.use_url_datasets.id_for_label }}">{{ fileForm.use_url_datasets.label }}</label>
+                            {% for error in fileForm.use_url_datasets.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="mb-3">
-                            {{ fileForm.test_dataset.label_tag }}
-                            {{ fileForm.test_dataset }}
-                            {% for error in fileForm.test_dataset.errors %}
-                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                        <div class="mb-3">
-                            {{ fileForm.val_dataset.label_tag }}
-                            {{ fileForm.val_dataset }}
-                            {% for error in fileForm.val_dataset.errors %}
-                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                            {% endfor %}
+                        <script>
+                            docReady(function () {
+                                let Switch = $('#{{ fileForm.use_url_datasets.id_for_label }}');
+                                let Collapse = $('#fileFileDatasets');
+                                Switch.click(function() {
+                                    if (Switch.is(':checked'))
+                                        Collapse.hide()
+                                    else
+                                        Collapse.show()
+                                });
+                                if (Switch.is(':checked'))
+                                    Collapse.hide()
+                                else
+                                    Collapse.show()
+                            });
+                        </script>
+                        <div id="fileFileDatasets">
+                            <div class="mb-3">
+                                {{ fileForm.train_dataset.label_tag }}
+                                {{ fileForm.train_dataset }}
+                                {% for error in fileForm.train_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fileForm.test_dataset.label_tag }}
+                                {{ fileForm.test_dataset }}
+                                {% for error in fileForm.test_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fileForm.val_dataset.label_tag }}
+                                {{ fileForm.val_dataset }}
+                                {% for error in fileForm.val_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Create</button>

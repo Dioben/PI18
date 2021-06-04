@@ -61,30 +61,6 @@ class SimCreationForm(forms.Form):
             }
         )
     )
-    train_dataset = forms.FileField(
-        label='Training dataset',
-        widget=forms.FileInput(
-            attrs={
-                'class': 'form-control'
-            }
-        )
-    )
-    test_dataset = forms.FileField(
-        label='Test dataset',
-        widget=forms.FileInput(
-            attrs={
-                'class': 'form-control'
-            }
-        )
-    )
-    val_dataset = forms.FileField(
-        label='Validation dataset',
-        widget=forms.FileInput(
-            attrs={
-                'class': 'form-control'
-            }
-        )
-    )
     metrics = forms.MultipleChoiceField(
         label='Extra metrics',
         widget=forms.SelectMultiple(),
@@ -200,6 +176,153 @@ class SimCreationForm(forms.Form):
             }
         )
     )
+    use_url_datasets = forms.BooleanField(
+        label='Use links for the datasets',
+        required=False,
+        widget=forms.CheckboxInput(
+            attrs={
+                'class': 'form-check-input',
+            }
+        )
+    )
+    train_dataset = forms.FileField(
+        label='Training dataset',
+        required=False,
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    url_train_dataset = forms.URLField(
+        max_length=255,
+        label='Training dataset',
+        required=False,
+        widget=forms.URLInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    test_dataset = forms.FileField(
+        label='Test dataset',
+        required=False,
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    url_test_dataset = forms.URLField(
+        max_length=255,
+        label='Test dataset',
+        required=False,
+        widget=forms.URLInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    val_dataset = forms.FileField(
+        label='Validation dataset',
+        required=False,
+        widget=forms.FileInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    url_val_dataset = forms.URLField(
+        max_length=255,
+        label='Validation dataset',
+        required=False,
+        widget=forms.URLInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    dataset_format = forms.ChoiceField(
+        label='Format used by the datasets',
+        widget=forms.Select(
+            attrs={
+                'class': 'form-select'
+            }),
+        choices=(
+            ('npz', '.npz'),
+            ('csv', '.csv'),
+        )
+    )
+    label_column = forms.CharField(
+        label='Label column',
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    train_feature_name = forms.CharField(
+        label='Training feature name',
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    train_label_name = forms.CharField(
+        label='Training label name',
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    test_feature_name = forms.CharField(
+        label='Test feature name',
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    test_label_name = forms.CharField(
+        label='Test label name',
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    val_feature_name = forms.CharField(
+        label='Validation feature name',
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
+    val_label_name = forms.CharField(
+        label='Validation label name',
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control'
+            }
+        )
+    )
 
     def clean_logging_interval(self):
         cleaned_data = super().clean()
@@ -222,6 +345,106 @@ class SimCreationForm(forms.Form):
             raise ValidationError("K-Fold needs to have tag set")
         return clean_tag
 
+    # def clean_train_dataset(self):
+    #     cleaned_data = super().clean()
+    #     clean_train_dataset = cleaned_data.get("train_dataset")
+    #     if not cleaned_data.get("use_url_datasets"):
+    #         if clean_train_dataset is None:
+    #             raise ValidationError("Training dataset is required")
+    #         if clean_train_dataset.name.split(".")[-1] != cleaned_data.get("dataset_format"):
+    #             raise ValidationError("Please select the correct format below")
+    #     return clean_train_dataset
+
+    def clean_url_train_dataset(self):
+        cleaned_data = super().clean()
+        clean_url_train_dataset = cleaned_data.get("url_train_dataset")
+        if cleaned_data.get("use_url_datasets") and (clean_url_train_dataset is None or str(clean_url_train_dataset).strip() == ''):
+            raise ValidationError("Training dataset is required")
+        return clean_url_train_dataset
+
+    # def clean_test_dataset(self):
+    #     cleaned_data = super().clean()
+    #     clean_test_dataset = cleaned_data.get("test_dataset")
+    #     if not cleaned_data.get("use_url_datasets"):
+    #         if clean_test_dataset is None:
+    #             raise ValidationError("Test dataset is required")
+    #         if clean_test_dataset.name.split(".")[-1] != cleaned_data.get("dataset_format"):
+    #             raise ValidationError("Please select the correct format below")
+    #     return clean_test_dataset
+
+    def clean_url_test_dataset(self):
+        cleaned_data = super().clean()
+        clean_url_test_dataset = cleaned_data.get("url_test_dataset")
+        if cleaned_data.get("use_url_datasets") and (clean_url_test_dataset is None or str(clean_url_test_dataset).strip() == ''):
+            raise ValidationError("Test dataset is required")
+        return clean_url_test_dataset
+
+    # def clean_val_dataset(self):
+    #     cleaned_data = super().clean()
+    #     clean_val_dataset = cleaned_data.get("val_dataset")
+    #     if not cleaned_data.get("use_url_datasets"):
+    #         if clean_val_dataset is None:
+    #             raise ValidationError("Validation dataset is required")
+    #         if clean_val_dataset.name.split(".")[-1] != cleaned_data.get("dataset_format"):
+    #             raise ValidationError("Please select the correct format below")
+    #     return clean_val_dataset
+
+    def clean_url_val_dataset(self):
+        cleaned_data = super().clean()
+        clean_url_val_dataset = cleaned_data.get("url_val_dataset")
+        if cleaned_data.get("use_url_datasets") and (clean_url_val_dataset is None or str(clean_url_val_dataset).strip() == ''):
+            raise ValidationError("Validation dataset is required")
+        return clean_url_val_dataset
+
+    def clean_label_column(self):
+        cleaned_data = super().clean()
+        clean_label_column = cleaned_data.get("label_column")
+        if cleaned_data.get("dataset_format") == "csv" and (clean_label_column is None or str(clean_label_column).strip() == ''):
+            raise ValidationError("Label column is required")
+        return clean_label_column
+
+    def clean_train_feature_name(self):
+        cleaned_data = super().clean()
+        clean_train_feature_name = cleaned_data.get("train_feature_name")
+        if cleaned_data.get("dataset_format") == "npz" and (clean_train_feature_name is None or str(clean_train_feature_name).strip() == ''):
+            raise ValidationError("Training feature name is required")
+        return clean_train_feature_name
+
+    def clean_train_label_name(self):
+        cleaned_data = super().clean()
+        clean_train_label_name = cleaned_data.get("train_label_name")
+        if cleaned_data.get("dataset_format") == "npz" and (clean_train_label_name is None or str(clean_train_label_name).strip() == ''):
+            raise ValidationError("Training label name is required")
+        return clean_train_label_name
+
+    def clean_test_feature_name(self):
+        cleaned_data = super().clean()
+        clean_test_feature_name = cleaned_data.get("test_feature_name")
+        if cleaned_data.get("dataset_format") == "npz" and (clean_test_feature_name is None or str(clean_test_feature_name).strip() == ''):
+            raise ValidationError("Test feature name is required")
+        return clean_test_feature_name
+
+    def clean_test_label_name(self):
+        cleaned_data = super().clean()
+        clean_test_label_name = cleaned_data.get("test_label_name")
+        if cleaned_data.get("dataset_format") == "npz" and (clean_test_label_name is None or str(clean_test_label_name).strip() == ''):
+            raise ValidationError("Test label name is required")
+        return clean_test_label_name
+
+    def clean_val_feature_name(self):
+        cleaned_data = super().clean()
+        clean_val_feature_name = cleaned_data.get("val_feature_name")
+        if cleaned_data.get("dataset_format") == "npz" and (clean_val_feature_name is None or str(clean_val_feature_name).strip() == ''):
+            raise ValidationError("Validation feature name is required")
+        return clean_val_feature_name
+
+    def clean_val_label_name(self):
+        cleaned_data = super().clean()
+        clean_val_label_name = cleaned_data.get("val_label_name")
+        if cleaned_data.get("dataset_format") == "npz" and (clean_val_label_name is None or str(clean_val_label_name).strip() == ''):
+            raise ValidationError("Validation label name is required")
+        return clean_val_label_name
+
 
 class ConfigFileSimCreationForm(forms.Form):
     config = forms.FileField(
@@ -242,8 +465,19 @@ class ConfigFileSimCreationForm(forms.Form):
             }
         )
     )
+    use_url_datasets = forms.BooleanField(
+        label='Use links for the datasets',
+        required=False,
+        widget=forms.CheckboxInput(
+            attrs={
+                'class': 'form-check-input',
+                'id': 'file_use_url_datasets',
+            }
+        )
+    )
     train_dataset = forms.FileField(
         label='Training dataset',
+        required=False,
         widget=forms.FileInput(
             attrs={
                 'class': 'form-control',
@@ -253,6 +487,7 @@ class ConfigFileSimCreationForm(forms.Form):
     )
     test_dataset = forms.FileField(
         label='Test dataset',
+        required=False,
         widget=forms.FileInput(
             attrs={
                 'class': 'form-control',
@@ -262,6 +497,7 @@ class ConfigFileSimCreationForm(forms.Form):
     )
     val_dataset = forms.FileField(
         label='Validation dataset',
+        required=False,
         widget=forms.FileInput(
             attrs={
                 'class': 'form-control',
@@ -269,6 +505,27 @@ class ConfigFileSimCreationForm(forms.Form):
             }
         )
     )
+
+    def clean_train_dataset(self):
+        cleaned_data = super().clean()
+        clean_train_dataset = cleaned_data.get("train_dataset")
+        if (not cleaned_data.get("use_url_datasets")) and clean_train_dataset is None:
+            raise ValidationError("Training dataset is required")
+        return clean_train_dataset
+
+    def clean_test_dataset(self):
+        cleaned_data = super().clean()
+        clean_test_dataset = cleaned_data.get("test_dataset")
+        if (not cleaned_data.get("use_url_datasets")) and clean_test_dataset is None:
+            raise ValidationError("Test dataset is required")
+        return clean_test_dataset
+
+    def clean_val_dataset(self):
+        cleaned_data = super().clean()
+        clean_val_dataset = cleaned_data.get("val_dataset")
+        if (not cleaned_data.get("use_url_datasets")) and clean_val_dataset is None:
+            raise ValidationError("Validation dataset is required")
+        return clean_val_dataset
 
 
 class CustomAuthenticationForm(auth_forms.AuthenticationForm):
