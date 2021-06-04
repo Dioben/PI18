@@ -64,7 +64,18 @@ def main(model_json,conf_json):
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
 
             #If it's a csv it's expect of conf to have this extra
-
+        
+        elif 'pickle' in file_arr[1] or 'zip' in file_arr[1]:
+            #If pandas.Dataframe serialized as pickle
+            print('File is pickled Dataframe')
+            print('File is of extension:',file_arr[1])
+            df = pd.read_pickle(path_given)
+            label_name = conf_json['label_collumn']
+            target = df.pop(label_name)
+            features = df.values.tolist()
+            labels = target.values.tolist()
+            print('dataset make')
+            dataset = tf.data.Dataset.from_tensor_slices((features, labels))
         elif 'json' in file_arr[1]:
             print('File is json')
             with open(path_given,'rb') as file_read:
