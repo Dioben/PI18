@@ -93,12 +93,12 @@ def read_file(path):
 
 
 
-def download_dataset(url,filename):
-    local_filename = "./dataset/"
+def download_dataset(url,filename,simid):
+    local_filename = "../all_datasets/"
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         fname = re.findall('filename=(.+)', r.headers.get('content-disposition'))
-        local_filename = local_filename + fname[0].split('"')[1]
+        local_filename = local_filename + str(simid) + "-" + filename + "." + fname[0].split('"')[1].split(".")[-1]
         with open(local_filename, 'wb') as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
@@ -114,9 +114,9 @@ def make_simualtion(sim_id,model_data,conf_data):
     #Get data -> numpy
     if conf_data["dataset_url"]:
         #download
-        path_train = download_dataset(conf_data["dataset_train"], "dataset_train")
-        path_test = download_dataset(conf_data["dataset_test"], "dataset_test")
-        path_val = download_dataset(conf_data["dataset_val"], "dataset_val")
+        path_train = download_dataset(conf_data["dataset_train"], "dataset_train", conf_data["id"])
+        path_test = download_dataset(conf_data["dataset_test"], "dataset_test", conf_data["id"])
+        path_val = download_dataset(conf_data["dataset_val"], "dataset_val", conf_data["id"])
     else:
         path_test = conf_data["dataset_test"]
         path_train = conf_data["dataset_train"]
@@ -146,6 +146,12 @@ def cleanup_data(path_train,path_val,path_test):
     if os.path.exists(path_test):
         os.remove(path_test)
 
+def get_extension(path_given):
+    file_arr =  os.path.basename(path_given).split('.')
+    file_name = file_arr[0]
+    file_extension = file_arr[1]
+    return file_extension
+
 def start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test,k_fold_idx = None):
     if k_fold_idx != None:
         print_flask(str(conf_data))
@@ -164,18 +170,22 @@ def start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test,k
     #Copy dataset files from path given to containner
     print(conf_data)
     file_test = read_file(path_test)
-    tar_test = get_tarstream(file_test,"dataset_test.npz")
+    test_extension = get_extension(path_test)
+    print_flask(test_extension)
+    tar_test = get_tarstream(file_test,"dataset_test."+test_extension)
     success = container_made.put_archive(dest_path, tar_test)
     print_flask('Put test tar:'+str(success))
 
     file_train = read_file(path_train)
-    tar_train = get_tarstream(file_train,"dataset_train.npz")
+    train_extension = get_extension(path_train)
+    tar_train = get_tarstream(file_train,"dataset_train."+train_extension)
     success = container_made.put_archive(dest_path, tar_train)
     print_flask('Put train tar:'+str(success))
 
     file_val = read_file(path_val)
-    tar_train = get_tarstream(file_val,"dataset_val.npz")
-    success = container_made.put_archive(dest_path, tar_train)
+    val_extension = get_extension(path_val)
+    tar_val = get_tarstream(file_val,"dataset_val."+val_extension)
+    success = container_made.put_archive(dest_path, tar_val)
     print_flask('Put val tar:'+str(success))
 
     success = container_made.put_archive(dest_path, tar_model)

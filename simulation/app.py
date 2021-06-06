@@ -47,24 +47,26 @@ def main(model_json,conf_json):
         file_extension = file_arr[1]
 
         if 'csv' in file_arr[1]:
-            if type_file == "train":
-                feature_name = conf_json['train_feature_name']
-                label_name = conf_json['train_label_name']
-            elif type_file == 'test':
-                feature_name = conf_json['test_feature_name']
-                label_name = conf_json['test_label_name']
-            elif type_file == 'validation':
-                feature_name = conf_json['val_feature_name']
-                label_name = conf_json['val_label_name']
+            label_name = conf_json['label_collumn']
             df = pd.read_csv(path_given)
             target = df.pop(label_name)
             features = df.values.tolist()
             labels = target.values.tolist()
             print('dataset make')
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
-
             #If it's a csv it's expect of conf to have this extra
-
+        
+        elif 'pickle' in file_arr[1] or 'zip' in file_arr[1]:
+            #If pandas.Dataframe serialized as pickle
+            print('File is pickled Dataframe')
+            print('File is of extension:',file_arr[1])
+            df = pd.read_pickle(path_given)
+            label_name = conf_json['label_column']
+            target = df.pop(label_name)
+            features = df.values.tolist()
+            labels = target.values.tolist()
+            print('dataset make')
+            dataset = tf.data.Dataset.from_tensor_slices((features, labels))
         elif 'json' in file_arr[1]:
             print('File is json')
             with open(path_given,'rb') as file_read:

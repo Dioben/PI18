@@ -15,7 +15,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import requests
-from app.forms import UploadModelFileForm, UploadDataSetFileForm, ConfSimForm, CustomUserCreationForm
+from app.forms import SimCreationForm, CustomUserCreationForm, ConfigFileSimCreationForm
 from app.models import *
 from app.serializers import SimulationSerializer, UpdateSerializer
 
@@ -150,7 +150,7 @@ def userinfo(request, id):
 
 def simulation_list(request):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
+        return HttpResponse("Please Log In", status=403)
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
@@ -169,7 +169,7 @@ def simulation_list(request):
 
 def simulation_list_content(request):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
+        return HttpResponse("Please Log In", status=403)
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
@@ -188,21 +188,21 @@ def simulation_list_content(request):
 
 def simulation_create(request):
     if not request.user.is_authenticated:  # you could use is_active here for email verification i think
-        return HttpResponse("Please Log In", 403)
+        return HttpResponse("Please Log In", status=403)
     if request.method == 'POST':
         response = simulations(request)
         if type(response) is HttpResponse:
             if response.status_code == 400:
                 return render(request, 'simulationCreate.html',
-                              {'fileForm': UploadModelFileForm(request.POST), 'configForm': ConfSimForm(request.POST)})
+                              {'fieldForm': SimCreationForm(request.POST), 'fileForm': ConfigFileSimCreationForm(request.POST)})
             return response
         return redirect('/simulations/' + str(response.id.int))
-    return render(request, 'simulationCreate.html', {'fileForm': UploadModelFileForm(), 'configForm': ConfSimForm()})
+    return render(request, 'simulationCreate.html', {'fieldForm': SimCreationForm(), 'fileForm': ConfigFileSimCreationForm()})
 
 
 def simulation_info(request, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
+        return HttpResponse("Please Log In", status=403)
     if 'downloadData' in request.POST:
         HEADER = []
         id = request.POST.get('simulationIdInput')
@@ -280,7 +280,6 @@ def simulation_info(request, id):
         response = HttpResponse(zipped_file, content_type='application/octet-stream')
         response['Content-Disposition'] = 'attachment; filename=' + sim.name + 'Data.zip'
         return response
-
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
@@ -289,18 +288,22 @@ def simulation_info(request, id):
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
+    responseList = simulations(request)
+    if type(responseList) == HttpResponse:
+        return responseList
     t_params = {
         'simulation': response,
         'notification': notification,
         'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)],
         'tags': Tagged.objects.filter(sim=response),
+        'simulationList': responseList,
     }
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
 
 
 def simulation_info_content1(request, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
+        return HttpResponse("Please Log In", status=403)
     if 'deleteTag' in request.POST:
         tag_id = request.POST.get('tag_id')
         t = Tagged.objects.get(id=tag_id)
@@ -331,7 +334,7 @@ def simulation_info_content1(request, id):
 
 def simulation_info_content2(request, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
+        return HttpResponse("Please Log In", status=403)
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
@@ -344,7 +347,7 @@ def simulation_info_content2(request, id):
 
 def simulation_info_context(request, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
+        return HttpResponse("Please Log In", status=403)
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
@@ -352,7 +355,7 @@ def simulation_info_context(request, id):
         'simulation': SimulationSerializer(response).data,
         'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
     }
-    return HttpResponse(json.dumps(t_params), 200)
+    return HttpResponse(json.dumps(t_params), status=200)
 
 
 def simulation_command(request, id, command):
@@ -375,16 +378,17 @@ def simulation_command(request, id, command):
     return response
 
 
-def post_sim(request):  # TODO: add a version that allows file upload for Dataset
-    modelForm = UploadModelFileForm(request.POST, request.FILES)
-    confForm = ConfSimForm(request.POST, request.FILES)
-    if modelForm.is_valid() and confForm.is_valid():
-        model = request.FILES['model']
+def post_sim(request):
+    fieldForm = SimCreationForm(request.POST, request.FILES)
+    fileForm = ConfigFileSimCreationForm(request.POST, request.FILES)
+    if fieldForm.is_valid():
+        cleaned_data = fieldForm.cleaned_data
+
+        model = cleaned_data['model']
         modeltext = b''
         for chunk in model.chunks():
             modeltext += chunk
         modeljson = json.loads(modeltext)
-        # TODO: This is probably not what Silva wants
         biastext = "["
         for layer in modeljson['config']:
             if 'bias_initializer' in layer:
@@ -393,66 +397,72 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                 biastext += f"{{ }},"
         biastext += "]"
 
-        sim = Simulation(owner=request.user,
-                         isdone=False,
-                         isrunning=True,
-                         model=modeltext,
-                         name=confForm.cleaned_data["name"],
-                         layers=len(modeljson['config']['layers']),
-                         biases=bytes(biastext, 'utf-8'),
-                         epoch_interval=confForm.cleaned_data["logging_interval"],
-                         goal_epochs=confForm.cleaned_data["max_epochs"],
-                         learning_rate=confForm.cleaned_data["learning_rate"],
-                         metrics=confForm.cleaned_data["metrics"])
-        sim.save()
+        if not cleaned_data['use_url_datasets']:
+            trainext = cleaned_data['train_dataset'].name.split('.')[-1]
+            testext = cleaned_data['test_dataset'].name.split('.')[-1]
+            valext = cleaned_data['val_dataset'].name.split('.')[-1]
+            if trainext != testext or testext != valext or trainext != valext:
+                return HttpResponse("Bad request", status=400)
+            if trainext != cleaned_data['dataset_format']:
+                return HttpResponse("Bad request", status=400)
 
         k_fold_ids = []
-        if 'tag' in confForm.cleaned_data:
-            tagged = Tagged(tag=confForm.cleaned_data['tag'],
-                            sim=sim,
-                            tagger=request.user,
-                            iskfold=(confForm.cleaned_data['k_fold_validation'] > 0), )
-            tagged.save()
-            if confForm.cleaned_data['k_fold_validation'] > 0:
-                for i in range(int(confForm.cleaned_data['k_fold_validation'])):
-                    ksim = Simulation(owner=request.user,
-                                      isdone=False,
-                                      isrunning=True,
-                                      model=modeltext,
-                                      name=str(confForm.cleaned_data["name"]) + " (" + str(i + 2) + ")",
-                                      layers=len(modeljson['config']['layers']),
-                                      biases=bytes(biastext, 'utf-8'),
-                                      epoch_interval=confForm.cleaned_data["logging_interval"],
-                                      goal_epochs=confForm.cleaned_data["max_epochs"],
-                                      learning_rate=confForm.cleaned_data["learning_rate"],
-                                      metrics=confForm.cleaned_data["metrics"])
-                    ksim.save()
-                    ktagged = Tagged(tag=confForm.cleaned_data['tag'],
-                                     sim=ksim,
-                                     tagger=request.user,
-                                     iskfold=True)
-                    ktagged.save()
-                    k_fold_ids.append(ksim.id.int)
+        if not cleaned_data['is_k_fold']:
+            sim = Simulation(owner=request.user,
+                             isdone=False,
+                             isrunning=True,
+                             model=modeltext,
+                             name=cleaned_data["name"],
+                             layers=len(modeljson['config']['layers']),
+                             biases=bytes(biastext, 'utf-8'),
+                             epoch_interval=cleaned_data["logging_interval"],
+                             goal_epochs=cleaned_data["max_epochs"],
+                             learning_rate=cleaned_data["learning_rate"],
+                             metrics=cleaned_data["metrics"])
+            sim.save()
+        else:
+            for i in range(int(cleaned_data['k_fold_validation'])):
+                sim = Simulation(owner=request.user,
+                                 isdone=False,
+                                 isrunning=True,
+                                 model=modeltext,
+                                 name=str(cleaned_data["name"]) + " (" + str(i + 1) + ")",
+                                 layers=len(modeljson['config']['layers']),
+                                 biases=bytes(biastext, 'utf-8'),
+                                 epoch_interval=cleaned_data["logging_interval"],
+                                 goal_epochs=cleaned_data["max_epochs"],
+                                 learning_rate=cleaned_data["learning_rate"],
+                                 metrics=cleaned_data["metrics"])
+                sim.save()
+                tagged = Tagged(tag=cleaned_data['tag'],
+                                sim=sim,
+                                tagger=request.user,
+                                iskfold=True)
+                tagged.save()
+                k_fold_ids.append(sim.id.int)
 
-        trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.npz'
-        if "test_dataset" in request.FILES:
-            testset = '/all_datasets/' + str(sim.id) + '-dataset_test.npz'
+        if not cleaned_data['use_url_datasets']:
+            trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.' + trainext
+            f = open(trainset, 'wb+')
+            for chunk in cleaned_data['train_dataset'].chunks():
+                f.write(chunk)
+            f.close()
+
+            testset = '/all_datasets/' + str(sim.id) + '-dataset_test.' + testext
             f = open(testset, 'wb+')
-            for chunk in request.FILES['test_dataset'].chunks():
+            for chunk in cleaned_data['test_dataset'].chunks():
+                f.write(chunk)
+            f.close()
+
+            valset = '/all_datasets/' + str(sim.id) + '-dataset_val.' + valext
+            f = open(valset, 'wb+')
+            for chunk in cleaned_data['val_dataset'].chunks():
                 f.write(chunk)
             f.close()
         else:
-            testset = trainset
-        f = open(trainset, 'wb+')
-        for chunk in request.FILES['train_dataset'].chunks():
-            f.write(chunk)
-        f.close()
-
-        valset = '/all_datasets/' + str(sim.id) + '-dataset_val.npz'
-        f = open(valset, 'wb+')
-        for chunk in request.FILES['val_dataset'].chunks():
-            f.write(chunk)
-        f.close()
+            trainset = cleaned_data['url_train_dataset']
+            testset = cleaned_data['url_test_dataset']
+            valset = cleaned_data['url_val_dataset']
 
         postdata = {
             "conf": {
@@ -460,24 +470,24 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
                 "dataset_train": trainset,
                 "dataset_test": testset,
                 "dataset_val": valset,
-                "dataset_url": False,
-                "batch_size": confForm.cleaned_data['batch_size'],
+                "dataset_url": cleaned_data['use_url_datasets'],
+                "batch_size": cleaned_data['batch_size'],
                 "epochs": sim.goal_epochs,
                 "epoch_period": sim.epoch_interval,
-                "train_feature_name": "x_train",
-                "train_label_name": "y_train",
-                "test_feature_name": "x_test",
-                "test_label_name": "y_test",
-                "val_feature_name": "x_val",
-                "val_label_name": "y_val",
-                "optimizer": confForm.cleaned_data['optimizer'],
-                "loss_function": confForm.cleaned_data['loss_function'],
+                "train_feature_name": cleaned_data['train_feature_name'] if cleaned_data['train_feature_name'] else '',
+                "train_label_name": cleaned_data['train_label_name'] if cleaned_data['train_label_name'] else '',
+                "test_feature_name": cleaned_data['test_feature_name'] if cleaned_data['test_feature_name'] else '',
+                "test_label_name": cleaned_data['test_label_name'] if cleaned_data['test_label_name'] else '',
+                "val_feature_name": cleaned_data['val_feature_name'] if cleaned_data['val_feature_name'] else '',
+                "val_label_name": cleaned_data['val_label_name'] if cleaned_data['val_label_name'] else '',
+                "optimizer": cleaned_data['optimizer'],
+                "loss_function": cleaned_data['loss_function'],
                 "from_logits": True,
-                "validation_split": 0.3,
                 "learning_rate": sim.learning_rate,
-                "k-fold_validation": confForm.cleaned_data['k_fold_validation'],
+                "k-fold_validation": 0 if not cleaned_data['k_fold_validation'] else cleaned_data['k_fold_validation'],
                 "k-fold_ids": k_fold_ids,
-                "metrics": confForm.cleaned_data['metrics'],
+                "metrics": sim.metrics,
+                "label_column": cleaned_data['label_column'] if cleaned_data['label_column'] else ''
             },
             "model": json.loads(sim.model)
         }
@@ -485,36 +495,169 @@ def post_sim(request):  # TODO: add a version that allows file upload for Datase
         if resp.ok:
             return sim
         sim.delete()
-        return HttpResponse("Failed to reach deployer", 500)
+        return HttpResponse("Failed to reach deployer", status=500)
+    elif fileForm.is_valid():
+        cleaned_data = fileForm.cleaned_data
+
+        model = cleaned_data['model']
+        modeltext = b''
+        for chunk in model.chunks():
+            modeltext += chunk
+        modeljson = json.loads(modeltext)
+        biastext = "["
+        for layer in modeljson['config']:
+            if 'bias_initializer' in layer:
+                biastext += f"{{{layer['bias_initializer']}}},"
+            else:
+                biastext += f"{{ }},"
+        biastext += "]"
+
+        config = cleaned_data['config']
+        configtext = b''
+        for chunk in config.chunks():
+            configtext += chunk
+        configjson = json.loads(configtext)
+
+        if not cleaned_data['use_url_datasets']:
+            trainext = cleaned_data['train_dataset'].name.split('.')[-1]
+            testext = cleaned_data['test_dataset'].name.split('.')[-1]
+            valext = cleaned_data['val_dataset'].name.split('.')[-1]
+            if trainext != testext or testext != valext or trainext != valext:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'csv' and 'label_column' not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "train_feature_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "train_label_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "test_feature_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "test_label_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "val_feature_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'npz' and "val_label_name" not in configjson:
+                return HttpResponse("Bad request", status=400)
+
+        k_fold_ids = []
+        if configjson['k-fold_validation'] < 2:
+            sim = Simulation(owner=request.user,
+                             isdone=False,
+                             isrunning=True,
+                             model=modeltext,
+                             name=configjson["name"],
+                             layers=len(modeljson['config']['layers']),
+                             biases=bytes(biastext, 'utf-8'),
+                             epoch_interval=configjson['epoch_period'],
+                             goal_epochs=configjson['total_epochs'],
+                             learning_rate=configjson["learning_rate"],
+                             metrics=configjson["extra-metrics"])
+            sim.save()
+        else:
+            for i in range(int(configjson['k-fold_validation'])):
+                sim = Simulation(owner=request.user,
+                                 isdone=False,
+                                 isrunning=True,
+                                 model=modeltext,
+                                 name=str(configjson["name"]) + " (" + str(i + 1) + ")",
+                                 layers=len(modeljson['config']['layers']),
+                                 biases=bytes(biastext, 'utf-8'),
+                                 epoch_interval=configjson['epoch_period'],
+                                 goal_epochs=configjson['total_epochs'],
+                                 learning_rate=configjson["learning_rate"],
+                                 metrics=configjson["extra-metrics"])
+                sim.save()
+                tagged = Tagged(tag=configjson['k-fold_tag'],
+                                sim=sim,
+                                tagger=request.user,
+                                iskfold=True)
+                tagged.save()
+                k_fold_ids.append(sim.id.int)
+
+        if not cleaned_data['use_url_datasets']:
+            trainset = '/all_datasets/' + str(sim.id) + '-dataset_train.' + trainext
+            f = open(trainset, 'wb+')
+            for chunk in cleaned_data['train_dataset'].chunks():
+                f.write(chunk)
+            f.close()
+
+            testset = '/all_datasets/' + str(sim.id) + '-dataset_test.' + testext
+            f = open(testset, 'wb+')
+            for chunk in cleaned_data['test_dataset'].chunks():
+                f.write(chunk)
+            f.close()
+
+            valset = '/all_datasets/' + str(sim.id) + '-dataset_val.' + valext
+            f = open(valset, 'wb+')
+            for chunk in cleaned_data['val_dataset'].chunks():
+                f.write(chunk)
+            f.close()
+        else:
+            trainset = configjson['dataset_train']
+            testset = configjson['dataset_test']
+            valset = configjson['dataset_val']
+
+        postdata = {
+            "conf": {
+                "id": str(sim.id.int),
+                "dataset_train": trainset,
+                "dataset_test": testset,
+                "dataset_val": valset,
+                "dataset_url": cleaned_data['use_url_datasets'],
+                "batch_size": configjson['batch_size'],
+                "epochs": sim.goal_epochs,
+                "epoch_period": sim.epoch_interval,
+                "train_feature_name": configjson['train_feature_name'] if configjson['train_feature_name'] else '',
+                "train_label_name": configjson['train_label_name'] if configjson['train_label_name'] else '',
+                "test_feature_name": configjson['test_feature_name'] if configjson['test_feature_name'] else '',
+                "test_label_name": configjson['test_label_name'] if configjson['test_label_name'] else '',
+                "val_feature_name": configjson['val_feature_name'] if configjson['val_feature_name'] else '',
+                "val_label_name": configjson['val_label_name'] if configjson['val_label_name'] else '',
+                "optimizer": configjson['optimizer'],
+                "loss_function": configjson['loss_function'],
+                "from_logits": True,
+                "learning_rate": sim.learning_rate,
+                "k-fold_validation": configjson['k-fold_validation'],
+                "k-fold_ids": k_fold_ids,
+                "metrics": sim.metrics,
+                "label_column": configjson['label_column'] if configjson['label_column'] else ''
+            },
+            "model": json.loads(sim.model)
+        }
+        resp = requests.post("http://tracker-deployer:7000/simulations", json=postdata)
+        if resp.ok:
+            return sim
+        sim.delete()
+        return HttpResponse("Failed to reach deployer", status=500)
     else:
-        return HttpResponse("Bad request", 400)
+        return HttpResponse("Bad request", status=400)
 
 
 @csrf_exempt
 def simulations(request):
     if not request.user.is_authenticated:  # you could use is_active here for email verification i think
-        return HttpResponse("Please Log In", 403)
+        return HttpResponse("Please Log In", status=403)
     if request.method == 'POST':
         return post_sim(request)
     elif request.method == 'GET':
         return Simulation.objects.filter(owner=request.user)
-    return HttpResponse("Bad request", 400)
+    return HttpResponse("Bad request", status=400)
 
 
 @csrf_exempt
 def get_simulation(request, id):
     if not request.user.is_authenticated:  # you could use is_active here for email verification i think
-        return HttpResponse("Please Log In", 403)
+        return HttpResponse("Please Log In", status=403)
 
     sim = Simulation.objects.get(pk=id)
 
     if sim.owner == request.user:
         if request.method == "DELETE":
             sim.delete()
-            return HttpResponse(sim, 200)
+            return HttpResponse(sim, status=200)
         return sim
     else:
-        return HttpResponse("Forbidden", 403)
+        return HttpResponse("Forbidden", status=403)
 
 
 def command_start(request, id):  # return the objects you're acting on in these
@@ -522,14 +665,14 @@ def command_start(request, id):  # return the objects you're acting on in these
     requests.post(f'http://tracker-deployer:7000/simulations/{id}/START')
     sim.isrunning = True
     sim.save()
-    return HttpResponse(sim, 200)
+    return HttpResponse(sim, status=200)
 
 
 def command_stop(request, id):
     sim = Simulation.objects.get(id=id)
     requests.delete(f'http://tracker-deployer:7000/simulations/{id}')
     sim.delete()
-    return HttpResponse(sim, 200)
+    return HttpResponse(sim, status=200)
 
 
 def command_pause(request, id):
@@ -537,15 +680,15 @@ def command_pause(request, id):
     requests.post(f'http://tracker-deployer:7000/simulations/{id}/PAUSE')
     sim.isrunning = False
     sim.save()
-    return HttpResponse(sim, 200)
+    return HttpResponse(sim, status=200)
 
 
 @csrf_exempt
 def command_simulation(request, command, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please log in", 403)
+        return HttpResponse("Please log in", status=403)
     if not Simulation.objects.filter(id__exact=id, owner=request.user).exists():
-        return HttpResponse("You do not own this simulation", 403)
+        return HttpResponse("You do not own this simulation", status=403)
     if command == "START":
         return command_start(request, id)
     elif command == "STOP":
@@ -553,4 +696,4 @@ def command_simulation(request, command, id):
     elif command == "PAUSE":
         return command_pause(request, id)
     else:
-        return HttpResponse("Unknown command", 400)
+        return HttpResponse("Unknown command", status=400)

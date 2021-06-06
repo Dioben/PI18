@@ -4,8 +4,41 @@
 {% block title %}NNT - Simulations{% endblock %}
 
 {% block content %}
-    <div id="content">
-        {% include 'simulations/simulationsContent.html' %}
+    <div class="row my-3">
+        <div class="col">
+            <h5 style="margin-bottom: 0; font-weight: bold">Simulations</h5>
+            <small style="color: grey">Manage and analyse all your simulations.</small>
+            <div class="d-flex flex-md-nowrap flex-wrap justify-content-between" style="border: 1px solid #DCDCDE; border-bottom: 0; margin-top: 5px; background-color: white; padding: 8px; padding-bottom: 0">
+                <div class="input-group d-flex flex-nowrap me-2" style="margin-bottom: 8px">
+                    <label class="input-group-text" for="simFilterSearch"><i class="fa fa-search"></i></label>
+                    <input type="text" class="form-control" id="simFilterSearch" placeholder="Search">
+                </div>
+                <div class="d-flex flex-md-nowrap flex-wrap">
+                    <div class="input-group d-flex flex-nowrap me-2" style="margin-bottom: 8px">
+                        <label class="input-group-text" for="simFilterSort">Sort:</label>
+                        <select id="simFilterSort">
+                            <option value="nameAsc">By Name</option>
+                            <option value="nameDesc">By Name</option>
+                            <option value="progressAsc">By Progress</option>
+                            <option value="progressDesc">By Progress</option>
+                        </select>
+                    </div>
+                    <div class="input-group d-flex flex-nowrap" style="margin-bottom: 8px">
+                        <label class="input-group-text" for="simFilterFilter">Filter:</label>
+                        <select id="simFilterFilter">
+                            <option value="all">All</option>
+                            <option value="unfinished">Unfinished</option>
+                            <option value="finished">Finished</option>
+                            <option value="running">Running</option>
+                            <option value="stopped">Stopped</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="content">
+                {% include 'simulations/simulationsContent.html' %}
+            </div>
+        </div>
     </div>
 
 
@@ -65,9 +98,116 @@
 
     <script>
         docReady(function () {
+            $('#simFilterSort').multipleSelect({
+                textTemplate: function ($el) {
+                    if ($el.val() === "nameAsc" || $el.val() === "progressAsc") {
+                        return $el.html() + " <i class='fa fa-arrow-up'></i>"
+                    } else if ($el.val() === "nameDesc" || $el.val() === "progressDesc") {
+                        return $el.html() + " <i class='fa fa-arrow-down'></i>"
+                    }
+                },
+            });
+            $('#simFilterFilter').multipleSelect({});
+            $('.ms-parent, .ms-choice, .ms-choice span, .ms-search, .ms-search input')
+                .prop('style', 'height: 38px !important; line-height: 38px; width: 155px; color: black;');
+            $('.ms-drop ul li').prop('style', 'height: 38px !important; line-height: 28px;');
+            $('.ms-choice span').prop('style', 'padding-left: 12px');
+            $('.multipleSelectContainer .ms-parent .ms-drop ul li label span').prop('style', 'height: 38px !important; line-height: 38px;');
+            $('.ms-search').prop('style', 'height: 42px !important; width: 100%;')
+            $('.ms-choice').prop('class', 'ms-choice form-select')
+            $('.icon-caret').hide();
+
+            function filterSims() {
+                let searchValue = $("#simFilterSearch").val()
+                let sortValue = $("#simFilterSort").val()
+                let filterValue = $("#simFilterFilter").val()
+                $(".simulationCard").css("display", "");
+                switch (sortValue) {
+                    case "nameAsc":
+                        $(".simulationCardContainer").html($(".simulationCard").sort(function (a, b) {
+                            let textA = $(a).find('.simulationCardName').text();
+                            let textB = $(b).find('.simulationCardName').text();
+                            return textA.localeCompare(textB)
+                        }));
+                        break;
+                    case "nameDesc":
+                        $(".simulationCardContainer").html($(".simulationCard").sort(function (a, b) {
+                            let textA = $(a).find('.simulationCardName').text();
+                            let textB = $(b).find('.simulationCardName').text();
+                            return textB.localeCompare(textA)
+                        }));
+                        break;
+                    case "progressAsc":
+                        $(".simulationCardContainer").html($(".simulationCard").sort(function (a, b) {
+                            let progressA = parseFloat($(a).find('.simulationCardProgress').prop("aria-valuenow"));
+                            let progressB = parseFloat($(b).find('.simulationCardProgress').prop("aria-valuenow"));
+                            if (progressA > progressB)
+                                return 1;
+                            if (progressB > progressA)
+                                return -1;
+                            return 0;
+                        }));
+                        break;
+                    case "progressDesc":
+                        $(".simulationCardContainer").html($(".simulationCard").sort(function (a, b) {
+                            let progressA = parseFloat($(a).find('.simulationCardProgress').prop("aria-valuenow"));
+                            let progressB = parseFloat($(b).find('.simulationCardProgress').prop("aria-valuenow"));
+                            if (progressB > progressA)
+                                return 1;
+                            if (progressA > progressB)
+                                return -1;
+                            return 0;
+                        }));
+                        break;
+                }
+                switch (filterValue) {
+                    case "all":
+                        break;
+                    case "unfinished":
+                        $(".simulationCard").filter(function () {
+                            return $(this).find('.simulationCardStatus').text() !== "Unfinished"
+                        }).css("display", "none");
+                        break;
+                    case "finished":
+                        $(".simulationCard").filter(function () {
+                            return $(this).find('.simulationCardStatus').text() !== "Finished"
+                        }).css("display", "none");
+                        break;
+                    case "running":
+                        $(".simulationCard").filter(function () {
+                            if (!$(this).find(".fa-pause")[0])
+                                return true;
+                            return false;
+                        }).css("display", "none");
+                        break;
+                    case "stopped":
+                        $(".simulationCard").filter(function () {
+                            if (!$(this).find(".fa-play")[0])
+                                return true;
+                            return false;
+                        }).css("display", "none");
+                        break;
+                }
+                $(".simulationCard").filter(function () {
+                    if (searchValue == null) return false;
+                    return $(this).find('.simulationCardName').text().toLowerCase().indexOf(searchValue.toLowerCase()) < 0
+                        && !$(this).find('.simulationCardTag').filter(function () {
+                            return $(this).text().toLowerCase().indexOf(searchValue.toLowerCase()) >= 0;
+                        })[0];
+                }).css("display", "none");
+                if (!$(".simulationCard").filter(function () {return $(this).css("display") !== "none";})[0])
+                    $(".simulationCardContainer").css("height", "50vh")
+                else
+                    $(".simulationCardContainer").css("height", "")
+            }
+            $("#simFilterSearch").keyup(filterSims);
+            $("#simFilterSort").change(filterSims);
+            $("#simFilterFilter").change(filterSims);
+
             setInterval(function() {
                 $.get("{% url 'SimulationListContent' %}", function (data) {
-                    $('#content').html(data)
+                    $('#content').html(data);
+                    filterSims();
                 })
             }, 30000);
         });
