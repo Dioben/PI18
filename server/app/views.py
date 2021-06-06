@@ -360,6 +360,13 @@ def post_sim(request):
                                          metrics=cleaned_data["metrics"])
                         sim.save()
                         simList.append(sim)
+                        if 'extra_tags' in cleaned_data:
+                            for tag in cleaned_data['extra_tags']:
+                                tagged = Tagged(tag=tag,
+                                                sim=sim,
+                                                tagger=request.user,
+                                                iskfold=False)
+                                tagged.save()
                     else:
                         for i in range(int(cleaned_data['k_fold_validation'])):
                             sim = Simulation(owner=request.user,
@@ -381,6 +388,13 @@ def post_sim(request):
                             tagged.save()
                             k_fold_ids.append(sim.id.int)
                             simList.append(sim)
+                            if 'extra_tags' in cleaned_data:
+                                for tag in cleaned_data['extra_tags']:
+                                    tagged = Tagged(tag=tag,
+                                                    sim=sim,
+                                                    tagger=request.user,
+                                                    iskfold=False)
+                                    tagged.save()
 
                     if not cleaned_data['use_url_datasets']:
                         trainset = '/all_datasets/' + str(simList[0].id) + '-dataset_train.' + trainext
@@ -517,6 +531,13 @@ def post_sim(request):
                                          metrics=configjson["extra-metrics"])
                         sim.save()
                         simList.append(sim)
+                        if 'tags' in configjson:
+                            for tag in configjson['tags']:
+                                tagged = Tagged(tag=tag,
+                                                sim=sim,
+                                                tagger=request.user,
+                                                iskfold=False)
+                                tagged.save()
                     else:
                         for i in range(int(configjson['k-fold_validation'])):
                             sim = Simulation(owner=request.user,
@@ -538,6 +559,13 @@ def post_sim(request):
                             tagged.save()
                             k_fold_ids.append(sim.id.int)
                             simList.append(sim)
+                            if 'tags' in configjson:
+                                for tag in configjson['tags']:
+                                    tagged = Tagged(tag=tag,
+                                                    sim=sim,
+                                                    tagger=request.user,
+                                                    iskfold=False)
+                                    tagged.save()
 
                     if not cleaned_data['use_url_datasets']:
                         trainset = '/all_datasets/' + str(simList[0].id) + '-dataset_train.' + trainext

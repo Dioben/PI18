@@ -326,6 +326,16 @@ class SimCreationForm(forms.Form):
             }
         )
     )
+    extra_tags = StringListField(
+        label='Tags',
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'style': 'display: none;'
+            }
+        )
+    )
 
     def clean_logging_interval(self):
         cleaned_data = super().clean()

@@ -18,8 +18,7 @@
     "k-fold_validation" : 2,
     "k-fold_ids" : [112312225459790, 112312225459797],
     "k-fold_tag" : "File",
-    "extra-metrics" : [
-        "KLDivergence",
-        "LogCoshError"],
-    "label_column" : "label"
+    "extra-metrics" : ["KLDivergence", "LogCoshError"],
+    "label_column" : "label",
+    "tags" : ["T1", "T2"]
 }
