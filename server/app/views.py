@@ -201,6 +201,8 @@ def simulation_create(request):
 
 
 def simulation_info(request, id):
+    if not request.user.is_authenticated:
+        return HttpResponse("Please Log In", 403)
     if 'downloadData' in request.POST:
         HEADER = []
         id = request.POST.get('simulationIdInput')
@@ -279,8 +281,6 @@ def simulation_info(request, id):
         response['Content-Disposition'] = 'attachment; filename=' + sim.name + 'Data.zip'
         return response
 
-    if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", 403)
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
