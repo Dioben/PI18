@@ -72,12 +72,97 @@
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ fieldForm.learning_rate.label_tag }}
                             {{ fieldForm.learning_rate }}
+                        </div>
+                        <div>
+                            <label for="addLearningRateInput">{{ fieldForm.learning_rate.label }}:</label>
+                            <div class="input-group d-flex flex-nowrap">
+                                <input id="addLearningRateInput" type="number" class="form-control">
+                                <button id="addLearningRateButton" class="btn btn-secondary" type="button">Add</button>
+                            </div>
                             {% for error in fieldForm.learning_rate.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
+                            <div id="learningRateError" class="invalid-feedback" style="display: initial;"></div>
                         </div>
+                        <div class="card card-body mb-3 p-1" style="padding-bottom: 1px !important;">
+                            <div id="learningRateList" class="d-flex flex-wrap">
+                            </div>
+                        </div>
+                        <script>
+                            docReady(function () {
+                                let learningRateArray = []
+                                let learningRateInput = $('#{{ fieldForm.learning_rate.id_for_label }}');
+
+                                let addLearningRateInput = $('#addLearningRateInput');
+                                let addLearningRateButton = $('#addLearningRateButton');
+                                let learningRateList = $('#learningRateList');
+                                let learningRateError = $('#learningRateError');
+
+                                if (learningRateInput.val() !== "")
+                                    learningRateInput.val().split(",").forEach(function(item, index) {
+                                        let tag = $(document.createElement("div"));
+                                        tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 0; margin-bottom: 3px; background-color: lightgray;");
+                                        let tagValue = $(document.createElement("span"));
+                                        tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                        tagValue.text(item);
+                                        tag.append(tagValue);
+                                        let tagDeleteButton = $(document.createElement("button"));
+                                        tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                        tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                        tag.append(tagDeleteButton);
+                                        learningRateList.append(tag);
+
+                                        tagDeleteButton.click(removeLearningRate)
+
+                                        learningRateArray.push(item)
+                                    })
+
+                                function addLearningRate() {
+                                    let learningRate = addLearningRateInput.val()
+                                    if (isNaN(learningRate) || learningRate === "") {
+                                        learningRateError.text("Learning rate is not a number");
+                                        return;
+                                    }
+                                    if (parseFloat(learningRate) < 0.00001) {
+                                        learningRateError.text("Learning rate has to be higher or equal to 0.00001");
+                                        return;
+                                    }
+                                    if (learningRateArray.indexOf(learningRate) > -1) {
+                                        learningRateError.text("Learning rate already has that value");
+                                        return;
+                                    }
+                                    $('#learningRateError').text("")
+
+                                    let tag = $(document.createElement("div"));
+                                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 0; margin-bottom: 3px; background-color: lightgray;");
+                                    let tagValue = $(document.createElement("span"));
+                                    tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                    tagValue.text(learningRate);
+                                    tag.append(tagValue);
+                                    let tagDeleteButton = $(document.createElement("button"));
+                                    tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                    tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                    tag.append(tagDeleteButton);
+                                    learningRateList.append(tag);
+
+                                    tagDeleteButton.click(removeLearningRate)
+
+                                    learningRateArray.push(learningRate)
+                                    learningRateInput.val(learningRateArray.toString())
+
+                                    $('#addLearningRateInput').val("")
+                                }
+
+                                function removeLearningRate() {
+                                    learningRateArray.splice(learningRateArray.indexOf($(this).parent().find("span").text()), 1)
+                                    learningRateInput.val(learningRateArray.toString())
+                                    $(this).parent().remove();
+                                }
+
+                                addLearningRateButton.click(addLearningRate);
+                            });
+                        </script>
                         <div class="mb-3 multipleSelectContainer">
                             {{ fieldForm.metrics.label_tag }}
                             {{ fieldForm.metrics }}
