@@ -102,7 +102,7 @@
                                 if (learningRateInput.val() !== "")
                                     learningRateInput.val().split(",").forEach(function(item, index) {
                                         let tag = $(document.createElement("div"));
-                                        tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 0; margin-bottom: 3px; background-color: lightgray;");
+                                        tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
                                         let tagValue = $(document.createElement("span"));
                                         tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
                                         tagValue.text(item);
@@ -135,7 +135,7 @@
                                     $('#learningRateError').text("")
 
                                     let tag = $(document.createElement("div"));
-                                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 0; margin-bottom: 3px; background-color: lightgray;");
+                                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
                                     let tagValue = $(document.createElement("span"));
                                     tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
                                     tagValue.text(learningRate);
