@@ -10,6 +10,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import model_from_json
 from sklearn.model_selection import KFold
 import pandas as pd
+import arff
 import re
 import os
 import urllib.request
@@ -55,13 +56,24 @@ def main(model_json,conf_json):
             print('dataset make')
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
             #If it's a csv it's expect of conf to have this extra
-        
+        elif 'arff' in file_arr[1]:
+            print('File is arff')
+            label_name = conf_json['label_column']
+            out = arff.load(open('dataset_val.arff', 'r'))
+            attrs = [label for label,data_type in out['attributes']]
+            df = pd.DataFrame(out['data'],columns =attrs)
+            target = df.pop(label_name)
+            features = df.values.tolist()
+            labels = target.values.tolist()
+            print('dataset make')
+            dataset = tf.data.Dataset.from_tensor_slices((features, labels))
         elif 'pickle' in file_arr[1] or 'zip' in file_arr[1]:
             #If pandas.Dataframe serialized as pickle
             print('File is pickled Dataframe')
             print('File is of extension:',file_arr[1])
             df = pd.read_pickle(path_given)
             label_name = conf_json['label_column']
+
             target = df.pop(label_name)
             features = df.values.tolist()
             labels = target.values.tolist()
