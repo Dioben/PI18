@@ -39,12 +39,12 @@ services:
     server:
         container_name: tracker-server
         image: dioben/nntrackerua-server:latest
-        #build: ./server
+        # build: ./server
         ports: 
          - "8000:8000"
         volumes:
             - ./datasetstore:/all_datasets
-            #- ./server:/app
+            # - ./server:/app
         depends_on:
             db:
                 condition: service_healthy

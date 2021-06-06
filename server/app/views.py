@@ -1,5 +1,9 @@
+import csv
 import json
 import sys
+import zipfile
+from datetime import datetime
+from io import StringIO, BytesIO
 
 from django.contrib import auth
 from django.shortcuts import render, redirect
@@ -199,6 +203,83 @@ def simulation_create(request):
 def simulation_info(request, id):
     if not request.user.is_authenticated:
         return HttpResponse("Please Log In", status=403)
+    if 'downloadData' in request.POST:
+        HEADER = []
+        id = request.POST.get('simulationIdInput')
+        general = request.POST.get('optiongeneralInfo')
+        weight = request.POST.get('optionWeight')
+        sim = Simulation.objects.get(id=id)
+
+        if general:
+            HEADER.append('GeneralInfo')
+            extra_metrics = ExtraMetrics.objects.filter(sim=sim)
+
+        if weight:
+            HEADER.append('Weights')
+            weights = Weights.objects.filter(sim=sim)
+
+        zipped_file = BytesIO()
+        # Construir File
+        with zipfile.ZipFile(zipped_file, 'a', zipfile.ZIP_DEFLATED) as zipped:
+            for h in HEADER:  # determines which csv file to write
+                rs = StringIO()
+                csv_data = StringIO()
+                if h == 'Weights':
+                    fieldnames = ['Epoch',
+                                  'Layer Index',
+                                  'Layer Name',
+                                  'Weight',
+                                  ]
+                    writer = csv.DictWriter(csv_data, fieldnames=fieldnames)
+                    writer.writeheader()
+                    for w in weights:
+                        writer.writerow({'Epoch': w.epoch,
+                                         'Layer Index': w.layer_index,
+                                         'Layer Name': w.layer_name,
+                                         'Weight': w.weight})
+                    for r in rs:
+                        writer.writerow(r)
+                    csv_data.seek(0)
+                    zipped.writestr("{}.csv".format(h), csv_data.read())
+
+                if h == 'GeneralInfo':
+                    fieldnames = ['Name',
+                                  'Owner',
+                                  'Learning Rate',
+                                  'Model',
+                                  'Biases',
+                                  'Layers',
+                                  'Epoch Interval',
+                                  'Goal Epoch',
+                                  'Metrics',
+                                  'Error Text',
+                                  ]
+                    dic={'Name': sim.name,
+                         'Owner': sim.owner,
+                         'Learning Rate': sim.learning_rate,
+                         'Model': sim.model,
+                         'Biases': sim.biases,
+                         'Layers': sim.layers,
+                         'Epoch Interval': sim.epoch_interval,
+                         'Goal Epoch': sim.goal_epochs,
+                         'Metrics': sim.metrics,
+                         'Error Text': sim.error_text,
+                         }
+                    for metric in extra_metrics:
+                        fieldnames.append("Extra Metric - " + metric.metric)
+                        dic["Extra Metric - " + metric.metric]=metric.value
+                    writer = csv.DictWriter(csv_data, fieldnames=fieldnames)
+                    writer.writeheader()
+                    writer.writerow(dic)
+                    for r in rs:
+                        writer.writerow(r)
+                    csv_data.seek(0)
+                    zipped.writestr("{}.csv".format(h), csv_data.read())
+
+        zipped_file.seek(0)
+        response = HttpResponse(zipped_file, content_type='application/octet-stream')
+        response['Content-Disposition'] = 'attachment; filename=' + sim.name + 'Data.zip'
+        return response
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
