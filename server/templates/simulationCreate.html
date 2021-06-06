@@ -388,6 +388,8 @@
         docReady(function () {
             $('select').multipleSelect({
                 filter: true,
+                ellipsis: true,
+                minimumCountSelected: 99,
                 onFilter: function (text) {
                     if ($('.ms-select-all').css("display") !== "none") {
                         $('.ms-drop ul li').prop('style', 'height: 38px !important; line-height: 28px;');
