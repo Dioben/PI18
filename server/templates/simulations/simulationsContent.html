@@ -10,7 +10,7 @@
             </script>
             <div class="card-body">
                 <div class="d-flex justify-content-between mb-2">
-                    <a class="simulationCardName" href="{{ simulation.pk.int }}" style="font-weight: bold; color: black; text-decoration: none">{{ simulation.name }}</a>
+                    <a class="simulationCardName me-1" href="{{ simulation.pk.int }}" style="font-weight: bold; color: black; text-decoration: none; overflow-wrap: anywhere;">{{ simulation.name }}</a>
                     {% if simulation.isdone %}
                         <span class="simulationCardStatus" style="color: green;">Finished</span>
                     {% else %}

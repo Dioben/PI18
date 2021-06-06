@@ -72,12 +72,97 @@
                             {% endfor %}
                         </div>
                         <div class="mb-3">
-                            {{ fieldForm.learning_rate.label_tag }}
                             {{ fieldForm.learning_rate }}
+                        </div>
+                        <div>
+                            <label for="addLearningRateInput">{{ fieldForm.learning_rate.label }}:</label>
+                            <div class="input-group d-flex flex-nowrap">
+                                <input id="addLearningRateInput" type="number" class="form-control">
+                                <button id="addLearningRateButton" class="btn btn-secondary" type="button">Add</button>
+                            </div>
                             {% for error in fieldForm.learning_rate.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
+                            <div id="learningRateError" class="invalid-feedback" style="display: initial;"></div>
                         </div>
+                        <div class="card card-body mb-3 p-1" style="padding-bottom: 1px !important;">
+                            <div id="learningRateList" class="d-flex flex-wrap">
+                            </div>
+                        </div>
+                        <script>
+                            docReady(function () {
+                                let learningRateArray = []
+                                let learningRateInput = $('#{{ fieldForm.learning_rate.id_for_label }}');
+
+                                let addLearningRateInput = $('#addLearningRateInput');
+                                let addLearningRateButton = $('#addLearningRateButton');
+                                let learningRateList = $('#learningRateList');
+                                let learningRateError = $('#learningRateError');
+
+                                if (learningRateInput.val() !== "")
+                                    learningRateInput.val().split(",").forEach(function(item, index) {
+                                        let tag = $(document.createElement("div"));
+                                        tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                                        let tagValue = $(document.createElement("span"));
+                                        tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                        tagValue.text(item);
+                                        tag.append(tagValue);
+                                        let tagDeleteButton = $(document.createElement("button"));
+                                        tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                        tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                        tag.append(tagDeleteButton);
+                                        learningRateList.append(tag);
+
+                                        tagDeleteButton.click(removeLearningRate)
+
+                                        learningRateArray.push(item)
+                                    })
+
+                                function addLearningRate() {
+                                    let learningRate = addLearningRateInput.val()
+                                    if (isNaN(learningRate) || learningRate === "") {
+                                        learningRateError.text("Learning rate is not a number");
+                                        return;
+                                    }
+                                    if (parseFloat(learningRate) < 0.00001) {
+                                        learningRateError.text("Learning rate has to be higher or equal to 0.00001");
+                                        return;
+                                    }
+                                    if (learningRateArray.indexOf(learningRate) > -1) {
+                                        learningRateError.text("Learning rate already has that value");
+                                        return;
+                                    }
+                                    $('#learningRateError').text("")
+
+                                    let tag = $(document.createElement("div"));
+                                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                                    let tagValue = $(document.createElement("span"));
+                                    tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                    tagValue.text(learningRate);
+                                    tag.append(tagValue);
+                                    let tagDeleteButton = $(document.createElement("button"));
+                                    tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                    tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                    tag.append(tagDeleteButton);
+                                    learningRateList.append(tag);
+
+                                    tagDeleteButton.click(removeLearningRate)
+
+                                    learningRateArray.push(learningRate)
+                                    learningRateInput.val(learningRateArray.toString())
+
+                                    $('#addLearningRateInput').val("")
+                                }
+
+                                function removeLearningRate() {
+                                    learningRateArray.splice(learningRateArray.indexOf($(this).parent().find("span").text()), 1)
+                                    learningRateInput.val(learningRateArray.toString())
+                                    $(this).parent().remove();
+                                }
+
+                                addLearningRateButton.click(addLearningRate);
+                            });
+                        </script>
                         <div class="mb-3 multipleSelectContainer">
                             {{ fieldForm.metrics.label_tag }}
                             {{ fieldForm.metrics }}
@@ -138,6 +223,95 @@
                                 {% endfor %}
                             </div>
                         </div>
+                        <div class="mb-3">
+                            {{ fieldForm.extra_tags }}
+                        </div>
+                        <div>
+                            <label for="addExtraTagsInput">{{ fieldForm.extra_tags.label }}:</label>
+                            <div class="input-group d-flex flex-nowrap">
+                                <input id="addExtraTagsInput" class="form-control">
+                                <button id="addExtraTagsButton" class="btn btn-secondary" type="button">Add</button>
+                            </div>
+                            {% for error in fieldForm.extra_tags.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                            <div id="extraTagsError" class="invalid-feedback" style="display: initial;"></div>
+                        </div>
+                        <div class="card card-body mb-3 p-1" style="padding-bottom: 1px !important;">
+                            <div id="extraTagsList" class="d-flex flex-wrap">
+                            </div>
+                        </div>
+                        <script>
+                            docReady(function () {
+                                let extraTagsArray = []
+                                let extraTagsInput = $('#{{ fieldForm.extra_tags.id_for_label }}');
+
+                                let addExtraTagsInput = $('#addExtraTagsInput');
+                                let addExtraTagsButton = $('#addExtraTagsButton');
+                                let extraTagsList = $('#extraTagsList');
+                                let extraTagsError = $('#extraTagsError');
+
+                                if (extraTagsInput.val() !== "")
+                                    extraTagsInput.val().split(",").forEach(function(item, index) {
+                                        let tag = $(document.createElement("div"));
+                                        tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                                        let tagValue = $(document.createElement("span"));
+                                        tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                        tagValue.text(item);
+                                        tag.append(tagValue);
+                                        let tagDeleteButton = $(document.createElement("button"));
+                                        tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                        tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                        tag.append(tagDeleteButton);
+                                        extraTagsList.append(tag);
+
+                                        tagDeleteButton.click(removeExtraTags)
+
+                                        extraTagsArray.push(item)
+                                    })
+
+                                function addExtraTags() {
+                                    let extraTags = addExtraTagsInput.val()
+                                    console.log(extraTags)
+                                    if (extraTags.trim() === "") {
+                                        extraTagsError.text("Tag cannot be empty");
+                                        return;
+                                    }
+                                    if (extraTagsArray.indexOf(extraTags) > -1) {
+                                        extraTagsError.text("Tag already exists");
+                                        return;
+                                    }
+                                    $('#extraTagsError').text("")
+
+                                    let tag = $(document.createElement("div"));
+                                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                                    let tagValue = $(document.createElement("span"));
+                                    tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                    tagValue.text(extraTags);
+                                    tag.append(tagValue);
+                                    let tagDeleteButton = $(document.createElement("button"));
+                                    tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                    tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                    tag.append(tagDeleteButton);
+                                    extraTagsList.append(tag);
+
+                                    tagDeleteButton.click(removeExtraTags)
+
+                                    extraTagsArray.push(extraTags)
+                                    extraTagsInput.val(extraTagsArray.toString())
+
+                                    $('#addExtraTagsInput').val("")
+                                }
+
+                                function removeExtraTags() {
+                                    extraTagsArray.splice(extraTagsArray.indexOf($(this).parent().find("span").text()), 1)
+                                    extraTagsInput.val(extraTagsArray.toString())
+                                    $(this).parent().remove();
+                                }
+
+                                addExtraTagsButton.click(addExtraTags);
+                            });
+                        </script>
                         <div class="mb-3" style="border-top: 1px solid #DCDCDE"></div>
                         <div class="mb-3">
                             {{ fieldForm.model.label_tag }}
@@ -388,6 +562,8 @@
         docReady(function () {
             $('select').multipleSelect({
                 filter: true,
+                ellipsis: true,
+                minimumCountSelected: 99,
                 onFilter: function (text) {
                     if ($('.ms-select-all').css("display") !== "none") {
                         $('.ms-drop ul li').prop('style', 'height: 38px !important; line-height: 28px;');

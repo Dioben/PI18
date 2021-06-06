@@ -6,6 +6,18 @@ from django.utils.translation import gettext, gettext_lazy as _
 from app.models import User
 
 
+class StringListField(forms.CharField):
+    def prepare_value(self, value):
+        if not value:
+            return ''
+        return str(value)
+
+    def to_python(self, value):
+        if not value:
+            return []
+        return [item.strip() for item in value.split(',')]
+
+
 class SimCreationForm(forms.Form):
     model = forms.FileField(
         label='Model',
@@ -52,12 +64,12 @@ class SimCreationForm(forms.Form):
             }
         )
     )
-    learning_rate = forms.FloatField(
-        validators=[MinValueValidator(0.00001)],
+    learning_rate = StringListField(
         label='Learning rate',
-        widget=forms.NumberInput(
+        widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
+                'style': 'display: none;'
             }
         )
     )
@@ -105,9 +117,9 @@ class SimCreationForm(forms.Form):
         ),
         required=False
     )
-    optimizer = forms.ChoiceField(
+    optimizer = forms.MultipleChoiceField(
         label='Optimizer',
-        widget=forms.Select(),
+        widget=forms.SelectMultiple(),
         choices=(
             ('Adadelta', 'Adadelta'),
             ('Adagrad', 'Adagrad'),
@@ -119,9 +131,9 @@ class SimCreationForm(forms.Form):
             ('SGD', 'SGD'),
         )
     )
-    loss_function = forms.ChoiceField(
+    loss_function = forms.MultipleChoiceField(
         label='Loss function',
-        widget=forms.Select(),
+        widget=forms.SelectMultiple(),
         choices=(
             ('BinaryCrossentropy', 'BinaryCrossentropy'),
             ('CategoricalCrossentropy', 'CategoricalCrossentropy'),
@@ -311,6 +323,16 @@ class SimCreationForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control'
+            }
+        )
+    )
+    extra_tags = StringListField(
+        label='Tags',
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'style': 'display: none;'
             }
         )
     )
