@@ -29,6 +29,7 @@ services:
             - GF_INSTALL_PLUGINS=natel-plotly-panel
             - GF_SECURITY_ALLOW_EMBEDDING=true
             - GF_AUTH_ANONYMOUS_ENABLED=true
+            - GF_DEFAULT_THEME=light
         depends_on:
            db:
             condition: service_healthy

@@ -67,7 +67,7 @@
                     <script>
                         docReady(function () {
                             $('#deleteButton{{ simulation.pk }}').click(function() {
-                                $('#deleteModalSimName').text('{{ simulation.name }}');
+                                $('#deleteModalSimName').text('Are you sure you want to delete the simulation "{{ simulation.name }}"?');
                                 $('#deleteModalForm').prop('action', "/simulations/command/{{ simulation.pk.int }}/STOP");
                                 $('#deleteModal').modal('show');
                             });
@@ -93,7 +93,19 @@
             </div>
         </div>
     </div>
-{% endfor %}
+    <script>
+    docReady(function() {
+        let error_text = '{{ simulation.error_text }}';
+        if (error_text !== "") {
+            $('#errorNotification').text(error_text);
+            $('#errorNotificationForm').prop('action', '{% url "SimulationList" %}');
+            $('#errorNotificationSimId').val('{{ simulation.id }}');
+            let modal = new bootstrap.Modal(document.getElementById("errorNotificationModal"), {});
+            modal.show();
+        }
+    });
+    </script>
+    {% endfor %}
 </div>
 
 {% if notification != None %}

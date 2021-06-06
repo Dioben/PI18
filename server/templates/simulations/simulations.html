@@ -70,7 +70,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body d-flex justify-content-center my-3">
-                    Are you sure you want to delete the simulation "<span id="deleteModalSimName"></span>"?
+                    <span id="deleteModalSimName"></span>
                 </div>
                 <div class="modal-footer d-flex justify-content-center">
                     <form id="deleteModalForm" method="POST">
@@ -91,6 +91,22 @@
                 </div>
                 <div class="modal-footer d-flex justify-content-center">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="errorNotificationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div id="errorNotification" class="modal-body d-flex justify-content-center my-3">
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <form id="errorNotificationForm" method="post" action="">
+                        {% csrf_token %}
+                        <input id="errorNotificationSimId" name="deleteErrorSimId" value="" type="hidden">
+                        <button name="deleteError" value="deleteError" type="submit" class="btn btn-secondary">Ok</button>
+                    </form>
                 </div>
             </div>
         </div>

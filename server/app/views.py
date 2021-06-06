@@ -151,6 +151,11 @@ def userinfo(request, id):
 def simulation_list(request):
     if not request.user.is_authenticated:
         return HttpResponse("Please Log In", status=403)
+    if 'deleteError' in request.POST:
+        sim = Simulation.objects.filter(id=request.POST.get('deleteErrorSimId')).get()
+        sim.error_text = ""
+        sim.save()
+        request.method = 'GET'
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
@@ -288,15 +293,29 @@ def simulation_info(request, id):
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
+    if 'deleteError' in request.POST:
+        response.error_text = ""
+        response.save()
+        request.method = "GET"
     responseList = simulations(request)
     if type(responseList) == HttpResponse:
         return responseList
+    extraMetrics = ExtraMetrics.objects.filter(sim_id=id)
+    extraMetricsEpochs = extraMetrics.values("epoch").distinct()
+    extraMetricsMetrics = extraMetrics.values("metric").distinct()
+    extraMetricsDict = {epoch.get('epoch'): [] for epoch in extraMetricsEpochs}
+    for epoch in extraMetricsEpochs:
+        for metric in extraMetricsMetrics:
+            extraMetricsDict.get(epoch.get('epoch')).append(
+                {"metric": metric.get('metric'),
+                 "value": extraMetrics.filter(epoch=epoch.get('epoch'), metric=metric.get('metric')).values("value").get().get('value')})
     t_params = {
         'simulation': response,
         'notification': notification,
         'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)],
         'tags': Tagged.objects.filter(sim=response),
         'simulationList': responseList,
+        'extra_metrics': extraMetricsDict
     }
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
 
@@ -338,9 +357,19 @@ def simulation_info_content2(request, id):
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
+    extraMetrics = ExtraMetrics.objects.filter(sim_id=id)
+    extraMetricsEpochs = extraMetrics.values("epoch").distinct()
+    extraMetricsMetrics = extraMetrics.values("metric").distinct()
+    extraMetricsDict = {epoch.get('epoch'): [] for epoch in extraMetricsEpochs}
+    for epoch in extraMetricsEpochs:
+        for metric in extraMetricsMetrics:
+            extraMetricsDict.get(epoch.get('epoch')).append(
+                {"metric": metric.get('metric'),
+                 "value": extraMetrics.filter(epoch=epoch.get('epoch'), metric=metric.get('metric')).values("value").get().get('value')})
     t_params = {
         'simulation': response,
-        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)]
+        'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)],
+        'extra_metrics': extraMetricsDict
     }
     return render(request, 'simulationInfo/simulationInfoContent2.html', t_params)
 
@@ -420,11 +449,11 @@ def post_sim(request):
                     learning_rate = float(cleaned_data['learning_rate'][learning_rate_i])
                     name = cleaned_data['name']
                     if len(cleaned_data['optimizer']) > 1:
-                        name += ' (O' + str(optimizer_i) + ')'
+                        name += ' (O' + str(optimizer_i+1) + ')'
                     if len(cleaned_data['loss_function']) > 1:
-                        name += ' (LF' + str(loss_function_i) + ')'
+                        name += ' (LF' + str(loss_function_i+1) + ')'
                     if len(cleaned_data['learning_rate']) > 1:
-                        name += ' (LR' + str(learning_rate_i) + ')'
+                        name += ' (LR' + str(learning_rate_i+1) + ')'
 
                     k_fold_ids = []
                     if not cleaned_data['is_k_fold']:
@@ -591,11 +620,11 @@ def post_sim(request):
                     learning_rate = configjson['learning_rate'][learning_rate_i]
                     name = configjson['name']
                     if len(configjson['optimizer']) > 1:
-                        name += ' (O' + str(optimizer_i) + ')'
+                        name += ' (O' + str(optimizer_i+1) + ')'
                     if len(configjson['loss_function']) > 1:
-                        name += ' (LF' + str(loss_function_i) + ')'
+                        name += ' (LF' + str(loss_function_i+1) + ')'
                     if len(configjson['learning_rate']) > 1:
-                        name += ' (LR' + str(learning_rate_i) + ')'
+                        name += ' (LR' + str(learning_rate_i+1) + ')'
 
                     k_fold_ids = []
                     if configjson['k-fold_validation'] < 2:
@@ -728,7 +757,7 @@ def get_simulation(request, id):
 
     sim = Simulation.objects.get(pk=id)
 
-    if sim.owner == request.user:
+    if sim.owner == request.user or request.user.is_staff:
         if request.method == "DELETE":
             sim.delete()
             return HttpResponse(sim, status=200)
