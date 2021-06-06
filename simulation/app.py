@@ -10,6 +10,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import model_from_json
 from sklearn.model_selection import KFold
 import pandas as pd
+import arff
 import re
 import os
 import urllib.request
@@ -64,7 +65,18 @@ def main(model_json,conf_json):
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
 
             #If it's a csv it's expect of conf to have this extra
-
+        elif 'arff' in file_arr[1]:
+            print('File is arff')
+            label_name = conf_json['label_column']
+            out = arff.load(open('dataset_val.arff', 'r'))
+            attrs = [label for label,data_type in out['attributes']]
+            df = pd.DataFrame(out['data'],columns =attrs)
+            target = df.pop(label_name)
+            features = df.values.tolist()
+            labels = target.values.tolist()
+            print('dataset make')
+            dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+            
         elif 'json' in file_arr[1]:
             print('File is json')
             with open(path_given,'rb') as file_read:
