@@ -4,29 +4,145 @@
         <div class="col">
             <h5 style="margin-bottom: 0; font-weight: bold">Users</h5>
             <small style="color: grey">Manage of users on the Platform </small>
-            <ul class="list-group"  style="margin-top: 5px;">
+            <div class="d-flex flex-md-nowrap flex-wrap justify-content-between" style="border: 1px solid #DCDCDE; border-bottom: 0; margin-top: 5px; background-color: white; padding: 8px; padding-bottom: 0">
+                <div class="input-group d-flex flex-nowrap me-2" style="margin-bottom: 8px">
+                    <label class="input-group-text" for="userFilterSearch"><i class="fa fa-search"></i></label>
+                    <input type="text" class="form-control" id="userFilterSearch" placeholder="Search">
+                </div>
+                <div class="d-flex flex-md-nowrap flex-wrap">
+                    <div class="input-group d-flex flex-nowrap me-2" style="margin-bottom: 8px">
+                        <label class="input-group-text" for="userFilterSort">Sort:</label>
+                        <select id="userFilterSort">
+                            <option value="nameAsc">By Name</option>
+                            <option value="nameDesc">By Name</option>
+                        </select>
+                    </div>
+                    <div class="input-group d-flex flex-nowrap" style="margin-bottom: 8px">
+                        <label class="input-group-text" for="userFilterFilter">Filter:</label>
+                        <select id="userFilterFilter">
+                            <option value="all">All</option>
+                            <option value="regular">Regular</option>
+                            <option value="admin">Admin</option>
+                            <option value="enabled">Enabled</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="userItemContainer" style="border: 1px solid #DCDCDE; background-color: white; padding: 8px">
                 {% for user in users %}
-                        <form action="{% url 'Users' %}" method="post" >
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <a style="align-items: center" href="{{ user.id }}"><i class="fas fa-user"></i> {{ user.username }}</a>
-                        <input type="hidden" name="user_id" value="{{user.id}}" />
-                        {% if user.is_staff %}
-                           <button type="submit" value="remove" name="remove" class="btn btn-primary"><i class="fas fa-user-secret"></i> Remove admin privileges</button>
-                        {% else %}
-                           <button type="submit" name="give" value="give" class="btn btn-primary"><i class="fas fa-user-secret"></i> Give admin privileges</button>
-                        {% endif %}
-                        {% if user.is_active %}
-                           <button type="submit" name="disable" value="disable" class="btn btn-primary"><i class="fas fa-lock"></i> Disable</button>
-                        {% else %}
-                           <button type="submit" name="enable" value="enable" class="btn btn-primary"><i class="fas fa-lock-open"></i> Enable</button>
-                        {% endif %}
-                           <button type="submit" name="delete" value="delete" value="enable" class="btn btn-danger"><i class="fas fa-user-times"></i> Delete</button>
-                        </li>
+                    <div class="userItem mx-2 my-2 px-0 py-2" style="border-bottom: 1px solid #DCDCDE;">
+                        <form action="{% url 'Users' %}" method="post" class="p-0 m-0">
+                            <input type="hidden" name="user_id" value="{{user.id}}">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                <a style="align-items: center; white-space: nowrap;" class="py-2 flex-grow-1" href="{{ user.id }}"><i class="fas fa-user"></i> <span class="userItemName" style="white-space: nowrap;">{{ user.username }}</span></a>
+                                <div class="d-flex justify-content-start align-content-start flex-wrap flex-md-nowrap">
+                                    {% if user.is_staff %}
+                                       <button type="submit" value="remove" name="remove" style="height: 32px; white-space: nowrap; color: #fff;" class="btn btn-primary btn-sm ms-1 mb-1"><i class="fas fa-user"></i> Remove admin privileges</button>
+                                    {% else %}
+                                       <button type="submit" name="give" value="give" style="height: 32px; white-space: nowrap; color: #fff;" class="btn btn-primary btn-sm ms-1 mb-1"><i class="fas fa-user-secret"></i> Give admin privileges</button>
+                                    {% endif %}
+                                    {% if user.is_active %}
+                                       <button type="submit" name="disable" value="disable" style="height: 32px; white-space: nowrap; color: #fff;" class="btn btn-primary btn-sm ms-1 mb-1"><i class="fas fa-lock"></i> Disable</button>
+                                    {% else %}
+                                       <button type="submit" name="enable" value="enable" style="height: 32px; white-space: nowrap; color: #fff;" class="btn btn-primary btn-sm ms-1 mb-1"><i class="fas fa-lock-open"></i> Enable</button>
+                                    {% endif %}
+                                   <button type="submit" name="delete" value="delete" value="enable" style="height: 32px; white-space: nowrap; color: #fff;" class="btn btn-danger btn-sm ms-1 mb-1"><i class="fas fa-user-times"></i> Delete</button>
+                                </div>
+                            </div>
                         </form>
+                    </div>
                 {% endfor %}
-            </ul>
+            </div>
         </div>
     </div>
 
+    <script>
+        docReady(function() {
+            $('#userFilterSort').multipleSelect({
+                textTemplate: function ($el) {
+                    if ($el.val() === "nameAsc") {
+                        return $el.html() + " <i class='fa fa-arrow-up'></i>"
+                    } else if ($el.val() === "nameDesc") {
+                        return $el.html() + " <i class='fa fa-arrow-down'></i>"
+                    }
+                },
+            });
+            $('#userFilterFilter').multipleSelect({});
+            $('.ms-parent, .ms-choice, .ms-choice span, .ms-search, .ms-search input')
+                .prop('style', 'height: 38px !important; line-height: 38px; width: 135px; color: black;');
+            $('.ms-drop ul li').prop('style', 'height: 38px !important; line-height: 28px;');
+            $('.ms-choice span').prop('style', 'padding-left: 12px');
+            $('.ms-choice').prop('class', 'ms-choice form-select')
+            $('.icon-caret').hide();
+
+            function filterUsers() {
+                let searchValue = $("#userFilterSearch").val()
+                let sortValue = $("#userFilterSort").val()
+                let filterValue = $("#userFilterFilter").val()
+                $(".userItem").css("display", "");
+                switch (sortValue) {
+                    case "nameAsc":
+                        $(".userItemContainer").html($(".userItem").sort(function (a, b) {
+                            let textA = $(a).find('.userItemName').text();
+                            let textB = $(b).find('.userItemName').text();
+                            return textA.localeCompare(textB)
+                        }));
+                        break;
+                    case "nameDesc":
+                        $(".userItemContainer").html($(".userItem").sort(function (a, b) {
+                            let textA = $(a).find('.userItemName').text();
+                            let textB = $(b).find('.userItemName').text();
+                            return textB.localeCompare(textA)
+                        }));
+                        break;
+                }
+                switch (filterValue) {
+                    case "all":
+                        break;
+                    case "regular":
+                        $(".userItem").filter(function () {
+                            if (!$(this).find('button').find(".fa-user-secret")[0])
+                                return true;
+                            return false;
+                        }).css("display", "none");
+                        break;
+                    case "admin":
+                        $(".userItem").filter(function () {
+                            if (!$(this).find('button').find(".fa-user")[0])
+                                return true;
+                            return false;
+                        }).css("display", "none");
+                        break;
+                    case "enabled":
+                        $(".userItem").filter(function () {
+                            if (!$(this).find('button').find(".fa-lock")[0])
+                                return true;
+                            return false;
+                        }).css("display", "none");
+                        break;
+                    case "disabled":
+                        $(".userItem").filter(function () {
+                            if (!$(this).find('button').find(".fa-lock-open")[0])
+                                return true;
+                            return false;
+                        }).css("display", "none");
+                        break;
+                }
+                $(".userItem").filter(function () {
+                    if (searchValue == null) return false;
+                    return $(this).find('.userItemName').text().toLowerCase().indexOf(searchValue.toLowerCase()) < 0;
+                }).css("display", "none");
+                if (!$(".userItem").filter(function () {return $(this).css("display") !== "none";})[0])
+                    $(".userItemContainer").css("height", "50vh")
+                else
+                    $(".userItemContainer").css("height", "")
+            }
+            $("#userFilterSearch").keyup(filterUsers);
+            $("#userFilterSort").change(filterUsers);
+            $("#userFilterFilter").change(filterUsers);
+            filterUsers();
+        });
+    </script>
 
 {% endblock %}

@@ -9,16 +9,6 @@
             <div id="content1">
                 {% include 'simulationInfo/simulationInfoContent1.html' %}
             </div>
-            <div style="padding-top: 5px;">
-                <button id="downloadDataModalOpenButton" style="color:#fff;" type="button" class="btn btn-info">Download Simulation Data</button>
-                <script>
-                    docReady(function () {
-                        $("#downloadDataModalOpenButton").click(function () {
-                            $("#downloadDataModal").modal("show");
-                        });
-                    });
-                </script>
-            </div>
             <div style="margin-top: 5px;">
                 <nav>
                     <div class="nav nav-tabs nav-fill" id="tab" role="tablist">
