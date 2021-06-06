@@ -28,6 +28,7 @@ services:
             - GF_SECURITY_ADMIN_PASSWORD=grafana
             - GF_INSTALL_PLUGINS=natel-plotly-panel
             - GF_SECURITY_ALLOW_EMBEDDING=true
+            - GF_AUTH_ANONYMOUS_ENABLED=true
         depends_on:
            db:
             condition: service_healthy
@@ -38,11 +39,12 @@ services:
     server:
         container_name: tracker-server
         image: dioben/nntrackerua-server:latest
-        #build: ./server
+        # build: ./server
         ports: 
          - "8000:8000"
         volumes:
             - ./datasetstore:/all_datasets
+            # - ./server:/app
         depends_on:
             db:
                 condition: service_healthy
