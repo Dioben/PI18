@@ -21,20 +21,12 @@ from app.serializers import SimulationSerializer, UpdateSerializer
 
 
 def index(request):
-    if request.user.is_authenticated:
-        return redirect('/simulations/')
     return render(request, 'index.html')
-
-
-def login(request):
-    if request.user.is_authenticated:
-        return redirect('/simulations/')
-    return render(request, 'login.html')
 
 
 def signup(request):
     if request.user.is_authenticated:
-        return redirect('/simulations/')
+        return redirect('/')
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():

@@ -9,6 +9,12 @@
         <title>NNT - Login</title>
     </head>
     <body>
+        {% if user.is_authenticated %}
+            <script>
+                window.location.href = "{% url 'Frontpage' %}"
+            </script>
+        {% endif %}
+
         <div class="container">
             <div class="row justify-content-center align-items-center h-100">
                 <div class="col-lg-5 col-md-6 col-sm-8 col-10 p-0">
@@ -40,7 +46,7 @@
                         <div class="d-flex mt-4 justify-content-center">
                             <a href="{% url 'Register' %}" class="link-secondary"><small>Don't have an account? Sign up.</small></a>
                         </div>
-                        <input type="hidden" name="next" value="/simulations/">
+                        <input type="hidden" name="next" value="/">
                     </form>
                 </div>
             </div>
