@@ -4,13 +4,36 @@
     {% for simulation in simulations %}
     <div class="simulationCard col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 p-1">
         <div class="p-0 card">
-            <a href="{{ simulation.pk.int }}"><div id="{{ simulation.id }}" class="card-img-top" style="height: 100px;"></div></a>
+            <div id="{{ simulation.id }}" class="card-img-top" style="height: 100px; cursor: pointer;">
+                {% comment %}<div style="position: relative;">
+                    <input id="{{ simulation.id }}MultiSelectCheckbox" style="position: absolute; right: 0; top: 0; margin: 5px;" class="form-check-input" type="checkbox">
+                </div>{% endcomment %}
+            </div>
+            <script>
+                document.getElementById("{{ simulation.id}}").style.backgroundColor = string2color("{{simulation.name}}");
+                docReady(function() {
+                    $("#{{ simulation.id }}").click(function(e) {
+                        if (e.target !== this) return;
+                        window.location.href = '{% url 'SimulationInfo' id=simulation.id.int %}';
+                    })
+                    {% comment %}$("#{{ simulation.id }}MultiSelectCheckbox").change(function() {
+                        if ($("#{{ simulation.id }}MultiSelectCheckbox").is(":checked"))
+                            $('#{{ simulation.id }}').parent().css("box-shadow", "0 0 10px hsl(206, 100%, 60%)").css("border-color", "hsl(206, 100%, 60%)")
+                        else
+                            $('#{{ simulation.id }}').parent().css("box-shadow", "").css("border-color", "rgba(0, 0, 0, 0.125)")
+                    })
+                    if ($("#{{ simulation.id }}MultiSelectCheckbox").is(":checked"))
+                        $('#{{ simulation.id }}').parent().css("box-shadow", "0 0 10px hsl(206, 100%, 60%)").css("border-color", "hsl(206, 100%, 60%)")
+                    else
+                        $('#{{ simulation.id }}').parent().css("box-shadow", "").css("border-color", "rgba(0, 0, 0, 0.125)"){% endcomment %}
+                });
+            </script>
             <script>
                 document.getElementById("{{ simulation.id}}").style.backgroundColor = string2color("{{simulation.name}}");
             </script>
             <div class="card-body">
                 <div class="d-flex justify-content-between mb-2">
-                    <a class="simulationCardName me-1" href="{{ simulation.pk.int }}" style="font-weight: bold; color: black; text-decoration: none; overflow-wrap: anywhere;">{{ simulation.name }}</a>
+                    <a class="simulationCardName me-1" href="{% url 'SimulationInfo' id=simulation.id.int %}" style="font-weight: bold; color: black; text-decoration: none; overflow-wrap: anywhere;">{{ simulation.name }}</a>
                     {% if simulation.isdone %}
                         <span class="simulationCardStatus" style="color: green;">Finished</span>
                     {% else %}
@@ -44,7 +67,7 @@
                     <script>
                         docReady(function () {
                             $('#deleteButton{{ simulation.pk }}').click(function() {
-                                $('#deleteModalSimName').text('{{ simulation.name }}');
+                                $('#deleteModalSimName').text('Are you sure you want to delete the simulation "{{ simulation.name }}"?');
                                 $('#deleteModalForm').prop('action', "/simulations/command/{{ simulation.pk.int }}/STOP");
                                 $('#deleteModal').modal('show');
                             });
@@ -70,7 +93,19 @@
             </div>
         </div>
     </div>
-{% endfor %}
+    <script>
+    docReady(function() {
+        let error_text = '{{ simulation.error_text }}';
+        if (error_text !== "") {
+            $('#errorNotification').text(error_text);
+            $('#errorNotificationForm').prop('action', '{% url "SimulationList" %}');
+            $('#errorNotificationSimId').val('{{ simulation.id }}');
+            let modal = new bootstrap.Modal(document.getElementById("errorNotificationModal"), {});
+            modal.show();
+        }
+    });
+    </script>
+    {% endfor %}
 </div>
 
 {% if notification != None %}

@@ -27,7 +27,10 @@
                         {% endif %}
                     </span>
                 </div>
-                <button class="btn btn-danger btn-sm" style="height: 32px; white-space: nowrap" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa fa-trash fa-sm"></i> Delete</button>
+                <div class="d-flex justify-content-end align-content-start flex-wrap flex-md-nowrap">
+                    <button id="downloadDataModalOpenButton" style="height: 32px; white-space: nowrap; color: #fff;" type="button" class="btn btn-info btn-sm me-0 me-md-1 mb-1 mb-md-0" data-bs-toggle="modal" data-bs-target="#downloadDataModal"><i class="fa fa-download fa-sm"></i> Download</button>
+                    <button class="btn btn-danger btn-sm" style="height: 32px; white-space: nowrap" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa fa-trash fa-sm"></i> Delete</button>
+                </div>
             </div>
 
             <div class="d-flex flex-wrap">

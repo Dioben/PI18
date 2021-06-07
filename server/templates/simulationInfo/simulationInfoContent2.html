@@ -1,21 +1,79 @@
-<ul>
-    <li>ID: {{ simulation.id }}</li>
-    <li>Owner: {{ simulation.owner }}</li>
-    <li>Name: {{ simulation.name }}</li>
-    <li>Model: {{ simulation.model }}</li>
-    <li>IsDone: {{ simulation.isdone }}</li>
-    <li>IsRunning: {{ simulation.isrunning }}</li>
-{#  <li>Biases: {{ simulation.biases }}</li>#}
-    <li>Layers: {{ simulation.layers }}</li>
-    <li>Learning rate: {{ simulation.learning_rate }}</li>
-    <li>Epoch period: {{ simulation.epoch_interval }}</li>
-    <li>Total epochs: {{ simulation.goal_epochs }}</li>
-    {% for update in updates %}
-        <li>==========</li>
-        <li>Epoch: {{ update.epoch }}</li>
-        <li>Loss: {{ update.loss }}</li>
-        <li>Accuracy: {{ update.accuracy }}</li>
-        <li>Validation Loss: {{ update.val_loss }}</li>
-        <li>Validation Accuracy: {{ update.val_accuracy }}</li>
-    {% endfor %}
-</ul>
+<div class="row">
+    <div class="mb-2 col-12 col-sm-6">
+        <label for="layers">Layers:</label>
+        <input id="layers" class="form-control" readonly value="{{ simulation.layers }}" style="background-color: #f2f2f2">
+    </div>
+    <div class="mb-2 col-12 col-sm-6">
+        <label for="learningRate">Learning rate:</label>
+        <input id="learningRate" class="form-control" readonly value="{{ simulation.learning_rate }}" style="background-color: #f2f2f2">
+    </div>
+    <div class="mb-2 col-12 col-sm-6">
+        <label for="totalEpochs">Total epochs:</label>
+        <input id="totalEpochs" class="form-control" readonly value="{{ simulation.goal_epochs }}" style="background-color: #f2f2f2">
+    </div>
+    <div class="mb-2 col-12 col-sm-6">
+        <label for="epochPeriod">Epoch period:</label>
+        <input id="epochPeriod" class="form-control" readonly value="{{ simulation.epoch_interval }}" style="background-color: #f2f2f2">
+    </div>
+    <div class="mb-2 col-12">
+        <label for="model">Model:</label>
+        <textarea id="model" class="form-control" readonly style="height: 200px; background-color: #f2f2f2"></textarea>
+        <script>
+            docReady(function() {
+                let modelStr = "{{ simulation.model }}";
+                let model = JSON.parse(modelStr.substring(7, modelStr.length - 6).replaceAll("&quot;", "\""))
+                $('#model').val(JSON.stringify(model, null, "  "));
+            });
+        </script>
+    </div>
+</div>
+<div class="table-responsive" style="margin-right: 12px; margin-left: 12px">
+    <label>Epochs:</label>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Epoch</th>
+                <th>Accuracy</th>
+                <th>Loss</th>
+                <th>Validation Accuracy</th>
+                <th>Validation Loss</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for update in updates %}
+                <tr>
+                    <th scope="col">{{ update.epoch }}</th>
+                    <td>{{ update.accuracy|floatformat:"3" }}</td>
+                    <td>{{ update.loss|floatformat:"3" }}</td>
+                    <td>{{ update.val_accuracy|floatformat:"3" }}</td>
+                    <td>{{ update.val_loss|floatformat:"3" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if extra_metrics|length != 0 %}
+    <div class="table-responsive" style="margin-right: 12px; margin-left: 12px">
+        <label>Epochs (Extra Metrics):</label>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Epoch</th>
+                    {% for metric in extra_metrics.0 %}
+                        <th>{{ metric.metric }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for epoch,metrics in extra_metrics.items %}
+                        <th scope="col">{{ epoch }}</th>
+                        {% for metric in metrics %}
+                            <td>{{ metric.value|floatformat:"3" }}</td>
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% endif %}

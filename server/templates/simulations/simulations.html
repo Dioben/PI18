@@ -70,7 +70,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body d-flex justify-content-center my-3">
-                    Are you sure you want to delete the simulation "<span id="deleteModalSimName"></span>"?
+                    <span id="deleteModalSimName"></span>
                 </div>
                 <div class="modal-footer d-flex justify-content-center">
                     <form id="deleteModalForm" method="POST">
@@ -96,6 +96,22 @@
         </div>
     </div>
 
+    <div class="modal fade" id="errorNotificationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div id="errorNotification" class="modal-body d-flex justify-content-center my-3">
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <form id="errorNotificationForm" method="post" action="">
+                        {% csrf_token %}
+                        <input id="errorNotificationSimId" name="deleteErrorSimId" value="" type="hidden">
+                        <button name="deleteError" value="deleteError" type="submit" class="btn btn-secondary">Ok</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         docReady(function () {
             $('#simFilterSort').multipleSelect({
@@ -112,8 +128,6 @@
                 .prop('style', 'height: 38px !important; line-height: 38px; width: 155px; color: black;');
             $('.ms-drop ul li').prop('style', 'height: 38px !important; line-height: 28px;');
             $('.ms-choice span').prop('style', 'padding-left: 12px');
-            $('.multipleSelectContainer .ms-parent .ms-drop ul li label span').prop('style', 'height: 38px !important; line-height: 38px;');
-            $('.ms-search').prop('style', 'height: 42px !important; width: 100%;')
             $('.ms-choice').prop('class', 'ms-choice form-select')
             $('.icon-caret').hide();
 
@@ -203,6 +217,7 @@
             $("#simFilterSearch").keyup(filterSims);
             $("#simFilterSort").change(filterSims);
             $("#simFilterFilter").change(filterSims);
+            filterSims();
 
             setInterval(function() {
                 $.get("{% url 'SimulationListContent' %}", function (data) {

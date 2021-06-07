@@ -9,76 +9,17 @@
             <div id="content1">
                 {% include 'simulationInfo/simulationInfoContent1.html' %}
             </div>
-            <div style="padding-top: 5px;">
-                <button id="downloadDataModalOpenButton" style="color:#fff;" type="button" class="btn btn-info">Download Simulation Data</button>
-                <script>
-                    docReady(function () {
-                        $("#downloadDataModalOpenButton").click(function () {
-                            $("#downloadDataModal").modal("show");
-                        });
-                    });
-                </script>
-            </div>
             <div style="margin-top: 5px;">
                 <nav>
                     <div class="nav nav-tabs nav-fill" id="tab" role="tablist">
-                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">General</button>
-{#                        <button class="nav-link" id="network-tab" data-bs-toggle="tab" data-bs-target="#network" type="button" role="tab" aria-controls="network" aria-selected="false">Network</button>#}
-                        <button class="nav-link" id="comparisons-tab" data-bs-toggle="tab" data-bs-target="#comparisons" type="button" role="tab" aria-controls="comparisons" aria-selected="false">Comparisons</button>
+                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true" style="border-color: #dee2e6 #dee2e6 #fff">General</button>
+{#                        <button class="nav-link" id="network-tab" data-bs-toggle="tab" data-bs-target="#network" type="button" role="tab" aria-controls="network" aria-selected="false" style="border-color: #dee2e6 #dee2e6 #fff">Network</button>#}
+                        <button class="nav-link" id="graphs-tab" data-bs-toggle="tab" data-bs-target="#graphs" type="button" role="tab" aria-controls="graphs" aria-selected="false" style="border-color: #dee2e6 #dee2e6 #fff">Graphs</button>
+                        <button class="nav-link" id="comparisons-tab" data-bs-toggle="tab" data-bs-target="#comparisons" type="button" role="tab" aria-controls="comparisons" aria-selected="false" style="border-color: #dee2e6 #dee2e6 #fff">Comparisons</button>
                     </div>
                 </nav>
                 <div class="tab-content" id="tabContent" style="border: 1px solid #DCDCDE; border-top: none; min-height: 50vh; background-color: white; padding: 8px">
                     <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
-
-                        <h6>Epoch Values:</h6>
-                        <div class="input-group">
-                            <button id="grafanaEpochValuesRefreshButton" class="btn btn-primary" type="button">Refresh</button>
-                            <span class="input-group-text">Values:</span>
-                            <div class="input-group-text form-switch" style="background-color: white">
-                                <input id="grafanaEpochValuesAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                <label for="grafanaEpochValuesAccuracySwitch" class="form-check-label ms-1">Accuracy</label>
-                            </div>
-                            <div class="input-group-text form-switch" style="background-color: white">
-                                <input id="grafanaEpochValuesLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                <label for="grafanaEpochValuesLossSwitch" class="form-check-label ms-1">Loss</label>
-                            </div>
-                            <div class="input-group-text form-switch" style="background-color: white">
-                                <input id="grafanaEpochValuesValidationAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                <label for="grafanaEpochValuesValidationAccuracySwitch" class="form-check-label ms-1">Validation accuracy</label>
-                            </div>
-                            <div class="input-group-text form-switch" style="background-color: white">
-                                <input id="grafanaEpochValuesValidationLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                <label for="grafanaEpochValuesValidationLossSwitch" class="form-check-label ms-1">Validation loss</label>
-                            </div>
-                        </div>
-                        <iframe width="100%" height="400" frameborder="0" id="grafanaEpochValuesIFrame"></iframe>
-
-                        <h6 style="margin-top: 8px">Weights Graphing:</h6>
-                        <div class="input-group">
-                            <button id="grafanaWeightsGraphingRefreshButton" class="btn btn-primary" type="button">Refresh</button>
-                            <label for="grafanaWeightsGraphingLayerInput" class="input-group-text">Layer:</label>
-                            <div class="input-group-text form-switch" style="background-color: white">
-                                <span id="grafanaWeightsGraphingLayerNumber" class="me-2"></span>
-                                <input class="form-range" id="grafanaWeightsGraphingLayerInput" type="range" min="0" max="{{ simulation.layers|add:-1 }}" value="0">
-                            </div>
-
-                        </div>
-                        <iframe width="100%" height="400" frameborder="0" id="grafanaWeightsGraphingIFrame"></iframe>
-
-                        {% if simulation.metrics|length != 0 %}
-                            <h6 style="margin-top: 8px">Extra Metrics Dash:</h6>
-                            <div class="input-group">
-                                <button id="grafanaExtraMetricsDashRefreshButton" class="btn btn-primary" type="button">Refresh</button>
-                                <label for="grafanaExtraMetricsDashMetricSelect" class="input-group-text">Metric:</label>
-                                <select id="grafanaExtraMetricsDashMetricSelect" class="form-select">
-                                    {% for metric in simulation.metrics %}
-                                        <option value="{{ metric }}">{{ metric }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <iframe width="100%" height="400" frameborder="0" id="grafanaExtraMetricsDashIFrame"></iframe>
-                        {% endif %}
-
                         <div id="content2">
                             {% include 'simulationInfo/simulationInfoContent2.html' %}
                         </div>
@@ -86,123 +27,180 @@
                     {% comment %}<div class="tab-pane fade" id="network" role="tabpanel" aria-labelledby="network-tab">
                         <div id="content3"></div>
                     </div>{% endcomment %}
-                    <div class="tab-pane fade" id="comparisons" role="tabpanel" aria-labelledby="comparisons-tab">
-
-                        {% if tags|length != 0 %}
-                            <h6 style="margin-top: 8px">Epoch Values for Tag Group:</h6>
-                            <div class="input-group">
-                                <button id="grafanaGroupCompRefreshButton" class="btn btn-primary" type="button">Refresh</button>
-                                <label for="grafanaGroupCompTagSelect" class="input-group-text">Tag:</label>
-                                <select id="grafanaGroupCompTagSelect" class="form-select">
-                                    {% for tag in tags %}
-                                        <option value="{{ tag.tag }}">{{ tag.tag }}</option>
-                                    {% endfor %}
-                                </select>
-                                <label for="grafanaGroupCompOperationSelect" class="input-group-text">Operation:</label>
-                                <select id="grafanaGroupCompOperationSelect" class="form-select">
-                                    <option value="avg">Average</option>
-                                    <option value="min">Minimum</option>
-                                    <option value="max">Maximum</option>
-                                </select>
-                                <span class="input-group-text">Values:</span>
-                                <div class="input-group-text form-switch" style="background-color: white">
-                                    <input id="grafanaGroupCompAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                    <label for="grafanaGroupCompAccuracySwitch" class="form-check-label ms-1">Accuracy</label>
-                                </div>
-                                <div class="input-group-text form-switch" style="background-color: white">
-                                    <input id="grafanaGroupCompLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                    <label for="grafanaGroupCompLossSwitch" class="form-check-label ms-1">Loss</label>
-                                </div>
-                                <div class="input-group-text form-switch" style="background-color: white">
-                                    <input id="grafanaGroupCompValidationAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                    <label for="grafanaGroupCompValidationAccuracySwitch" class="form-check-label ms-1">Validation accuracy</label>
-                                </div>
-                                <div class="input-group-text form-switch" style="background-color: white">
-                                    <input id="grafanaGroupCompValidationLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                    <label for="grafanaGroupCompValidationLossSwitch" class="form-check-label ms-1">Validation loss</label>
-                                </div>
-                            </div>
-                            <iframe width="100%" height="400" frameborder="0" id="grafanaGroupCompIFrame"></iframe>
-
-                            {% if simulation.metrics|length != 0 %}
-                                <h6 style="margin-top: 8px">Extra Metrics for Tag Group:</h6>
+                    <div class="tab-pane fade show" id="graphs" role="tabpanel" aria-labelledby="graphs-tab">
+                        <div class="row">
+                            <div class="col">
+                                <h6 style="margin-top: 8px">Epoch Values:</h6>
                                 <div class="input-group">
-                                    <button id="grafanaGroupCompMetricsRefreshButton" class="btn btn-primary" type="button">Refresh</button>
-                                    <label for="grafanaGroupCompMetricsTagSelect" class="input-group-text">Tag:</label>
-                                    <select id="grafanaGroupCompMetricsTagSelect" class="form-select">
-                                        {% for tag in tags %}
-                                            <option value="{{ tag.tag }}">{{ tag.tag }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <label for="grafanaGroupCompMetricsOperationSelect" class="input-group-text">Operation:</label>
-                                    <select id="grafanaGroupCompMetricsOperationSelect" class="form-select">
-                                        <option value="avg">Average</option>
-                                        <option value="min">Minimum</option>
-                                        <option value="max">Maximum</option>
-                                    </select>
-                                    <label for="grafanaGroupCompMetricsMetricSelect" class="input-group-text">Metric:</label>
-                                    <select id="grafanaGroupCompMetricsMetricSelect" class="form-select">
-                                        {% for metric in simulation.metrics %}
-                                            <option value="{{ metric }}">{{ metric }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <button id="grafanaEpochValuesRefreshButton" class="btn btn-primary" type="button">Refresh</button>
+                                    <span class="input-group-text">Values:</span>
+                                    <div class="input-group-text form-switch" style="background-color: white">
+                                        <input id="grafanaEpochValuesAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                        <label for="grafanaEpochValuesAccuracySwitch" class="form-check-label ms-1">Accuracy</label>
+                                    </div>
+                                    <div class="input-group-text form-switch" style="background-color: white">
+                                        <input id="grafanaEpochValuesLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                        <label for="grafanaEpochValuesLossSwitch" class="form-check-label ms-1">Loss</label>
+                                    </div>
+                                    <div class="input-group-text form-switch" style="background-color: white">
+                                        <input id="grafanaEpochValuesValidationAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                        <label for="grafanaEpochValuesValidationAccuracySwitch" class="form-check-label ms-1">Validation accuracy</label>
+                                    </div>
+                                    <div class="input-group-text form-switch" style="background-color: white">
+                                        <input id="grafanaEpochValuesValidationLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                        <label for="grafanaEpochValuesValidationLossSwitch" class="form-check-label ms-1">Validation loss</label>
+                                    </div>
                                 </div>
-                                <iframe width="100%" height="400" frameborder="0" id="grafanaGroupCompMetricsIFrame"></iframe>
-                            {% endif %}
-                        {% endif %}
+                                <iframe style="height: 50vh; width: 100%;" frameborder="0" id="grafanaEpochValuesIFrame"></iframe>
 
-                        <h6 style="margin-top: 8px">Sutraction with another Simulation:</h6>
-                        <div class="input-group">
-                            <button id="grafanaSubCompRefreshButton" class="btn btn-primary" type="button">Refresh</button>
-                            <label for="grafanaSubCompSimSelect" class="input-group-text">Simulation:</label>
-                            <select id="grafanaSubCompSimSelect" class="form-select">
-                                {% for s in simulationList %}
-                                    {% if not s == simulation %}
-                                        <option value="{{ s.id }}">{{ s.name }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                            <span class="input-group-text">Values:</span>
-                            <div class="input-group-text form-switch" style="background-color: white">
-                                <input id="grafanaSubCompAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                <label for="grafanaSubCompAccuracySwitch" class="form-check-label ms-1">Accuracy</label>
-                            </div>
-                            <div class="input-group-text form-switch" style="background-color: white">
-                                <input id="grafanaSubCompLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                <label for="grafanaSubCompLossSwitch" class="form-check-label ms-1">Loss</label>
-                            </div>
-                            <div class="input-group-text form-switch" style="background-color: white">
-                                <input id="grafanaSubCompValidationAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                <label for="grafanaSubCompValidationAccuracySwitch" class="form-check-label ms-1">Validation accuracy</label>
-                            </div>
-                            <div class="input-group-text form-switch" style="background-color: white">
-                                <input id="grafanaSubCompValidationLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
-                                <label for="grafanaSubCompValidationLossSwitch" class="form-check-label ms-1">Validation loss</label>
+                                <h6 style="margin-top: 8px">Weights Graphing:</h6>
+                                <div class="input-group">
+                                    <button id="grafanaWeightsGraphingRefreshButton" class="btn btn-primary" type="button">Refresh</button>
+                                    <label for="grafanaWeightsGraphingLayerInput" class="input-group-text">Layer:</label>
+                                    <div class="input-group-text form-switch" style="background-color: white">
+                                        <span id="grafanaWeightsGraphingLayerNumber" class="me-2"></span>
+                                        <input class="form-range" id="grafanaWeightsGraphingLayerInput" type="range" min="0" max="{{ simulation.layers|add:-1 }}" value="0">
+                                    </div>
+
+                                </div>
+                                <iframe style="height: 50vh; width: 100%;" frameborder="0" id="grafanaWeightsGraphingIFrame"></iframe>
+
+                                {% if simulation.metrics|length != 0 %}
+                                    <h6 style="margin-top: 8px">Extra Metrics Dash:</h6>
+                                    <div class="input-group">
+                                        <button id="grafanaExtraMetricsDashRefreshButton" class="btn btn-primary" type="button">Refresh</button>
+                                        <label for="grafanaExtraMetricsDashMetricSelect" class="input-group-text">Metric:</label>
+                                        <select id="grafanaExtraMetricsDashMetricSelect" class="form-select">
+                                            {% for metric in simulation.metrics %}
+                                                <option value="{{ metric }}">{{ metric }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <iframe style="height: 50vh; width: 100%;" frameborder="0" id="grafanaExtraMetricsDashIFrame"></iframe>
+                                {% endif %}
                             </div>
                         </div>
-                        <iframe width="100%" height="400" frameborder="0" id="grafanaSubCompIFrame"></iframe>
+                    </div>
+                    <div class="tab-pane fade" id="comparisons" role="tabpanel" aria-labelledby="comparisons-tab">
+                        <div class="row">
+                            <div class="col">
+                                {% if tags|length != 0 %}
+                                    <h6 style="margin-top: 8px">Epoch Values for Tag Group:</h6>
+                                    <div class="input-group">
+                                        <button id="grafanaGroupCompRefreshButton" class="btn btn-primary" type="button">Refresh</button>
+                                        <label for="grafanaGroupCompTagSelect" class="input-group-text">Tag:</label>
+                                        <select id="grafanaGroupCompTagSelect" class="form-select">
+                                            {% for tag in tags %}
+                                                <option value="{{ tag.tag }}">{{ tag.tag }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <label for="grafanaGroupCompOperationSelect" class="input-group-text">Operation:</label>
+                                        <select id="grafanaGroupCompOperationSelect" class="form-select">
+                                            <option value="avg">Average</option>
+                                            <option value="min">Minimum</option>
+                                            <option value="max">Maximum</option>
+                                        </select>
+                                        <span class="input-group-text">Values:</span>
+                                        <div class="input-group-text form-switch" style="background-color: white">
+                                            <input id="grafanaGroupCompAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                            <label for="grafanaGroupCompAccuracySwitch" class="form-check-label ms-1">Accuracy</label>
+                                        </div>
+                                        <div class="input-group-text form-switch" style="background-color: white">
+                                            <input id="grafanaGroupCompLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                            <label for="grafanaGroupCompLossSwitch" class="form-check-label ms-1">Loss</label>
+                                        </div>
+                                        <div class="input-group-text form-switch" style="background-color: white">
+                                            <input id="grafanaGroupCompValidationAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                            <label for="grafanaGroupCompValidationAccuracySwitch" class="form-check-label ms-1">Validation accuracy</label>
+                                        </div>
+                                        <div class="input-group-text form-switch" style="background-color: white">
+                                            <input id="grafanaGroupCompValidationLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                            <label for="grafanaGroupCompValidationLossSwitch" class="form-check-label ms-1">Validation loss</label>
+                                        </div>
+                                    </div>
+                                    <iframe style="height: 50vh; width: 100%;" frameborder="0" id="grafanaGroupCompIFrame"></iframe>
 
-                        {% if simulation.metrics|length != 0 %}
-                            <h6 style="margin-top: 8px">Sutraction of Extra Metrics with another Simulation:</h6>
-                            <div class="input-group">
-                                <button id="grafanaSubCompMetricsRefreshButton" class="btn btn-primary" type="button">Refresh</button>
-                                <label for="grafanaSubCompMetricsSimSelect" class="input-group-text">Simulation:</label>
-                                <select id="grafanaSubCompMetricsSimSelect" class="form-select">
-                                    {% for s in simulationList %}
-                                        {% if s != simulation and s.metrics|length != 0 %}
-                                            <option value="{{ s.id }}">{{ s.name }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </select>
-                                <label for="grafanaSubCompMetricsMetricSelect" class="input-group-text">Metric:</label>
-                                <select id="grafanaSubCompMetricsMetricSelect" class="form-select">
-                                    {% for metric in simulation.metrics %}
-                                        <option value="{{ metric }}">{{ metric }}</option>
-                                    {% endfor %}
-                                </select>
+                                    {% if simulation.metrics|length != 0 %}
+                                        <h6 style="margin-top: 8px">Extra Metrics for Tag Group:</h6>
+                                        <div class="input-group">
+                                            <button id="grafanaGroupCompMetricsRefreshButton" class="btn btn-primary" type="button">Refresh</button>
+                                            <label for="grafanaGroupCompMetricsTagSelect" class="input-group-text">Tag:</label>
+                                            <select id="grafanaGroupCompMetricsTagSelect" class="form-select">
+                                                {% for tag in tags %}
+                                                    <option value="{{ tag.tag }}">{{ tag.tag }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <label for="grafanaGroupCompMetricsOperationSelect" class="input-group-text">Operation:</label>
+                                            <select id="grafanaGroupCompMetricsOperationSelect" class="form-select">
+                                                <option value="avg">Average</option>
+                                                <option value="min">Minimum</option>
+                                                <option value="max">Maximum</option>
+                                            </select>
+                                            <label for="grafanaGroupCompMetricsMetricSelect" class="input-group-text">Metric:</label>
+                                            <select id="grafanaGroupCompMetricsMetricSelect" class="form-select">
+                                                {% for metric in simulation.metrics %}
+                                                    <option value="{{ metric }}">{{ metric }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <iframe style="height: 50vh; width: 100%;" frameborder="0" id="grafanaGroupCompMetricsIFrame"></iframe>
+                                    {% endif %}
+                                {% endif %}
+
+                                <h6 style="margin-top: 8px">Sutraction with another Simulation:</h6>
+                                <div class="input-group">
+                                    <button id="grafanaSubCompRefreshButton" class="btn btn-primary" type="button">Refresh</button>
+                                    <label for="grafanaSubCompSimSelect" class="input-group-text">Simulation:</label>
+                                    <select id="grafanaSubCompSimSelect" class="form-select">
+                                        {% for s in simulationList %}
+                                            {% if not s == simulation %}
+                                                <option value="{{ s.id }}">{{ s.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <span class="input-group-text">Values:</span>
+                                    <div class="input-group-text form-switch" style="background-color: white">
+                                        <input id="grafanaSubCompAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                        <label for="grafanaSubCompAccuracySwitch" class="form-check-label ms-1">Accuracy</label>
+                                    </div>
+                                    <div class="input-group-text form-switch" style="background-color: white">
+                                        <input id="grafanaSubCompLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                        <label for="grafanaSubCompLossSwitch" class="form-check-label ms-1">Loss</label>
+                                    </div>
+                                    <div class="input-group-text form-switch" style="background-color: white">
+                                        <input id="grafanaSubCompValidationAccuracySwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                        <label for="grafanaSubCompValidationAccuracySwitch" class="form-check-label ms-1">Validation accuracy</label>
+                                    </div>
+                                    <div class="input-group-text form-switch" style="background-color: white">
+                                        <input id="grafanaSubCompValidationLossSwitch" class="form-check-input mt-0 ms-0" type="checkbox" checked>
+                                        <label for="grafanaSubCompValidationLossSwitch" class="form-check-label ms-1">Validation loss</label>
+                                    </div>
+                                </div>
+                                <iframe style="height: 50vh; width: 100%;" frameborder="0" id="grafanaSubCompIFrame"></iframe>
+
+                                {% if simulation.metrics|length != 0 %}
+                                    <h6 style="margin-top: 8px">Sutraction of Extra Metrics with another Simulation:</h6>
+                                    <div class="input-group">
+                                        <button id="grafanaSubCompMetricsRefreshButton" class="btn btn-primary" type="button">Refresh</button>
+                                        <label for="grafanaSubCompMetricsSimSelect" class="input-group-text">Simulation:</label>
+                                        <select id="grafanaSubCompMetricsSimSelect" class="form-select">
+                                            {% for s in simulationList %}
+                                                {% if s != simulation and s.metrics|length != 0 %}
+                                                    <option value="{{ s.id }}">{{ s.name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        <label for="grafanaSubCompMetricsMetricSelect" class="input-group-text">Metric:</label>
+                                        <select id="grafanaSubCompMetricsMetricSelect" class="form-select">
+                                            {% for metric in simulation.metrics %}
+                                                <option value="{{ metric }}">{{ metric }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <iframe style="height: 50vh; width: 100%;" frameborder="0" id="grafanaSubCompMetricsIFrame"></iframe>
+                                {% endif %}
                             </div>
-                            <iframe width="100%" height="400" frameborder="0" id="grafanaSubCompMetricsIFrame"></iframe>
-                        {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -310,6 +308,21 @@
         </div>
     </div>
 
+    <div class="modal fade" id="errorNotificationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div id="errorNotification" class="modal-body d-flex justify-content-center my-3">
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <form method="post" action="{% url 'SimulationList' %}{{ simulation.id.int }}/">
+                        {% csrf_token %}
+                        <button name="deleteError" value="deleteError" type="submit" class="btn btn-secondary">Ok</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         docReady(function () {
@@ -373,6 +386,11 @@
                                 $('#content2').html(data)
                             })
                         }
+                        let error_text = data.simulation.error_text;
+                        if (error_text !== "") {
+                            $('#errorNotification').text(error_text);
+                            $('#errorNotificationModal').modal('show');
+                        }
                     },
                     error: function(data) {
                     }
@@ -383,9 +401,9 @@
             function reloadGrafanaEpochValues() {
                 let grafanaUrl;
                 if (firstUpdate !== undefined)
-                    grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                 else
-                    grafanaUrl = "http://localhost:3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
+                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
                 if ($("#grafanaEpochValuesAccuracySwitch").prop("checked")) {
                     grafanaUrl += "&var-values=1";
                 }
@@ -411,9 +429,9 @@
             function reloadGrafanaWeightsGraphing() {
                 let grafanaURL
                 if (firstUpdate !== undefined)
-                    grafanaUrl = "http://localhost:3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                 else
-                    grafanaUrl = "http://localhost:3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
+                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
                 grafanaUrl += "&var-layer=" + $('#grafanaWeightsGraphingLayerInput').val();
                 $("#grafanaWeightsGraphingIFrame").prop("src", grafanaUrl);
                 $("#grafanaWeightsGraphingLayerNumber").text($('#grafanaWeightsGraphingLayerInput').val());
@@ -427,9 +445,9 @@
                 function reloadGrafanaExtraMetricsDashGraphing() {
                     let grafanaUrl;
                     if (firstUpdate !== undefined)
-                        grafanaUrl = "http://localhost:3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&refresh=30s&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&refresh=30s&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                     else
-                        grafanaUrl = "http://localhost:3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&refresh=30s&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
+                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&refresh=30s&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
                     grafanaUrl += "&var-metric=" + $("#grafanaExtraMetricsDashMetricSelect").val();
                     $("#grafanaExtraMetricsDashIFrame").prop("src", grafanaUrl);
                 }
@@ -442,9 +460,9 @@
                 function reloadGrafanaGroupComp() {
                     let grafanaUrl;
                     if (firstUpdate !== undefined)
-                        grafanaUrl = "http://localhost:3000/d-solo/KH6gzIeMz/group-comparison-dashboard?orgId=1&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/KH6gzIeMz/group-comparison-dashboard?orgId=1&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                     else
-                        grafanaUrl = "http://localhost:3000/d-solo/KH6gzIeMz/group-comparison-dashboard?orgId=1&from="+Date.now()+"&to=now&panelId=2";
+                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/KH6gzIeMz/group-comparison-dashboard?orgId=1&from="+Date.now()+"&to=now&panelId=2";
                     grafanaUrl += "&var-tagname=" + $("#grafanaGroupCompTagSelect").val();
                     grafanaUrl += "&var-operation=" + $("#grafanaGroupCompOperationSelect").val();
                     if ($("#grafanaGroupCompAccuracySwitch").prop("checked")) {
@@ -475,9 +493,9 @@
                     function reloadGrafanaGroupCompMetrics() {
                         let grafanaUrl;
                         if (firstUpdate !== undefined)
-                            grafanaUrl = "http://localhost:3000/d-solo/j_NyND6Gz/group_comp_metrics_dashboard?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                            grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/j_NyND6Gz/group_comp_metrics_dashboard?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                         else
-                            grafanaUrl = "http://localhost:3000/d-solo/j_NyND6Gz/group_comp_metrics_dashboard?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
+                            grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/j_NyND6Gz/group_comp_metrics_dashboard?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
                         grafanaUrl += "&var-tagname=" + $("#grafanaGroupCompMetricsTagSelect").val();
                         grafanaUrl += "&var-operation=" + $("#grafanaGroupCompMetricsOperationSelect").val();
                         grafanaUrl += "&var-metric=" + $("#grafanaGroupCompMetricsMetricSelect").val();
@@ -495,9 +513,9 @@
             function reloadGrafanaSubComp() {
                 let grafanaUrl;
                 if (firstUpdate !== undefined)
-                    grafanaUrl = "http://localhost:3000/d-solo/wTZDdD6Gz/subtract_comp_dashboard?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/wTZDdD6Gz/subtract_comp_dashboard?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                 else
-                    grafanaUrl = "http://localhost:3000/d-solo/wTZDdD6Gz/subtract_comp_dashboard?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
+                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/wTZDdD6Gz/subtract_comp_dashboard?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
                 grafanaUrl += "&var-sim_id1=" + "{{ simulation.id }}";
                 grafanaUrl += "&var-sim_id2=" + $("#grafanaSubCompSimSelect").val();
                 if ($("#grafanaSubCompAccuracySwitch").prop("checked")) {
@@ -527,9 +545,9 @@
                 function reloadGrafanaSubCompMetrics() {
                     let grafanaUrl;
                     if (firstUpdate !== undefined)
-                        grafanaUrl = "http://localhost:3000/d-solo/zAZY1D6Gz/subtract_comp_dashboard_extrametrics?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/zAZY1D6Gz/subtract_comp_dashboard_extrametrics?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                     else
-                        grafanaUrl = "http://localhost:3000/d-solo/zAZY1D6Gz/subtract_comp_dashboard_extrametrics?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
+                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/zAZY1D6Gz/subtract_comp_dashboard_extrametrics?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
                     grafanaUrl += "&var-sim_id1=" + "{{ simulation.id }}";
                     grafanaUrl += "&var-sim_id2=" + $("#grafanaSubCompMetricsSimSelect").val();
                     grafanaUrl += "&var-metric=" + $("#grafanaSubCompMetricsMetricSelect").val();

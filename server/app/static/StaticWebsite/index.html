@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<!--
+	TXT by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+
+<head>
+	<title>Neural Net Tracker</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="stylesheet" href="assets/css/main.css" />
+	<link rel="icon" type="image/png" href="images/logo.jpg"/>
+
+</head>
+
+<body class="homepage is-preload">
+	
+	<!-- A modal for the img expansion -->
+	<div id="modal" class="modal">
+		<!-- The Close Button -->
+		<span class="modal-close">&times;</span>
+		<!-- Modal Content (The Image) -->
+		<img class="modal-content" id="modal-img" />
+		<!-- Modal Caption (Image Text) -->
+		<div id="caption"></div>
+	  </div>
+
+	<!-- Added manual mobile panel because events dont work well with dynamically added elements -->
+	<div>
+		<div id="titleBar">
+			<a href="#navPanel" class="toggle"></a>
+		</div>
+		<div id="navPanel">
+			<nav>
+				<a class="home-nav-a link depth-0" href="#navPanel">
+					<span class="indent-0"></span>
+					Home
+				</a>
+				<a class="features-nav-a link depth-0" href="#navPanel">
+					<span class="indent-0"></span>
+					Features
+				</a>
+				<a class="feature1-nav-a link depth-1" href="#navPanel">
+					<span class="indent-1"></span>
+					Neural network data storage
+				</a>
+				<a class="feature2-nav-a link depth-1" href="#navPanel">
+					<span class="indent-1"></span>
+					Neural network analysis
+				</a>
+				<a class="feature3-nav-a link depth-1" href="#navPanel">
+					<span class="indent-1"></span>
+					Service layer REST API
+				</a>
+				<a class="feature4-nav-a link depth-1" href="#navPanel">
+					<span class="indent-1"></span>
+					Web application
+				</a>
+				<a class="work-nav-a link depth-0" href="#navPanel">
+					<span class="indent-0"></span>
+					Work
+				</a>
+				<a class="documentation-nav-a link depth-0" href="#navPanel">
+					<span class="indent-0"></span>
+					Documentation
+				</a>
+				<a class="team-nav-a link depth-0" href="#navPanel">
+					<span class="indent-0"></span>
+					Team
+				</a>
+			</nav>
+		</div>
+	</div>
+
+	<div id="page-wrapper">
+
+		<!-- Nav -->
+		<nav id="nav">
+			<ul>
+				<li id="home-nav-li" class="current"><a class="home-nav-a">Home</a></li>
+				<li id="features-nav-li">
+					<a class="features-nav-a">Features</a>
+					<ul>
+						<li><a class="feature1-nav-a">Neural network data storage</a></li>
+						<li><a class="feature2-nav-a">Neural network analysis</a></li>
+						<li><a class="feature3-nav-a">Service layer REST API</a></li>
+						<li><a class="feature4-nav-a">Web application</a></li>
+					</ul>
+				</li>
+				<li id="work-nav-li"><a class="work-nav-a">Work</a></li>
+				<li id="documentation-nav-li"><a class="documentation-nav-a">Documentation</a></li>
+				<li id="team-nav-li"><a class="team-nav-a">Team</a></li>
+			</ul>
+		</nav>
+
+		<!-- Banner -->
+		<section id="banner">
+			<div class="content">
+				<h2>Neural Net Tracker</h2>
+				<h3>NEURAL NETWORK BEHAVIOR ANALYSIS TOOL DURING TRAINING</h3>
+				<p>Easily monitor and experiment with neural networks</p>
+			</div>
+		</section>
+
+		<!-- Main -->
+		<section id="main">
+			<div class="container">
+				<div class="row gtr-200">
+
+
+					<div class="col-12">
+						<section class="box">
+							<div class="box highlight">
+								<header id="features-nav-location">
+									<h2 class="major"><span>Features</span></h2>
+									<p>A brief description of this project's features</p>
+								</header>
+							</div>
+
+							<section class="row">
+								<div class="col-6 col-6-medium col-12-small">
+									<h3 id="feature1-nav-location">
+										Neural network data storage
+									</h3>
+									<p>
+										The internal parameters of the neural networks run with our project are periodically
+										stored in our database for future use and analysis.
+									</p>
+								</div>
+								<div class="col-6 col-6-medium col-12-small">
+									<h3 id="feature2-nav-location">
+										Neural Network Analysis
+									</h3>
+									<p>
+										The previously stored internal parameters can be accessed in an easily comprehensible
+										format for ease of analysis.
+									</p>
+								</div>
+								<div class="col-6 col-6-medium col-12-small">
+									<h3 id="feature3-nav-location">
+										Service Layer REST API
+									</h3>
+									<p>
+										Our service layer is made with REST API for ease of use and integration with any other
+										interfaces.
+									</p>
+								</div>
+								<div class="col-6 col-6-medium col-12-small">
+									<h3 id="feature4-nav-location">
+										Web Application
+									</h3>
+									<p>
+										We developed a web application in order to facilitate the use of our other features.
+										It contains an easy way to deploy neural networks and a graph viewer to better analyse
+										the progress of the deployed neural networks.
+									</p>
+								</div>
+							</section>
+						</section>
+					</div>
+					<div class="col-12">
+						<!-- Features -->
+						<section class="box features">
+							<div class="box highlight">
+								<header id="work-nav-location">
+									<h2 class="major"><span>Work</span></h2>
+									<p></p>
+								</header>
+							</div>
+							<div>
+								<div class="row">
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature">
+											<a href="https://github.com/buckaroo69/PI18/tree/main/server" class="image featured"><img class="tall-img" src="images/server.png" alt="" /></a>
+											<h3><a>Server</a></h3>
+											<p>
+												Rest API and Web Server
+											</p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature">
+											<a href="https://github.com/buckaroo69/PI18/tree/main/deployer" class="image featured"><img class="tall-img" src="images/deployer.png" alt="" /></a>
+											<h3><a>Deployer</a></h3>
+											<p>
+												Deploy Simulations and Control the Training Process
+											</p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature">
+											<a href="https://github.com/buckaroo69/PI18/tree/main/grafana" class="image featured"><img class="tall-img" src="images/grafana.png" alt="" /></a>
+											<h3><a>Grafana</a></h3>
+											<p>
+												Present Simulation Data in a Variety of Different Formats/Graphs
+											</p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature">
+											<a href="https://github.com/buckaroo69/PI18/tree/main/parser" class="image featured"><img class="tall-img" src="images/parse.png" alt="" /></a>
+											<h3><a>Parser</a></h3>
+											<p>
+												Parse Simulation Data for the Database Format
+											</p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature">
+											<a href="https://github.com/buckaroo69/PI18/tree/main/simulation" class="image featured"><img class="tall-img" src="images/simulation.png" alt="" /></a>
+											<h3><a>Simulation</a></h3>
+											<p>
+												Create and Start Simulation from Configurable Instantiation of Neural Network
+											</p>
+										</section>
+									</div>
+								</div>
+							</div>
+						</section>
+					</div>
+
+					<div class="col-12">
+						<!-- Features -->
+						<section class="box features">
+							<div class="box highlight">
+								<header id="documentation-nav-location">
+									<h2 class="major"><span>Documentation</span></h2>
+									<p></p>
+								</header>
+							</div>
+							<div>
+								<div class="row">
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature">
+											<a href="https://github.com/pmasilva20/PI18" class="image featured"><img class="tall-img" src="images/github.png" alt="" /></a>
+											<h3><a>Github</a></h3>
+											<p>
+												 Project Source Code
+											</p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature">
+											<a href="https://drive.google.com/drive/folders/1fKs2JHETXoU734YC7vtqrKK6MTRMNYVx" class="image featured"><img class="tall-img" src="images/presentations.jpg" alt="" /></a>
+											<h3><a>Presentations</a></h3>
+											<p>
+												 Project Presentations During Development
+											</p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature img-feature">
+											<a class="image featured">
+												<img class="wide-img" src="images/calendar.png" alt="" />
+											</a>
+											<h3><a>Calendar</a></h3>
+											<p>
+												A Calendar of the Planned Development
+											</p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature img-feature">
+											<a class="image featured">
+												<img class="wide-img" src="images/architectureDiagram.png" alt="" />
+											</a>
+											<h3><a>Architecture Diagram</a></h3>
+											<p>
+												The Full Architecture of the System
+											</p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature img-feature">
+											<a class="image featured">
+												<img class="wide-img" src="images/deploymentDiagram.png" alt="" />
+											</a>
+											<h3><a>Deployment Diagram</a></h3>
+											<p>
+												How the System is Deployed
+											</p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature img-feature">
+											<a class="image featured">
+												<img class="wide-img" src="images/domainmodel.png" alt="" />
+											</a>
+											<h3><a>Domain Model</a></h3>
+											<p>
+												Domain Model of the System
+											</p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature img-feature">
+											<a class="image featured">
+												<img class="wide-img" src="images/workplanning.PNG" alt="" />
+											</a>
+											<h3><a>Work Planning M4</a></h3>
+											<p>
+												Work Planning for Milestone 4
+											</p>
+										</section>
+									</div>
+								</div>
+							</div>
+						</section>
+					</div>
+					<div class="col-12">
+						<section class="box highlight">
+							<header id="team-nav-location">
+								<h2 class="major"><span>The Team</span></h2>
+								<p>
+									<!-- And where to find us -->
+								</p>
+							</header>
+							<ul class="special">
+								<li>
+									<div>
+										<img src="images/team/db.jpg" alt="">
+										<br />
+										<h3>Diogo Bento</h3>
+										<p>DevOps Master</p>
+										<ul class="contact row">
+											<li class="col-4"><a class="icon brands fa-github" href="https://github.com/buckaroo69"><span class="label">Github</span></a></li>
+											<li class="col-4"><a class="icon brands fa fa-linkedin" href="https://www.linkedin.com"><span class="label">Linkedin</span></a></li>
+										</ul>
+									</div>
+								</li>
+								<li>
+									<div>
+										<img src="images/team/hf.png" alt="">
+										<br />
+										<h3>Hugo Ferreira</h3>
+										<p>Product Owner</p>
+										<ul class="contact row">
+											<li class="col-4"><a class="icon brands fa-github" href="https://github.com/HugoDinisOF"><span class="label">Github</span></a></li>
+											<li class="col-4"><a class="icon brands fa fa-linkedin" href="https://www.linkedin.com"><span class="label">Linkedin</span></a></li>
+										</ul>
+									</div>
+								</li>
+								<li>
+									<div>
+										<img src="images/team/js.png" alt="">
+										<br />
+										<h3>João Soares</h3>
+										<p>Team Manager</p>
+										<ul class="contact row">
+											<li class="col-4"><a class="icon brands fa-github" href="https://github.com/JoaoTS20"><span class="label">Github</span></a></li>
+											<li class="col-4"><a class="icon brands fa fa-linkedin" href="https://www.linkedin.com/in/jo%C3%A3o-soares-2a265b174"><span class="label">Linkedin</span></a></li>
+										</ul>
+									</div>
+								</li>
+								<li>
+									<div>
+										<img src="images/team/pc.jpg" alt="">
+										<br />
+										<h3>Pedro Laranjinha</h3>
+										<p>Lead Developer</p>
+										<ul class="contact row">
+											<li class="col-4"><a class="icon brands fa-github" href="https://github.com/p-laranjinha"><span class="label">Github</span></a></li>
+											<li class="col-4"><a class="icon brands fa fa-linkedin" href="https://www.linkedin.com"><span class="label">Linkedin</span></a></li>
+										</ul>
+									</div>
+								</li>
+								<li>
+									<div>
+										<img src="images/team/ps.png" alt="">
+										<br />
+										<h3>Pedro Silva</h3>
+										<p>Architect</p>
+										<ul class="contact row">
+											<li class="col-4"><a class="icon brands fa-github" href="https://github.com/pmasilva20"><span class="label">Github</span></a></li>
+											<li class="col-4"><a class="icon brands fa fa-linkedin" href="https://www.linkedin.com"><span class="label">Linkedin</span></a></li>
+										</ul>
+									</div>
+								</li>
+								<li>
+									<div>
+										<img src="images/team/ma.png" alt="">
+										<br />
+										<h3>Mário Antunes</h3>
+										<p>Advisor</p>
+										<ul class="contact row">
+											<!-- Placeholder icon to make all the same height -->
+											<li class="col-4"><a class="icon brands fa-github" href="https://github.com/mariolpantunes"><span class="label">Github</span></a></li>
+											<li class="col-4"><a class="icon brands fa fa-linkedin" href="https://www.linkedin.com/in/mariolpantunes/"><span class="label">Linkedin</span></a></li>
+										</ul>
+									</div>
+								</li>
+								<li>
+									<div>
+										<img src="images/team/ra.png" alt="">
+										<br />
+										<h3>Rui Aguiar</h3>
+										<p>Advisor</p>
+										<ul class="contact row">
+											<li class="col-4"><a class="icon brands fa-github" href="https://github.com"><span class="label">Github</span></a></li>
+											<li class="col-4"><a class="icon brands fa fa-linkedin" href="https://www.linkedin.com/in/rui-luís-aguiar-046719/"><span class="label">Linkedin</span></a></li>
+										</ul>
+									</div>
+								</li>
+							</ul>
+						</section>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Footer -->
+		<footer id="footer">
+			<div class="container">
+
+				<!-- Copyright -->
+				<div id="copyright">
+					<ul class="menu">
+						<li>&copy; Neural Tracker. All rights reserved</li>
+						<li>Design based on TXT from <a href="http://html5up.net">HTML5 UP</a></li>
+					</ul>
+				</div>
+
+			</div>
+		</footer>
+
+	</div>
+
+	<!-- Scripts -->
+	<script src="assets/js/jquery.min.js"></script>
+	<script src="assets/js/jquery.dropotron.min.js"></script>
+	<script src="assets/js/jquery.scrolly.min.js"></script>
+	<script src="assets/js/browser.min.js"></script>
+	<script src="assets/js/breakpoints.min.js"></script>
+	<script src="assets/js/util.js"></script>
+	<script src="assets/js/main.js"></script>
+
+</body>
+
+</html>
