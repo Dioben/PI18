@@ -18,7 +18,7 @@
     "loss_functions" : [
         {"loss_function": "SparseCategoricalCrossentropy", "conf": {"from_logits": true}}
     ],
-    "learning_rate" : [0.01, 0.1],
+    "learning_rates" : [0.01, 0.1],
     "k-fold_validation" : 2,
     "k-fold_ids" : [112312225459790, 112312225459797],
     "k-fold_tag" : "File",

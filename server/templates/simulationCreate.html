@@ -144,6 +144,7 @@
                                                     tagValue.text(tagItem);
                                                     tag.append(tagValue);
                                                     let tagDeleteButton = $(document.createElement("button"));
+                                                    tagDeleteButton.prop("type", "button");
                                                     tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
                                                     tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
                                                     tag.append(tagDeleteButton);
@@ -189,6 +190,7 @@
                                                 tagValue.text(item);
                                                 tag.append(tagValue);
                                                 let tagDeleteButton = $(document.createElement("button"));
+                                                tagDeleteButton.prop("type", "button");
                                                 tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
                                                 tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
                                                 tagDeleteButton.val(fullItem)
@@ -211,6 +213,18 @@
                                             }
 
                                             addMetricConfButton.click(addMetricConf);
+                                            addMetricConfNameInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addMetricConf();
+                                                }
+                                            });
+                                            addMetricConfValueInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addMetricConf();
+                                                }
+                                            });
 
                                         });
                                     </script>
@@ -300,6 +314,7 @@
                                                     tagValue.text(tagItem);
                                                     tag.append(tagValue);
                                                     let tagDeleteButton = $(document.createElement("button"));
+                                                    tagDeleteButton.prop("type", "button");
                                                     tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
                                                     tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
                                                     tag.append(tagDeleteButton);
@@ -345,6 +360,7 @@
                                                 tagValue.text(item);
                                                 tag.append(tagValue);
                                                 let tagDeleteButton = $(document.createElement("button"));
+                                                tagDeleteButton.prop("type", "button");
                                                 tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
                                                 tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
                                                 tagDeleteButton.val(fullItem)
@@ -367,6 +383,18 @@
                                             }
 
                                             addOptimizerConfButton.click(addOptimizerConf);
+                                            addOptimizerConfNameInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addOptimizerConf();
+                                                }
+                                            });
+                                            addOptimizerConfValueInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addOptimizerConf();
+                                                }
+                                            });
 
                                         });
                                     </script>
@@ -456,6 +484,7 @@
                                                     tagValue.text(tagItem);
                                                     tag.append(tagValue);
                                                     let tagDeleteButton = $(document.createElement("button"));
+                                                    tagDeleteButton.prop("type", "button");
                                                     tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
                                                     tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
                                                     tag.append(tagDeleteButton);
@@ -501,6 +530,7 @@
                                                 tagValue.text(item);
                                                 tag.append(tagValue);
                                                 let tagDeleteButton = $(document.createElement("button"));
+                                                tagDeleteButton.prop("type", "button");
                                                 tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
                                                 tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
                                                 tagDeleteButton.val(fullItem)
@@ -523,6 +553,18 @@
                                             }
 
                                             addLossFunctionConfButton.click(addLossFunctionConf);
+                                            addLossFunctionConfNameInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addLossFunctionConf();
+                                                }
+                                            });
+                                            addLossFunctionConfValueInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addLossFunctionConf();
+                                                }
+                                            });
 
                                         });
                                     </script>
@@ -610,66 +652,6 @@
                                     <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                                 {% endfor %}
                             </div>
-                            <div>
-                                {{ fieldForm.dataset_format.label_tag }}
-                                {{ fieldForm.dataset_format }}
-                                {% for error in fieldForm.dataset_format.errors %}
-                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                            <div class="card card-body mb-3" id="fieldCSVCollapse">
-                                <div class="mb-3">
-                                    {{ fieldForm.label_column.label_tag }}
-                                    {{ fieldForm.label_column }}
-                                    {% for error in fieldForm.label_column.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            <div class="card card-body mb-3" id="fieldNPZCollapse">
-                                <div class="mb-3">
-                                    {{ fieldForm.train_feature_name.label_tag }}
-                                    {{ fieldForm.train_feature_name }}
-                                    {% for error in fieldForm.train_feature_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mb-3">
-                                    {{ fieldForm.train_label_name.label_tag }}
-                                    {{ fieldForm.train_label_name }}
-                                    {% for error in fieldForm.train_label_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mb-3">
-                                    {{ fieldForm.test_feature_name.label_tag }}
-                                    {{ fieldForm.test_feature_name }}
-                                    {% for error in fieldForm.test_feature_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mb-3">
-                                    {{ fieldForm.test_label_name.label_tag }}
-                                    {{ fieldForm.test_label_name }}
-                                    {% for error in fieldForm.test_label_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mb-3">
-                                    {{ fieldForm.val_feature_name.label_tag }}
-                                    {{ fieldForm.val_feature_name }}
-                                    {% for error in fieldForm.val_feature_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mb-3">
-                                    {{ fieldForm.val_label_name.label_tag }}
-                                    {{ fieldForm.val_label_name }}
-                                    {% for error in fieldForm.val_label_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                            </div>
                         </div>
                         <div id="fieldUrlDatasets">
                             <div class="mb-3">
@@ -690,6 +672,66 @@
                                 {{ fieldForm.url_val_dataset.label_tag }}
                                 {{ fieldForm.url_val_dataset }}
                                 {% for error in fieldForm.url_val_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            {{ fieldForm.dataset_format.label_tag }}
+                            {{ fieldForm.dataset_format }}
+                            {% for error in fieldForm.dataset_format.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="card card-body mb-3" id="fieldCSVCollapse">
+                            <div class="mb-3">
+                                {{ fieldForm.label_column.label_tag }}
+                                {{ fieldForm.label_column }}
+                                {% for error in fieldForm.label_column.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="card card-body mb-3" id="fieldNPZCollapse">
+                            <div class="mb-3">
+                                {{ fieldForm.train_feature_name.label_tag }}
+                                {{ fieldForm.train_feature_name }}
+                                {% for error in fieldForm.train_feature_name.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.train_label_name.label_tag }}
+                                {{ fieldForm.train_label_name }}
+                                {% for error in fieldForm.train_label_name.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.test_feature_name.label_tag }}
+                                {{ fieldForm.test_feature_name }}
+                                {% for error in fieldForm.test_feature_name.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.test_label_name.label_tag }}
+                                {{ fieldForm.test_label_name }}
+                                {% for error in fieldForm.test_label_name.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.val_feature_name.label_tag }}
+                                {{ fieldForm.val_feature_name }}
+                                {% for error in fieldForm.val_feature_name.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.val_label_name.label_tag }}
+                                {{ fieldForm.val_label_name }}
+                                {% for error in fieldForm.val_label_name.errors %}
                                     <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                                 {% endfor %}
                             </div>
@@ -820,6 +862,7 @@
                     tagValue.text(item);
                     tag.append(tagValue);
                     let tagDeleteButton = $(document.createElement("button"));
+                    tagDeleteButton.prop("type", "button");
                     tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
                     tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
                     tag.append(tagDeleteButton);
@@ -853,6 +896,7 @@
                 tagValue.text(learningRate);
                 tag.append(tagValue);
                 let tagDeleteButton = $(document.createElement("button"));
+                tagDeleteButton.prop("type", "button");
                 tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
                 tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
                 tag.append(tagDeleteButton);
@@ -873,6 +917,12 @@
             }
 
             addLearningRateButton.click(addLearningRate);
+            addLearningRateInput.keyup(function(e) {
+                let keyCode = e.keyCode || e.which;
+                if (keyCode === 13) {
+                    addLearningRate();
+                }
+            });
         });
         docReady(function () {
             let isKFoldSwitch = $('#{{ fieldForm.is_k_fold.id_for_label }}');
@@ -906,6 +956,7 @@
                     tagValue.text(item);
                     tag.append(tagValue);
                     let tagDeleteButton = $(document.createElement("button"));
+                    tagDeleteButton.prop("type", "button");
                     tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
                     tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
                     tag.append(tagDeleteButton);
@@ -936,6 +987,7 @@
                 tagValue.text(extraTags);
                 tag.append(tagValue);
                 let tagDeleteButton = $(document.createElement("button"));
+                tagDeleteButton.prop("type", "button");
                 tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
                 tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
                 tag.append(tagDeleteButton);
@@ -956,6 +1008,12 @@
             }
 
             addExtraTagsButton.click(addExtraTags);
+            addExtraTagsInput.keyup(function(e) {
+                let keyCode = e.keyCode || e.which;
+                if (keyCode === 13) {
+                    addExtraTags();
+                }
+            });
         });
         docReady(function () {
             let fieldOrFileSwitch = $('#{{ fieldForm.use_url_datasets.id_for_label }}');
@@ -1014,6 +1072,22 @@
                 Collapse.hide()
             else
                 Collapse.show()
+        });
+        docReady(function () {
+            $('#fieldForm').on('keyup keypress', function(e) {
+                let keyCode = e.keyCode || e.which;
+                if (keyCode === 13) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            $('#fileForm').on('keyup keypress', function(e) {
+                let keyCode = e.keyCode || e.which;
+                if (keyCode === 13) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
         });
     </script>
 {% endblock %}
