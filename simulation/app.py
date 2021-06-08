@@ -174,41 +174,60 @@ def main(model_json,conf_json):
     url = 'http://parser:6000/update'
 
     def get_optimizer_tensorflow(conf_json,base_learning_rate):
-        if 'adadelta' in conf_json['optimizer'].lower():
-            return tf.keras.optimizers.Adadelta(lr=base_learning_rate)
-        elif 'adagrad' in conf_json['optimizer'].lower():
-            return tf.keras.optimizers.Adagrad(lr=base_learning_rate)
-        elif 'adam' in conf_json['optimizer'].lower():
-            return tf.keras.optimizers.Adam(lr=base_learning_rate)
-        elif 'ftrl' in conf_json['optimizer'].lower():
-            return tf.keras.optimizers.Ftrl(lr=base_learning_rate)
-        elif 'nadam' in conf_json['optimizer'].lower():
-            return tf.keras.optimizers.Nadam(lr=base_learning_rate)
-        elif 'rmsprop' in conf_json['optimizer'].lower():
-            return tf.keras.optimizers.RMSprop(lr=base_learning_rate)
-        elif 'sgd' in conf_json['optimizer'].lower():
-            return tf.keras.optimizers.SGD(lr=base_learning_rate)
+        config = conf_json['optimizer_conf']
+        print('optimizer_config',config)
+        config = parse_conf_dictionary(config)
+        identifier = {"class_name": conf_json['optimizer'].lower(),
+                               "config": config}
+        optimizer = tf.keras.optimizers.get(identifier)
+        return optimizer
 
     def get_loss_func_tensorflow(conf_json):
-        print(type(conf_json['from_logits']))
+        #config = {"from_logits": conf_json['from_logits']}
+        config = conf_json['loss_function_conf']
+        print('loss_config',config)
+        config = parse_conf_dictionary(config)
         identifier = {"class_name": conf_json['loss_function'],
-                "config": {"from_logits": conf_json['from_logits']} }
+                "config": config}
         loss = tf.keras.losses.get(identifier)
         return loss
 
+    def parse_conf_dictionary(config):
+        print('config pre parse:')
+        print(config)
+        for key in config.keys():
+            value = config[key].lower()
+            if 'true' in value:
+                config[key] = True
+            elif 'false' in value:
+                config[key] = False
+            elif value.isnumeric():
+                config[key] = float(value)
+        print('config pos parse:')
+        print(config)
+        return config
+
     def get_metrics_tensorflow(conf_json):
+        print('metrics')
         print(conf_json['metrics'])
         metrics_lst_json = conf_json['metrics']
         metrics_lst_class = []
         for metrics_json in metrics_lst_json:
+            #{"metric":"KLDivergence", "conf":{}},
+            metric_name = metrics_json['metric']
+            conf_metric = metrics_json['conf']
             #We already add accuracy and leave which one to be decided by framework
-            if metrics_json in ['BinaryAccuracy', 'Accuracy', 'TopKCategoricalAccuracy' 'CategoricalAccuracy', 'SparseCategoricalAccuracy']:
+            if metric_name in ['BinaryAccuracy', 'Accuracy', 'TopKCategoricalAccuracy' 'CategoricalAccuracy', 'SparseCategoricalAccuracy']:
                 print('skipped a acc metric')
                 continue
-            print(metrics_json)
-            metrics_class = tf.keras.metrics.get(metrics_json)
+            print('metric_conf')
+            print(metric_name)
+            print(conf_metric)
+            conf_metric = parse_conf_dictionary(conf_metric)
+            identifier = {"class_name": metric_name,
+                "config": conf_metric}
+            metrics_class = tf.keras.metrics.get(identifier)
             metrics_lst_class.append(metrics_class)
-        
         #Default one
         metrics_lst_class.append('accuracy')
         return metrics_lst_class
