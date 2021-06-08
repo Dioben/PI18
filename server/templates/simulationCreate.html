@@ -46,15 +46,13 @@
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="mb-3">
-                            {{ fieldForm.learning_rate }}
-                        </div>
                         <div>
                             <label for="addLearningRateInput">{{ fieldForm.learning_rate.label }}:</label>
                             <div class="input-group d-flex flex-nowrap">
                                 <input id="addLearningRateInput" type="number" class="form-control">
                                 <button id="addLearningRateButton" class="btn btn-secondary" type="button">Add</button>
                             </div>
+                            {{ fieldForm.learning_rate }}
                             {% for error in fieldForm.learning_rate.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
@@ -1074,14 +1072,14 @@
                 Collapse.show()
         });
         docReady(function () {
-            $('#fieldForm').on('keyup keypress', function(e) {
+            $('#fieldForm').on('keyup keydown keypress', function(e) {
                 let keyCode = e.keyCode || e.which;
                 if (keyCode === 13) {
                     e.preventDefault();
                     return false;
                 }
             });
-            $('#fileForm').on('keyup keypress', function(e) {
+            $('#fileForm').on('keyup keydown keypress', function(e) {
                 let keyCode = e.keyCode || e.which;
                 if (keyCode === 13) {
                     e.preventDefault();

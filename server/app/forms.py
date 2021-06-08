@@ -69,7 +69,9 @@ class SimCreationForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
-                'style': 'display: none;'
+                'style': 'height: 0; margin: 0; border: 0; padding: 0;',
+                'tabindex': '-1',
+                'readonly': '',
             }
         )
     )
@@ -127,7 +129,8 @@ class SimCreationForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
-                'style': 'display: none;'
+                'style': 'display: none;',
+                'readonly': '',
             }
         )
     )
@@ -154,7 +157,8 @@ class SimCreationForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
-                'style': 'display: none;'
+                'style': 'display: none;',
+                'readonly': '',
             }
         )
     )
@@ -189,7 +193,8 @@ class SimCreationForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
-                'style': 'display: none;'
+                'style': 'display: none;',
+                'readonly': '',
             }
         )
     )
@@ -375,7 +380,8 @@ class SimCreationForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
-                'style': 'display: none;'
+                'style': 'display: none;',
+                'readonly': '',
             }
         )
     )
