@@ -15,12 +15,16 @@
     "val_feature_name" : "x_val",
     "val_label_name" : "y_val",
     "optimizer" : "rmsprop",
+    "optimizer_conf" : {},
     "loss_function" : "SparseCategoricalCrossentropy",
-    "from_logits" : true,
+    "loss_function_conf" : {
+        "from_logits" : "true"
+    },
     "learning_rate" : 0.01,
     "k-fold_validation" : 0,
     "k-fold_ids" : [112312225459790, 112312225459797],
     "metrics" : [
-        "KLDivergence",
-        "LogCoshError"]
+        {"metric":"KLDivergence", "conf":{}},
+        {"metric":"LogCoshError", "conf":{}}
+    ]
 }
