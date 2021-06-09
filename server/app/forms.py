@@ -69,13 +69,19 @@ class SimCreationForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
-                'style': 'display: none;'
+                'style': 'height: 0; margin: 0; border: 0; padding: 0;',
+                'tabindex': '-1',
+                'readonly': '',
             }
         )
     )
     metrics = forms.MultipleChoiceField(
         label='Extra metrics',
-        widget=forms.SelectMultiple(),
+        widget=forms.CheckboxSelectMultiple(
+            attrs={
+                'class': 'form-check-input',
+            }
+        ),
         choices=(
             ('AUC', 'AUC'),
             ('Accuracy', 'Accuracy'),
@@ -117,9 +123,23 @@ class SimCreationForm(forms.Form):
         ),
         required=False
     )
+    metrics_conf = StringListField(
+        label='Metrics configs',
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'style': 'display: none;',
+                'readonly': '',
+            }
+        )
+    )
     optimizer = forms.MultipleChoiceField(
-        label='Optimizer',
-        widget=forms.SelectMultiple(),
+        label='Optimizers',
+        widget=forms.CheckboxSelectMultiple(
+            attrs={
+                'class': 'form-check-input',
+            }),
         choices=(
             ('Adadelta', 'Adadelta'),
             ('Adagrad', 'Adagrad'),
@@ -131,9 +151,23 @@ class SimCreationForm(forms.Form):
             ('SGD', 'SGD'),
         )
     )
+    optimizer_conf = StringListField(
+        label='Optimizers configs',
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'style': 'display: none;',
+                'readonly': '',
+            }
+        )
+    )
     loss_function = forms.MultipleChoiceField(
-        label='Loss function',
-        widget=forms.SelectMultiple(),
+        label='Loss functions',
+        widget=forms.CheckboxSelectMultiple(
+            attrs={
+                'class': 'form-check-input',
+            }),
         choices=(
             ('BinaryCrossentropy', 'BinaryCrossentropy'),
             ('CategoricalCrossentropy', 'CategoricalCrossentropy'),
@@ -151,6 +185,17 @@ class SimCreationForm(forms.Form):
             ('Reduction', 'Reduction'),
             ('SparseCategoricalCrossentropy', 'SparseCategoricalCrossentropy'),
             ('SquaredHinge', 'SquaredHinge'),
+        )
+    )
+    loss_function_conf = StringListField(
+        label='Loss functions configs',
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'style': 'display: none;',
+                'readonly': '',
+            }
         )
     )
     is_k_fold = forms.BooleanField(
@@ -254,6 +299,9 @@ class SimCreationForm(forms.Form):
         choices=(
             ('npz', '.npz'),
             ('csv', '.csv'),
+            ('pickle', '.pickle (pandas)'),
+            ('zip', '.zip (pandas)'),
+            ('arff', '.arff'),
         )
     )
     label_column = forms.CharField(
@@ -332,7 +380,8 @@ class SimCreationForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
-                'style': 'display: none;'
+                'style': 'display: none;',
+                'readonly': '',
             }
         )
     )

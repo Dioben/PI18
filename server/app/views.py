@@ -425,6 +425,26 @@ def post_sim(request):
             if trainext != cleaned_data['dataset_format']:
                 return HttpResponse("Bad request", status=400)
 
+        metric_conf = dict()
+        for x in cleaned_data['metrics_conf']:
+            x = x.split(':')
+            if x[0] not in metric_conf:
+                metric_conf[x[0]] = dict()
+            metric_conf[x[0]][x[1]] = x[2]
+
+        optimizer_conf = dict()
+        for x in cleaned_data['optimizer_conf']:
+            x = x.split(':')
+            if x[0] not in optimizer_conf:
+                optimizer_conf[x[0]] = dict()
+            optimizer_conf[x[0]][x[1]] = x[2]
+
+        loss_function_conf = dict()
+        for x in cleaned_data['loss_function_conf']:
+            x = x.split(':')
+            if x[0] not in loss_function_conf:
+                loss_function_conf[x[0]] = dict()
+            loss_function_conf[x[0]][x[1]] = x[2]
 
         firstPass = True
         allRespOk = True
@@ -535,12 +555,13 @@ def post_sim(request):
                             "val_feature_name": cleaned_data['val_feature_name'] if cleaned_data['val_feature_name'] else '',
                             "val_label_name": cleaned_data['val_label_name'] if cleaned_data['val_label_name'] else '',
                             "optimizer": optimizer,
+                            "optimizer_conf": optimizer_conf[optimizer] if optimizer in optimizer_conf else dict(),
                             "loss_function": loss_function,
-                            "from_logits": True,
+                            "loss_function_conf": loss_function_conf[loss_function] if loss_function in loss_function_conf else dict(),
                             "learning_rate": learning_rate,
                             "k-fold_validation": 0 if not cleaned_data['k_fold_validation'] else cleaned_data['k_fold_validation'],
                             "k-fold_ids": k_fold_ids,
-                            "metrics": sim.metrics,
+                            "metrics": [{'metric': metric, 'conf': metric_conf[metric] if metric in metric_conf else dict()} for metric in cleaned_data["metrics"]],
                             "label_column": cleaned_data['label_column'] if cleaned_data['label_column'] else ''
                         },
                         "model": modeljson
@@ -600,20 +621,20 @@ def post_sim(request):
         firstPass = True
         allRespOk = True
         simList = []
-        for optimizer_i in range(len(configjson['optimizer'])):
-            for loss_function_i in range(len(configjson['loss_function'])):
-                for learning_rate_i in range(len(configjson['learning_rate'])):
+        for optimizer_i in range(len(configjson['optimizers'])):
+            for loss_function_i in range(len(configjson['loss_functions'])):
+                for learning_rate_i in range(len(configjson['learning_rates'])):
                     if not allRespOk:
                         break
-                    optimizer = configjson['optimizer'][optimizer_i]
-                    loss_function = configjson['loss_function'][loss_function_i]
-                    learning_rate = configjson['learning_rate'][learning_rate_i]
+                    optimizer = configjson['optimizers'][optimizer_i]
+                    loss_function = configjson['loss_functions'][loss_function_i]
+                    learning_rate = configjson['learning_rates'][learning_rate_i]
                     name = configjson['name']
-                    if len(configjson['optimizer']) > 1:
+                    if len(configjson['optimizers']) > 1:
                         name += ' (O' + str(optimizer_i+1) + ')'
-                    if len(configjson['loss_function']) > 1:
+                    if len(configjson['loss_functions']) > 1:
                         name += ' (LF' + str(loss_function_i+1) + ')'
-                    if len(configjson['learning_rate']) > 1:
+                    if len(configjson['learning_rates']) > 1:
                         name += ' (LR' + str(learning_rate_i+1) + ')'
 
                     k_fold_ids = []
@@ -628,7 +649,7 @@ def post_sim(request):
                                          epoch_interval=configjson['epoch_period'],
                                          goal_epochs=configjson['total_epochs'],
                                          learning_rate=learning_rate,
-                                         metrics=configjson["extra-metrics"])
+                                         metrics=[metric['metric'] for metric in configjson["extra-metrics"]])
                         sim.save()
                         simList.append(sim)
                         if 'tags' in configjson:
@@ -650,7 +671,7 @@ def post_sim(request):
                                              epoch_interval=configjson['epoch_period'],
                                              goal_epochs=configjson['total_epochs'],
                                              learning_rate=learning_rate,
-                                             metrics=configjson["extra-metrics"])
+                                             metrics=[metric['metric'] for metric in configjson["extra-metrics"]])
                             sim.save()
                             tagged = Tagged(tag=configjson['k-fold_tag'],
                                             sim=sim,
@@ -705,13 +726,14 @@ def post_sim(request):
                             "test_label_name": configjson['test_label_name'] if configjson['test_label_name'] else '',
                             "val_feature_name": configjson['val_feature_name'] if configjson['val_feature_name'] else '',
                             "val_label_name": configjson['val_label_name'] if configjson['val_label_name'] else '',
-                            "optimizer": optimizer,
-                            "loss_function": loss_function,
-                            "from_logits": True,
+                            "optimizer": optimizer['optimizer'],
+                            "optimizer_conf": optimizer['conf'],
+                            "loss_function": loss_function['loss_function'],
+                            "loss_function_conf": loss_function['conf'],
                             "learning_rate": learning_rate,
                             "k-fold_validation": configjson['k-fold_validation'],
                             "k-fold_ids": k_fold_ids,
-                            "metrics": sim.metrics,
+                            "metrics": configjson["extra-metrics"],
                             "label_column": configjson['label_column'] if configjson['label_column'] else ''
                         },
                         "model": modeljson

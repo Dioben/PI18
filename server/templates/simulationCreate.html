@@ -16,31 +16,6 @@
                         <input id="fieldOrFileSwitch" class="form-check-input" type="checkbox">
                         <label class="form-check-label" for="fieldOrFileSwitch">Use config file</label>
                     </div>
-                    <script>
-                        docReady(function () {
-                            let fieldOrFileSwitch = $('#fieldOrFileSwitch');
-                            let fieldForm = $('#fieldForm');
-                            let fileForm = $('#fileForm');
-                            fieldOrFileSwitch.click(function() {
-                                if (fieldOrFileSwitch.is(':checked')) {
-                                    fileForm.show()
-                                    fieldForm.hide()
-                                }
-                                else {
-                                    fieldForm.show()
-                                    fileForm.hide()
-                                }
-                            });
-                            if (fieldOrFileSwitch.is(':checked')) {
-                                fileForm.show()
-                                fieldForm.hide()
-                            }
-                            else {
-                                fieldForm.show()
-                                fileForm.hide()
-                            }
-                        });
-                    </script>
                     <form id="fieldForm" action="/simulations/create/" method="post" style="margin-bottom: 0; display: none;" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="mb-3">
@@ -71,15 +46,13 @@
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="mb-3">
-                            {{ fieldForm.learning_rate }}
-                        </div>
                         <div>
                             <label for="addLearningRateInput">{{ fieldForm.learning_rate.label }}:</label>
                             <div class="input-group d-flex flex-nowrap">
                                 <input id="addLearningRateInput" type="number" class="form-control">
                                 <button id="addLearningRateButton" class="btn btn-secondary" type="button">Add</button>
                             </div>
+                            {{ fieldForm.learning_rate }}
                             {% for error in fieldForm.learning_rate.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
@@ -89,98 +62,513 @@
                             <div id="learningRateList" class="d-flex flex-wrap">
                             </div>
                         </div>
-                        <script>
-                            docReady(function () {
-                                let learningRateArray = []
-                                let learningRateInput = $('#{{ fieldForm.learning_rate.id_for_label }}');
-
-                                let addLearningRateInput = $('#addLearningRateInput');
-                                let addLearningRateButton = $('#addLearningRateButton');
-                                let learningRateList = $('#learningRateList');
-                                let learningRateError = $('#learningRateError');
-
-                                if (learningRateInput.val() !== "")
-                                    learningRateInput.val().split(",").forEach(function(item, index) {
-                                        let tag = $(document.createElement("div"));
-                                        tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
-                                        let tagValue = $(document.createElement("span"));
-                                        tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
-                                        tagValue.text(item);
-                                        tag.append(tagValue);
-                                        let tagDeleteButton = $(document.createElement("button"));
-                                        tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
-                                        tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
-                                        tag.append(tagDeleteButton);
-                                        learningRateList.append(tag);
-
-                                        tagDeleteButton.click(removeLearningRate)
-
-                                        learningRateArray.push(item)
-                                    })
-
-                                function addLearningRate() {
-                                    let learningRate = addLearningRateInput.val()
-                                    if (isNaN(learningRate) || learningRate === "") {
-                                        learningRateError.text("Learning rate is not a number");
-                                        return;
-                                    }
-                                    if (parseFloat(learningRate) < 0.00001) {
-                                        learningRateError.text("Learning rate has to be higher or equal to 0.00001");
-                                        return;
-                                    }
-                                    if (learningRateArray.indexOf(learningRate) > -1) {
-                                        learningRateError.text("Learning rate already has that value");
-                                        return;
-                                    }
-                                    $('#learningRateError').text("")
-
-                                    let tag = $(document.createElement("div"));
-                                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
-                                    let tagValue = $(document.createElement("span"));
-                                    tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
-                                    tagValue.text(learningRate);
-                                    tag.append(tagValue);
-                                    let tagDeleteButton = $(document.createElement("button"));
-                                    tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
-                                    tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
-                                    tag.append(tagDeleteButton);
-                                    learningRateList.append(tag);
-
-                                    tagDeleteButton.click(removeLearningRate)
-
-                                    learningRateArray.push(learningRate)
-                                    learningRateInput.val(learningRateArray.toString())
-
-                                    $('#addLearningRateInput').val("")
-                                }
-
-                                function removeLearningRate() {
-                                    learningRateArray.splice(learningRateArray.indexOf($(this).parent().find("span").text()), 1)
-                                    learningRateInput.val(learningRateArray.toString())
-                                    $(this).parent().remove();
-                                }
-
-                                addLearningRateButton.click(addLearningRate);
-                            });
-                        </script>
+                        <div>
+                            {{ fieldForm.metrics_conf }}
+                        </div>
                         <div class="mb-3 multipleSelectContainer">
                             {{ fieldForm.metrics.label_tag }}
-                            {{ fieldForm.metrics }}
+                            <div class="input-group d-flex">
+                                <label class="input-group-text" for="metricsSearch" style="border-bottom-left-radius: 0"><i class="fa fa-search"></i></label>
+                                <input type="text" class="form-control" id="metricsSearch" placeholder="Search" style="border-bottom-right-radius: 0">
+                            </div>
+                            <div class="card card-body" style="max-height: 50vh; overflow: auto; padding: 12px 12px 4px 12px; border-top-left-radius: 0; border-top-right-radius: 0; border-top: 0;">
+                                <script>
+                                    docReady(function() {
+                                        function filterMetrics() {
+                                            let searchValue = $("#metricsSearch").val()
+                                            $(".metricContainer").css("display", "");
+                                            $(".metricContainer").filter(function () {
+                                                if (searchValue == null) return false;
+                                                return $(this).find('.form-check-input').val().toLowerCase().indexOf(searchValue.toLowerCase()) < 0;
+                                            }).css("display", "none");
+                                        }
+                                        $("#metricsSearch").keyup(filterMetrics);
+                                        filterMetrics();
+                                    });
+                                    let metricConfArray = []
+                                </script>
+                                {% for metric in fieldForm.metrics %}
+                                    <div class="metricContainer">
+                                        {{ metric }}
+                                        <div id="{{ metric.id_for_label }}ConfContainer" class="card card-body" style="padding: 12px">
+                                            <span>Configuration:</span>
+                                            <div class="input-group d-flex flex-wrap">
+                                                <label class="input-group-text" for="{{ metric.id_for_label }}AddConfName">Name:</label>
+                                                <input type="text" class="form-control" id="{{ metric.id_for_label }}AddConfName" style="min-width: 100px">
+                                                <label class="input-group-text" for="{{ metric.id_for_label }}AddConfValue">Value:</label>
+                                                <input type="text" class="form-control" id="{{ metric.id_for_label }}AddConfValue" style="min-width: 100px">
+                                                <button id="{{ metric.id_for_label }}AddButton" class="btn btn-secondary" type="button">Add</button>
+                                            </div>
+                                            <div id="{{ metric.id_for_label }}Error" class="invalid-feedback mt-0" style="display: initial;"></div>
+                                            <div class="card card-body p-1" style="padding-bottom: 1px !important;">
+                                                <div id="{{ metric.id_for_label }}ConfList" class="d-flex flex-wrap">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2"></div>
+                                    </div>
+                                    <script>
+                                        docReady(function() {
+                                            let checkbox = $('#{{ metric.id_for_label }}');
+                                            let confDiv = $('#{{ metric.id_for_label }}ConfContainer');
+                                            function toggleConfs() {
+                                                if (checkbox.is(':checked'))
+                                                    confDiv.slideDown(10);
+                                                else
+                                                    confDiv.slideUp(10);
+                                            }
+                                            checkbox.change(toggleConfs);
+                                            toggleConfs();
+
+                                            let metricConfInput = $('#{{ fieldForm.metrics_conf.id_for_label }}');
+
+                                            let addMetricConfNameInput = $('#{{ metric.id_for_label }}AddConfName');
+                                            let addMetricConfValueInput = $('#{{ metric.id_for_label }}AddConfValue');
+                                            let addMetricConfButton = $('#{{ metric.id_for_label }}AddButton');
+                                            let metricConfList = $('#{{ metric.id_for_label }}ConfList');
+                                            let metricConfError = $('#{{ metric.id_for_label }}Error');
+
+                                            let metric = $('#{{ metric.id_for_label }}').val();
+
+                                            if (metricConfInput.val() !== "")
+                                                metricConfInput.val().split(",").forEach(function(item, index) {
+                                                    let tagItem = item.split(":")
+                                                    if (tagItem[0] !== metric) return;
+                                                    tagItem = tagItem[1] + ": " + tagItem[2]
+                                                    let tag = $(document.createElement("div"));
+                                                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                                                    let tagValue = $(document.createElement("span"));
+                                                    tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                                    tagValue.text(tagItem);
+                                                    tag.append(tagValue);
+                                                    let tagDeleteButton = $(document.createElement("button"));
+                                                    tagDeleteButton.prop("type", "button");
+                                                    tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                                    tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                                    tag.append(tagDeleteButton);
+                                                    metricConfList.append(tag);
+
+                                                    tagDeleteButton.click(removeMetricConf)
+
+                                                    metricConfArray.push(item)
+                                                })
+
+                                            function addMetricConf() {
+                                                let nameInput = addMetricConfNameInput.val()
+                                                let valueInput = addMetricConfValueInput.val()
+                                                if (nameInput.trim() === "") {
+                                                    metricConfError.text("Name cannot be empty");
+                                                    return;
+                                                }
+                                                if (nameInput.indexOf(':') > -1) {
+                                                    metricConfError.text("Name cannot contain \":\"");
+                                                    return;
+                                                }
+                                                if (valueInput.trim() === "") {
+                                                    metricConfError.text("Value cannot be empty");
+                                                    return;
+                                                }
+                                                if (valueInput.indexOf(':') > -1) {
+                                                    metricConfError.text("Value cannot contain \":\"");
+                                                    return;
+                                                }
+                                                let fullItem = metric+':'+nameInput+':'+valueInput;
+                                                console.log(nameInput + ": " + valueInput)
+                                                if (metricConfArray.indexOf(fullItem) > -1) {
+                                                    metricConfError.text("Config already exists");
+                                                    return;
+                                                }
+                                                $('#extraTagsError').text("")
+                                                let item = nameInput + ": " + valueInput;
+
+                                                let tag = $(document.createElement("div"));
+                                                tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                                                let tagValue = $(document.createElement("span"));
+                                                tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                                tagValue.text(item);
+                                                tag.append(tagValue);
+                                                let tagDeleteButton = $(document.createElement("button"));
+                                                tagDeleteButton.prop("type", "button");
+                                                tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                                tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                                tagDeleteButton.val(fullItem)
+                                                tag.append(tagDeleteButton);
+                                                metricConfList.append(tag);
+
+                                                tagDeleteButton.click(removeMetricConf)
+
+                                                metricConfArray.push(fullItem)
+                                                metricConfInput.val(metricConfArray.toString())
+
+                                                addMetricConfNameInput.val("")
+                                                addMetricConfValueInput.val("")
+                                            }
+
+                                            function removeMetricConf() {
+                                                metricConfArray.splice(metricConfArray.indexOf($(this).val()), 1)
+                                                metricConfInput.val(metricConfArray.toString())
+                                                $(this).parent().remove();
+                                            }
+
+                                            addMetricConfButton.click(addMetricConf);
+                                            addMetricConfNameInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addMetricConf();
+                                                }
+                                            });
+                                            addMetricConfValueInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addMetricConf();
+                                                }
+                                            });
+
+                                        });
+                                    </script>
+                                {% endfor %}
+                            </div>
                             {% for error in fieldForm.metrics.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="mb-3">
+                        <div>
+                            {{ fieldForm.optimizer_conf }}
+                        </div>
+                        <div class="mb-3 multipleSelectContainer">
                             {{ fieldForm.optimizer.label_tag }}
-                            {{ fieldForm.optimizer }}
+                            <div class="input-group d-flex">
+                                <label class="input-group-text" for="optimizerSearch" style="border-bottom-left-radius: 0"><i class="fa fa-search"></i></label>
+                                <input type="text" class="form-control" id="optimizerSearch" placeholder="Search" style="border-bottom-right-radius: 0">
+                            </div>
+                            <div class="card card-body" style="max-height: 50vh; overflow: auto; padding: 12px 12px 4px 12px; border-top-left-radius: 0; border-top-right-radius: 0; border-top: 0;">
+                                <script>
+                                    docReady(function() {
+                                        function filterOptimizer() {
+                                            let searchValue = $("#optimizerSearch").val()
+                                            $(".optimizerContainer").css("display", "");
+                                            $(".optimizerContainer").filter(function () {
+                                                if (searchValue == null) return false;
+                                                return $(this).find('.form-check-input').val().toLowerCase().indexOf(searchValue.toLowerCase()) < 0;
+                                            }).css("display", "none");
+                                        }
+                                        $("#optimizerSearch").keyup(filterOptimizer);
+                                        filterOptimizer();
+                                    });
+                                    let optimizerConfArray = []
+                                </script>
+                                {% for optimizer in fieldForm.optimizer %}
+                                    <div class="optimizerContainer">
+                                        {{ optimizer }}
+                                        <div id="{{ optimizer.id_for_label }}ConfContainer" class="card card-body" style="padding: 12px">
+                                            <span>Configuration:</span>
+                                            <div class="input-group d-flex flex-wrap">
+                                                <label class="input-group-text" for="{{ optimizer.id_for_label }}AddConfName">Name:</label>
+                                                <input type="text" class="form-control" id="{{ optimizer.id_for_label }}AddConfName" style="min-width: 100px">
+                                                <label class="input-group-text" for="{{ optimizer.id_for_label }}AddConfValue">Value:</label>
+                                                <input type="text" class="form-control" id="{{ optimizer.id_for_label }}AddConfValue" style="min-width: 100px">
+                                                <button id="{{ optimizer.id_for_label }}AddButton" class="btn btn-secondary" type="button">Add</button>
+                                            </div>
+                                            <div id="{{ optimizer.id_for_label }}Error" class="invalid-feedback mt-0" style="display: initial;"></div>
+                                            <div class="card card-body p-1" style="padding-bottom: 1px !important;">
+                                                <div id="{{ optimizer.id_for_label }}ConfList" class="d-flex flex-wrap">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2"></div>
+                                    </div>
+                                    <script>
+                                        docReady(function() {
+                                            let checkbox = $('#{{ optimizer.id_for_label }}');
+                                            let confDiv = $('#{{ optimizer.id_for_label }}ConfContainer');
+                                            function toggleConfs() {
+                                                if (checkbox.is(':checked'))
+                                                    confDiv.slideDown(10);
+                                                else
+                                                    confDiv.slideUp(10);
+                                            }
+                                            checkbox.change(toggleConfs);
+                                            toggleConfs();
+
+                                            let optimizerConfInput = $('#{{ fieldForm.optimizer_conf.id_for_label }}');
+
+                                            let addOptimizerConfNameInput = $('#{{ optimizer.id_for_label }}AddConfName');
+                                            let addOptimizerConfValueInput = $('#{{ optimizer.id_for_label }}AddConfValue');
+                                            let addOptimizerConfButton = $('#{{ optimizer.id_for_label }}AddButton');
+                                            let optimizerConfList = $('#{{ optimizer.id_for_label }}ConfList');
+                                            let optimizerConfError = $('#{{ optimizer.id_for_label }}Error');
+
+                                            let optimizer = $('#{{ optimizer.id_for_label }}').val();
+
+                                            if (optimizerConfInput.val() !== "")
+                                                optimizerConfInput.val().split(",").forEach(function(item, index) {
+                                                    let tagItem = item.split(":")
+                                                    if (tagItem[0] !== optimizer) return;
+                                                    tagItem = tagItem[1] + ": " + tagItem[2]
+                                                    let tag = $(document.createElement("div"));
+                                                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                                                    let tagValue = $(document.createElement("span"));
+                                                    tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                                    tagValue.text(tagItem);
+                                                    tag.append(tagValue);
+                                                    let tagDeleteButton = $(document.createElement("button"));
+                                                    tagDeleteButton.prop("type", "button");
+                                                    tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                                    tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                                    tag.append(tagDeleteButton);
+                                                    optimizerConfList.append(tag);
+
+                                                    tagDeleteButton.click(removeOptimizerConf)
+
+                                                    optimizerConfArray.push(item)
+                                                })
+
+                                            function addOptimizerConf() {
+                                                let nameInput = addOptimizerConfNameInput.val()
+                                                let valueInput = addOptimizerConfValueInput.val()
+                                                if (nameInput.trim() === "") {
+                                                    optimizerConfError.text("Name cannot be empty");
+                                                    return;
+                                                }
+                                                if (nameInput.indexOf(':') > -1) {
+                                                    optimizerConfError.text("Name cannot contain \":\"");
+                                                    return;
+                                                }
+                                                if (valueInput.trim() === "") {
+                                                    optimizerConfError.text("Value cannot be empty");
+                                                    return;
+                                                }
+                                                if (valueInput.indexOf(':') > -1) {
+                                                    optimizerConfError.text("Value cannot contain \":\"");
+                                                    return;
+                                                }
+                                                let fullItem = optimizer+':'+nameInput+':'+valueInput;
+                                                console.log(nameInput + ": " + valueInput)
+                                                if (optimizerConfArray.indexOf(fullItem) > -1) {
+                                                    optimizerConfError.text("Config already exists");
+                                                    return;
+                                                }
+                                                $('#extraTagsError').text("")
+                                                let item = nameInput + ": " + valueInput;
+
+                                                let tag = $(document.createElement("div"));
+                                                tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                                                let tagValue = $(document.createElement("span"));
+                                                tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                                tagValue.text(item);
+                                                tag.append(tagValue);
+                                                let tagDeleteButton = $(document.createElement("button"));
+                                                tagDeleteButton.prop("type", "button");
+                                                tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                                tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                                tagDeleteButton.val(fullItem)
+                                                tag.append(tagDeleteButton);
+                                                optimizerConfList.append(tag);
+
+                                                tagDeleteButton.click(removeOptimizerConf)
+
+                                                optimizerConfArray.push(fullItem)
+                                                optimizerConfInput.val(optimizerConfArray.toString())
+
+                                                addOptimizerConfNameInput.val("")
+                                                addOptimizerConfValueInput.val("")
+                                            }
+
+                                            function removeOptimizerConf() {
+                                                optimizerConfArray.splice(optimizerConfArray.indexOf($(this).val()), 1)
+                                                optimizerConfInput.val(optimizerConfArray.toString())
+                                                $(this).parent().remove();
+                                            }
+
+                                            addOptimizerConfButton.click(addOptimizerConf);
+                                            addOptimizerConfNameInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addOptimizerConf();
+                                                }
+                                            });
+                                            addOptimizerConfValueInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addOptimizerConf();
+                                                }
+                                            });
+
+                                        });
+                                    </script>
+                                {% endfor %}
+                            </div>
                             {% for error in fieldForm.optimizer.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <div class="mb-3">
+                        <div>
+                            {{ fieldForm.loss_function_conf }}
+                        </div>
+                        <div class="mb-3 multipleSelectContainer">
                             {{ fieldForm.loss_function.label_tag }}
-                            {{ fieldForm.loss_function }}
-                            {% for error in fieldForm.loss_function.errors %}
+                            <div class="input-group d-flex">
+                                <label class="input-group-text" for="lossFunctionSearch" style="border-bottom-left-radius: 0"><i class="fa fa-search"></i></label>
+                                <input type="text" class="form-control" id="lossFunctionSearch" placeholder="Search" style="border-bottom-right-radius: 0">
+                            </div>
+                            <div class="card card-body" style="max-height: 50vh; overflow: auto; padding: 12px 12px 4px 12px; border-top-left-radius: 0; border-top-right-radius: 0; border-top: 0;">
+                                <script>
+                                    docReady(function() {
+                                        function filterLossFunction() {
+                                            let searchValue = $("#lossFunctionSearch").val()
+                                            $(".lossFunctionContainer").css("display", "");
+                                            $(".lossFunctionContainer").filter(function () {
+                                                if (searchValue == null) return false;
+                                                return $(this).find('.form-check-input').val().toLowerCase().indexOf(searchValue.toLowerCase()) < 0;
+                                            }).css("display", "none");
+                                        }
+                                        $("#lossFunctionSearch").keyup(filterLossFunction);
+                                        filterLossFunction();
+                                    });
+                                    let lossFunctionConfArray = []
+                                </script>
+                                {% for lossFunction in fieldForm.loss_function %}
+                                    <div class="lossFunctionContainer">
+                                        {{ lossFunction }}
+                                        <div id="{{ lossFunction.id_for_label }}ConfContainer" class="card card-body" style="padding: 12px">
+                                            <span>Configuration:</span>
+                                            <div class="input-group d-flex flex-wrap">
+                                                <label class="input-group-text" for="{{ lossFunction.id_for_label }}AddConfName">Name:</label>
+                                                <input type="text" class="form-control" id="{{ lossFunction.id_for_label }}AddConfName" style="min-width: 100px">
+                                                <label class="input-group-text" for="{{ lossFunction.id_for_label }}AddConfValue">Value:</label>
+                                                <input type="text" class="form-control" id="{{ lossFunction.id_for_label }}AddConfValue" style="min-width: 100px">
+                                                <button id="{{ lossFunction.id_for_label }}AddButton" class="btn btn-secondary" type="button">Add</button>
+                                            </div>
+                                            <div id="{{ lossFunction.id_for_label }}Error" class="invalid-feedback mt-0" style="display: initial;"></div>
+                                            <div class="card card-body p-1" style="padding-bottom: 1px !important;">
+                                                <div id="{{ lossFunction.id_for_label }}ConfList" class="d-flex flex-wrap">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2"></div>
+                                    </div>
+                                    <script>
+                                        docReady(function() {
+                                            let checkbox = $('#{{ lossFunction.id_for_label }}');
+                                            let confDiv = $('#{{ lossFunction.id_for_label }}ConfContainer');
+                                            function toggleConfs() {
+                                                if (checkbox.is(':checked'))
+                                                    confDiv.slideDown(10);
+                                                else
+                                                    confDiv.slideUp(10);
+                                            }
+                                            checkbox.change(toggleConfs);
+                                            toggleConfs();
+
+                                            let lossFunctionConfInput = $('#{{ fieldForm.loss_function_conf.id_for_label }}');
+
+                                            let addLossFunctionConfNameInput = $('#{{ lossFunction.id_for_label }}AddConfName');
+                                            let addLossFunctionConfValueInput = $('#{{ lossFunction.id_for_label }}AddConfValue');
+                                            let addLossFunctionConfButton = $('#{{ lossFunction.id_for_label }}AddButton');
+                                            let lossFunctionConfList = $('#{{ lossFunction.id_for_label }}ConfList');
+                                            let lossFunctionConfError = $('#{{ lossFunction.id_for_label }}Error');
+
+                                            let lossFunction = $('#{{ lossFunction.id_for_label }}').val();
+
+                                            if (lossFunctionConfInput.val() !== "")
+                                                lossFunctionConfInput.val().split(",").forEach(function(item, index) {
+                                                    let tagItem = item.split(":")
+                                                    if (tagItem[0] !== lossFunction) return;
+                                                    tagItem = tagItem[1] + ": " + tagItem[2]
+                                                    let tag = $(document.createElement("div"));
+                                                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                                                    let tagValue = $(document.createElement("span"));
+                                                    tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                                    tagValue.text(tagItem);
+                                                    tag.append(tagValue);
+                                                    let tagDeleteButton = $(document.createElement("button"));
+                                                    tagDeleteButton.prop("type", "button");
+                                                    tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                                    tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                                    tag.append(tagDeleteButton);
+                                                    lossFunctionConfList.append(tag);
+
+                                                    tagDeleteButton.click(removeLossFunctionConf)
+
+                                                    lossFunctionConfArray.push(item)
+                                                })
+
+                                            function addLossFunctionConf() {
+                                                let nameInput = addLossFunctionConfNameInput.val()
+                                                let valueInput = addLossFunctionConfValueInput.val()
+                                                if (nameInput.trim() === "") {
+                                                    lossFunctionConfError.text("Name cannot be empty");
+                                                    return;
+                                                }
+                                                if (nameInput.indexOf(':') > -1) {
+                                                    lossFunctionConfError.text("Name cannot contain \":\"");
+                                                    return;
+                                                }
+                                                if (valueInput.trim() === "") {
+                                                    lossFunctionConfError.text("Value cannot be empty");
+                                                    return;
+                                                }
+                                                if (valueInput.indexOf(':') > -1) {
+                                                    lossFunctionConfError.text("Value cannot contain \":\"");
+                                                    return;
+                                                }
+                                                let fullItem = lossFunction+':'+nameInput+':'+valueInput;
+                                                console.log(nameInput + ": " + valueInput)
+                                                if (lossFunctionConfArray.indexOf(fullItem) > -1) {
+                                                    lossFunctionConfError.text("Config already exists");
+                                                    return;
+                                                }
+                                                $('#extraTagsError').text("")
+                                                let item = nameInput + ": " + valueInput;
+
+                                                let tag = $(document.createElement("div"));
+                                                tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                                                let tagValue = $(document.createElement("span"));
+                                                tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                                                tagValue.text(item);
+                                                tag.append(tagValue);
+                                                let tagDeleteButton = $(document.createElement("button"));
+                                                tagDeleteButton.prop("type", "button");
+                                                tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                                                tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                                                tagDeleteButton.val(fullItem)
+                                                tag.append(tagDeleteButton);
+                                                lossFunctionConfList.append(tag);
+
+                                                tagDeleteButton.click(removeLossFunctionConf)
+
+                                                lossFunctionConfArray.push(fullItem)
+                                                lossFunctionConfInput.val(lossFunctionConfArray.toString())
+
+                                                addLossFunctionConfNameInput.val("")
+                                                addLossFunctionConfValueInput.val("")
+                                            }
+
+                                            function removeLossFunctionConf() {
+                                                lossFunctionConfArray.splice(lossFunctionConfArray.indexOf($(this).val()), 1)
+                                                lossFunctionConfInput.val(lossFunctionConfArray.toString())
+                                                $(this).parent().remove();
+                                            }
+
+                                            addLossFunctionConfButton.click(addLossFunctionConf);
+                                            addLossFunctionConfNameInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addLossFunctionConf();
+                                                }
+                                            });
+                                            addLossFunctionConfValueInput.keyup(function(e) {
+                                                let keyCode = e.keyCode || e.which;
+                                                if (keyCode === 13) {
+                                                    addLossFunctionConf();
+                                                }
+                                            });
+
+                                        });
+                                    </script>
+                                {% endfor %}
+                            </div>
+                            {% for error in fieldForm.lossFunction.errors %}
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
@@ -191,22 +579,6 @@
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <script>
-                            docReady(function () {
-                                let isKFoldSwitch = $('#{{ fieldForm.is_k_fold.id_for_label }}');
-                                let kFoldCollapse = $('#fieldIsKFoldCollapse');
-                                isKFoldSwitch.click(function() {
-                                    if (isKFoldSwitch.is(':checked'))
-                                        kFoldCollapse.slideDown(100)
-                                    else
-                                        kFoldCollapse.slideUp(100)
-                                });
-                                if (isKFoldSwitch.is(':checked'))
-                                    kFoldCollapse.show()
-                                else
-                                    kFoldCollapse.hide()
-                            });
-                        </script>
                         <div class="card card-body mb-3" id="fieldIsKFoldCollapse">
                             <div class="mb-3">
                                 {{ fieldForm.k_fold_validation.label_tag }}
@@ -241,77 +613,6 @@
                             <div id="extraTagsList" class="d-flex flex-wrap">
                             </div>
                         </div>
-                        <script>
-                            docReady(function () {
-                                let extraTagsArray = []
-                                let extraTagsInput = $('#{{ fieldForm.extra_tags.id_for_label }}');
-
-                                let addExtraTagsInput = $('#addExtraTagsInput');
-                                let addExtraTagsButton = $('#addExtraTagsButton');
-                                let extraTagsList = $('#extraTagsList');
-                                let extraTagsError = $('#extraTagsError');
-
-                                if (extraTagsInput.val() !== "")
-                                    extraTagsInput.val().split(",").forEach(function(item, index) {
-                                        let tag = $(document.createElement("div"));
-                                        tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
-                                        let tagValue = $(document.createElement("span"));
-                                        tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
-                                        tagValue.text(item);
-                                        tag.append(tagValue);
-                                        let tagDeleteButton = $(document.createElement("button"));
-                                        tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
-                                        tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
-                                        tag.append(tagDeleteButton);
-                                        extraTagsList.append(tag);
-
-                                        tagDeleteButton.click(removeExtraTags)
-
-                                        extraTagsArray.push(item)
-                                    })
-
-                                function addExtraTags() {
-                                    let extraTags = addExtraTagsInput.val()
-                                    console.log(extraTags)
-                                    if (extraTags.trim() === "") {
-                                        extraTagsError.text("Tag cannot be empty");
-                                        return;
-                                    }
-                                    if (extraTagsArray.indexOf(extraTags) > -1) {
-                                        extraTagsError.text("Tag already exists");
-                                        return;
-                                    }
-                                    $('#extraTagsError').text("")
-
-                                    let tag = $(document.createElement("div"));
-                                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
-                                    let tagValue = $(document.createElement("span"));
-                                    tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
-                                    tagValue.text(extraTags);
-                                    tag.append(tagValue);
-                                    let tagDeleteButton = $(document.createElement("button"));
-                                    tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
-                                    tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
-                                    tag.append(tagDeleteButton);
-                                    extraTagsList.append(tag);
-
-                                    tagDeleteButton.click(removeExtraTags)
-
-                                    extraTagsArray.push(extraTags)
-                                    extraTagsInput.val(extraTagsArray.toString())
-
-                                    $('#addExtraTagsInput').val("")
-                                }
-
-                                function removeExtraTags() {
-                                    extraTagsArray.splice(extraTagsArray.indexOf($(this).parent().find("span").text()), 1)
-                                    extraTagsInput.val(extraTagsArray.toString())
-                                    $(this).parent().remove();
-                                }
-
-                                addExtraTagsButton.click(addExtraTags);
-                            });
-                        </script>
                         <div class="mb-3" style="border-top: 1px solid #DCDCDE"></div>
                         <div class="mb-3">
                             {{ fieldForm.model.label_tag }}
@@ -327,31 +628,6 @@
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <script>
-                            docReady(function () {
-                                let fieldOrFileSwitch = $('#{{ fieldForm.use_url_datasets.id_for_label }}');
-                                let fieldForm = $('#fieldFileDatasets');
-                                let fileForm = $('#fieldUrlDatasets');
-                                fieldOrFileSwitch.click(function() {
-                                    if (fieldOrFileSwitch.is(':checked')) {
-                                        fileForm.show()
-                                        fieldForm.hide()
-                                    }
-                                    else {
-                                        fieldForm.show()
-                                        fileForm.hide()
-                                    }
-                                });
-                                if (fieldOrFileSwitch.is(':checked')) {
-                                    fileForm.show()
-                                    fieldForm.hide()
-                                }
-                                else {
-                                    fieldForm.show()
-                                    fileForm.hide()
-                                }
-                            });
-                        </script>
                         <div id="fieldFileDatasets">
                             <div class="mb-3">
                                 {{ fieldForm.train_dataset.label_tag }}
@@ -374,89 +650,6 @@
                                     <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                                 {% endfor %}
                             </div>
-                            <div>
-                                {{ fieldForm.dataset_format.label_tag }}
-                                {{ fieldForm.dataset_format }}
-                                {% for error in fieldForm.dataset_format.errors %}
-                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                {% endfor %}
-                            </div>
-                            <script>
-                                docReady(function () {
-                                    let Select = $('#{{ fieldForm.dataset_format.id_for_label }}');
-                                    let CSVCollapse = $('#fieldCSVCollapse');
-                                    let NPZCollapse = $('#fieldNPZCollapse');
-                                    if (Select.val() === 'csv') {
-                                        NPZCollapse.hide()
-                                        CSVCollapse.show()
-                                    } else if (Select.val() === 'npz') {
-                                        CSVCollapse.hide()
-                                        NPZCollapse.show()
-                                    }
-                                    Select.change(function () {
-                                        if (Select.val() === 'csv') {
-                                            NPZCollapse.hide()
-                                            CSVCollapse.show()
-                                        } else if (Select.val() === 'npz') {
-                                            CSVCollapse.hide()
-                                            NPZCollapse.show()
-                                        }
-                                    })
-                                });
-                            </script>
-                            <div class="card card-body mb-3" id="fieldCSVCollapse">
-                                <div class="mb-3">
-                                    {{ fieldForm.label_column.label_tag }}
-                                    {{ fieldForm.label_column }}
-                                    {% for error in fieldForm.label_column.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            <div class="card card-body mb-3" id="fieldNPZCollapse">
-                                <div class="mb-3">
-                                    {{ fieldForm.train_feature_name.label_tag }}
-                                    {{ fieldForm.train_feature_name }}
-                                    {% for error in fieldForm.train_feature_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mb-3">
-                                    {{ fieldForm.train_label_name.label_tag }}
-                                    {{ fieldForm.train_label_name }}
-                                    {% for error in fieldForm.train_label_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mb-3">
-                                    {{ fieldForm.test_feature_name.label_tag }}
-                                    {{ fieldForm.test_feature_name }}
-                                    {% for error in fieldForm.test_feature_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mb-3">
-                                    {{ fieldForm.test_label_name.label_tag }}
-                                    {{ fieldForm.test_label_name }}
-                                    {% for error in fieldForm.test_label_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mb-3">
-                                    {{ fieldForm.val_feature_name.label_tag }}
-                                    {{ fieldForm.val_feature_name }}
-                                    {% for error in fieldForm.val_feature_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                                <div class="mb-3">
-                                    {{ fieldForm.val_label_name.label_tag }}
-                                    {{ fieldForm.val_label_name }}
-                                    {% for error in fieldForm.val_label_name.errors %}
-                                        <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
-                                    {% endfor %}
-                                </div>
-                            </div>
                         </div>
                         <div id="fieldUrlDatasets">
                             <div class="mb-3">
@@ -477,6 +670,66 @@
                                 {{ fieldForm.url_val_dataset.label_tag }}
                                 {{ fieldForm.url_val_dataset }}
                                 {% for error in fieldForm.url_val_dataset.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            {{ fieldForm.dataset_format.label_tag }}
+                            {{ fieldForm.dataset_format }}
+                            {% for error in fieldForm.dataset_format.errors %}
+                                <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="card card-body mb-3" id="fieldCSVCollapse">
+                            <div class="mb-3">
+                                {{ fieldForm.label_column.label_tag }}
+                                {{ fieldForm.label_column }}
+                                {% for error in fieldForm.label_column.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="card card-body mb-3" id="fieldNPZCollapse">
+                            <div class="mb-3">
+                                {{ fieldForm.train_feature_name.label_tag }}
+                                {{ fieldForm.train_feature_name }}
+                                {% for error in fieldForm.train_feature_name.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.train_label_name.label_tag }}
+                                {{ fieldForm.train_label_name }}
+                                {% for error in fieldForm.train_label_name.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.test_feature_name.label_tag }}
+                                {{ fieldForm.test_feature_name }}
+                                {% for error in fieldForm.test_feature_name.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.test_label_name.label_tag }}
+                                {{ fieldForm.test_label_name }}
+                                {% for error in fieldForm.test_label_name.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.val_feature_name.label_tag }}
+                                {{ fieldForm.val_feature_name }}
+                                {% for error in fieldForm.val_feature_name.errors %}
+                                    <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ fieldForm.val_label_name.label_tag }}
+                                {{ fieldForm.val_label_name }}
+                                {% for error in fieldForm.val_label_name.errors %}
                                     <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                                 {% endfor %}
                             </div>
@@ -510,22 +763,6 @@
                                 <div class="invalid-feedback" style="display: initial;">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        <script>
-                            docReady(function () {
-                                let Switch = $('#{{ fileForm.use_url_datasets.id_for_label }}');
-                                let Collapse = $('#fileFileDatasets');
-                                Switch.click(function() {
-                                    if (Switch.is(':checked'))
-                                        Collapse.hide()
-                                    else
-                                        Collapse.show()
-                                });
-                                if (Switch.is(':checked'))
-                                    Collapse.hide()
-                                else
-                                    Collapse.show()
-                            });
-                        </script>
                         <div id="fileFileDatasets">
                             <div class="mb-3">
                                 {{ fileForm.train_dataset.label_tag }}
@@ -579,6 +816,276 @@
             $('.ms-search').prop('style', 'height: 42px !important; width: 100%;')
             $('.ms-choice').prop('class', 'ms-choice form-select')
             $('.icon-caret').hide();
+        });
+    </script>
+    <script>
+        docReady(function () {
+            let fieldOrFileSwitch = $('#fieldOrFileSwitch');
+            let fieldForm = $('#fieldForm');
+            let fileForm = $('#fileForm');
+            fieldOrFileSwitch.click(function() {
+                if (fieldOrFileSwitch.is(':checked')) {
+                    fileForm.show()
+                    fieldForm.hide()
+                }
+                else {
+                    fieldForm.show()
+                    fileForm.hide()
+                }
+            });
+            if (fieldOrFileSwitch.is(':checked')) {
+                fileForm.show()
+                fieldForm.hide()
+            }
+            else {
+                fieldForm.show()
+                fileForm.hide()
+            }
+        });
+        docReady(function () {
+            let learningRateArray = []
+            let learningRateInput = $('#{{ fieldForm.learning_rate.id_for_label }}');
+
+            let addLearningRateInput = $('#addLearningRateInput');
+            let addLearningRateButton = $('#addLearningRateButton');
+            let learningRateList = $('#learningRateList');
+            let learningRateError = $('#learningRateError');
+
+            if (learningRateInput.val() !== "")
+                learningRateInput.val().split(",").forEach(function(item, index) {
+                    let tag = $(document.createElement("div"));
+                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                    let tagValue = $(document.createElement("span"));
+                    tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                    tagValue.text(item);
+                    tag.append(tagValue);
+                    let tagDeleteButton = $(document.createElement("button"));
+                    tagDeleteButton.prop("type", "button");
+                    tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                    tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                    tag.append(tagDeleteButton);
+                    learningRateList.append(tag);
+
+                    tagDeleteButton.click(removeLearningRate)
+
+                    learningRateArray.push(item)
+                })
+
+            function addLearningRate() {
+                let learningRate = addLearningRateInput.val()
+                if (isNaN(learningRate) || learningRate === "") {
+                    learningRateError.text("Learning rate is not a number");
+                    return;
+                }
+                if (parseFloat(learningRate) < 0.00001) {
+                    learningRateError.text("Learning rate has to be higher or equal to 0.00001");
+                    return;
+                }
+                if (learningRateArray.indexOf(learningRate) > -1) {
+                    learningRateError.text("Learning rate already has that value");
+                    return;
+                }
+                $('#learningRateError').text("")
+
+                let tag = $(document.createElement("div"));
+                tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                let tagValue = $(document.createElement("span"));
+                tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                tagValue.text(learningRate);
+                tag.append(tagValue);
+                let tagDeleteButton = $(document.createElement("button"));
+                tagDeleteButton.prop("type", "button");
+                tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                tag.append(tagDeleteButton);
+                learningRateList.append(tag);
+
+                tagDeleteButton.click(removeLearningRate)
+
+                learningRateArray.push(learningRate)
+                learningRateInput.val(learningRateArray.toString())
+
+                $('#addLearningRateInput').val("")
+            }
+
+            function removeLearningRate() {
+                learningRateArray.splice(learningRateArray.indexOf($(this).parent().find("span").text()), 1)
+                learningRateInput.val(learningRateArray.toString())
+                $(this).parent().remove();
+            }
+
+            addLearningRateButton.click(addLearningRate);
+            addLearningRateInput.keyup(function(e) {
+                let keyCode = e.keyCode || e.which;
+                if (keyCode === 13) {
+                    addLearningRate();
+                }
+            });
+        });
+        docReady(function () {
+            let isKFoldSwitch = $('#{{ fieldForm.is_k_fold.id_for_label }}');
+            let kFoldCollapse = $('#fieldIsKFoldCollapse');
+            isKFoldSwitch.click(function() {
+                if (isKFoldSwitch.is(':checked'))
+                    kFoldCollapse.slideDown(100)
+                else
+                    kFoldCollapse.slideUp(100)
+            });
+            if (isKFoldSwitch.is(':checked'))
+                kFoldCollapse.show()
+            else
+                kFoldCollapse.hide()
+        });
+        docReady(function () {
+            let extraTagsArray = []
+            let extraTagsInput = $('#{{ fieldForm.extra_tags.id_for_label }}');
+
+            let addExtraTagsInput = $('#addExtraTagsInput');
+            let addExtraTagsButton = $('#addExtraTagsButton');
+            let extraTagsList = $('#extraTagsList');
+            let extraTagsError = $('#extraTagsError');
+
+            if (extraTagsInput.val() !== "")
+                extraTagsInput.val().split(",").forEach(function(item, index) {
+                    let tag = $(document.createElement("div"));
+                    tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                    let tagValue = $(document.createElement("span"));
+                    tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                    tagValue.text(item);
+                    tag.append(tagValue);
+                    let tagDeleteButton = $(document.createElement("button"));
+                    tagDeleteButton.prop("type", "button");
+                    tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                    tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                    tag.append(tagDeleteButton);
+                    extraTagsList.append(tag);
+
+                    tagDeleteButton.click(removeExtraTags)
+
+                    extraTagsArray.push(item)
+                })
+
+            function addExtraTags() {
+                let extraTags = addExtraTagsInput.val()
+                console.log(extraTags)
+                if (extraTags.trim() === "") {
+                    extraTagsError.text("Tag cannot be empty");
+                    return;
+                }
+                if (extraTagsArray.indexOf(extraTags) > -1) {
+                    extraTagsError.text("Tag already exists");
+                    return;
+                }
+                $('#extraTagsError').text("")
+
+                let tag = $(document.createElement("div"));
+                tag.prop("style", "border-radius: 10%; font-size: small; margin-right: 3px; border: 1px darkgrey solid; margin-bottom: 3px;");
+                let tagValue = $(document.createElement("span"));
+                tagValue.prop("style", "padding: 1px 6px 1px 6px; float: left; white-space: nowrap;");
+                tagValue.text(extraTags);
+                tag.append(tagValue);
+                let tagDeleteButton = $(document.createElement("button"));
+                tagDeleteButton.prop("type", "button");
+                tagDeleteButton.prop("style", "height: 100%; padding: 1px 3px; background: transparent; border: 0; border-left: 1px darkgrey solid;");
+                tagDeleteButton.html('<i class="fa fa-times fa-sm"></i>');
+                tag.append(tagDeleteButton);
+                extraTagsList.append(tag);
+
+                tagDeleteButton.click(removeExtraTags)
+
+                extraTagsArray.push(extraTags)
+                extraTagsInput.val(extraTagsArray.toString())
+
+                $('#addExtraTagsInput').val("")
+            }
+
+            function removeExtraTags() {
+                extraTagsArray.splice(extraTagsArray.indexOf($(this).parent().find("span").text()), 1)
+                extraTagsInput.val(extraTagsArray.toString())
+                $(this).parent().remove();
+            }
+
+            addExtraTagsButton.click(addExtraTags);
+            addExtraTagsInput.keyup(function(e) {
+                let keyCode = e.keyCode || e.which;
+                if (keyCode === 13) {
+                    addExtraTags();
+                }
+            });
+        });
+        docReady(function () {
+            let fieldOrFileSwitch = $('#{{ fieldForm.use_url_datasets.id_for_label }}');
+            let fieldForm = $('#fieldFileDatasets');
+            let fileForm = $('#fieldUrlDatasets');
+            fieldOrFileSwitch.click(function() {
+                if (fieldOrFileSwitch.is(':checked')) {
+                    fileForm.show()
+                    fieldForm.hide()
+                }
+                else {
+                    fieldForm.show()
+                    fileForm.hide()
+                }
+            });
+            if (fieldOrFileSwitch.is(':checked')) {
+                fileForm.show()
+                fieldForm.hide()
+            }
+            else {
+                fieldForm.show()
+                fileForm.hide()
+            }
+        });
+        docReady(function () {
+            let Select = $('#{{ fieldForm.dataset_format.id_for_label }}');
+            let CSVCollapse = $('#fieldCSVCollapse');
+            let NPZCollapse = $('#fieldNPZCollapse');
+            if (Select.val() === 'csv' || Select.val() === 'pickle' || Select.val() === 'zip' || Select.val() === 'arff') {
+                NPZCollapse.hide()
+                CSVCollapse.show()
+            } else if (Select.val() === 'npz') {
+                CSVCollapse.hide()
+                NPZCollapse.show()
+            }
+            Select.change(function () {
+                if (Select.val() === 'csv' || Select.val() === 'pickle' || Select.val() === 'zip' || Select.val() === 'arff') {
+                    NPZCollapse.hide()
+                    CSVCollapse.show()
+                } else if (Select.val() === 'npz') {
+                    CSVCollapse.hide()
+                    NPZCollapse.show()
+                }
+            })
+        });
+        docReady(function () {
+            let Switch = $('#{{ fileForm.use_url_datasets.id_for_label }}');
+            let Collapse = $('#fileFileDatasets');
+            Switch.click(function() {
+                if (Switch.is(':checked'))
+                    Collapse.hide()
+                else
+                    Collapse.show()
+            });
+            if (Switch.is(':checked'))
+                Collapse.hide()
+            else
+                Collapse.show()
+        });
+        docReady(function () {
+            $('#fieldForm').on('keyup keydown keypress', function(e) {
+                let keyCode = e.keyCode || e.which;
+                if (keyCode === 13) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            $('#fileForm').on('keyup keydown keypress', function(e) {
+                let keyCode = e.keyCode || e.which;
+                if (keyCode === 13) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
         });
     </script>
 {% endblock %}
