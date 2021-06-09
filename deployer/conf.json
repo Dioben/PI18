@@ -1,8 +1,8 @@
 {
     "id" : "112312225459769",
-    "dataset_train" : "./dataset/dataset_train.pickle",
-    "dataset_test" : "./dataset/dataset_test.pickle",
-    "dataset_val" : "./dataset/dataset_val.pickle",
+    "dataset_train" : "./dataset/dataset_train.npz",
+    "dataset_test" : "./dataset/dataset_test.npz",
+    "dataset_val" : "./dataset/dataset_val.npz",
     "dataset_url" : false,
     "batch_size" : 32,
     "epochs" : 1,

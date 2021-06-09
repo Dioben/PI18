@@ -12,6 +12,7 @@ import uuid
 import re
 import os
 import pickle
+import psutil
 
 app = Flask(__name__)
 client = docker.from_env()
@@ -43,6 +44,117 @@ def change_simulation(simulation_id,command):
     result = change_simulation.delay(simulation_id,command)
     return 'All good'
 
+@app.route('/simulations_statistics', methods=['GET'])
+def simulation_stats():
+    sys_info = get_system_info()
+    docker_info = get_docker_container_info()
+    info = {'system_information': sys_info, 'docker_containers_info' : docker_info}
+    print_flask('Final')
+    print_flask(str(info))
+    resp = jsonify(info)
+    return resp
+
+def get_size(bytes, suffix="B"):
+    """
+    Scale bytes to its proper format
+    e.g:
+        1253656 => '1.20MB'
+        1253656678 => '1.17GB'
+    """
+    factor = 1024
+    for unit in ["", "K", "M", "G", "T", "P"]:
+        if bytes < factor:
+            return f"{bytes:.2f}{unit}{suffix}"
+        bytes /= factor
+
+def get_system_info():
+    svmem = psutil.virtual_memory()
+    info = {}
+    info['Total CPU Usage'] = psutil.cpu_percent()
+    info['Total Memory Usage'] = svmem.percent
+
+    print_flask("Total cores:" + str(psutil.cpu_count(logical=True)))
+    print_flask("CPU Usage Per Core:")
+    for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
+        print_flask(f"Core {i}: {percentage}%")
+    print_flask(f"Total CPU Usage: {psutil.cpu_percent()}%")
+    # get the memory details
+
+    print_flask(f"Total: {get_size(svmem.total)}")
+    print_flask(f"Available: {get_size(svmem.available)}")
+    print_flask(f"Used: {get_size(svmem.used)}")
+    print_flask(f"Percentage: {svmem.percent}%")
+    print_flask("Partitions and Usage:")
+    # get all disk partitions
+    partitions = psutil.disk_partitions()
+    for i in range(len(partitions)):
+        partition = partitions[i]
+        print_flask(f"=== Device: {partition.device} ===")
+        print_flask(f"  Mountpoint: {partition.mountpoint}")
+        print_flask(f"  File system type: {partition.fstype}")
+        try:
+            partition_usage = psutil.disk_usage(partition.mountpoint)
+        except PermissionError:
+            # this can be catched due to the disk that
+            # isn't ready
+            continue
+        print_flask(f"  Total Size: {get_size(partition_usage.total)}")
+        print_flask(f"  Used: {get_size(partition_usage.used)}")
+        print_flask(f"  Free: {get_size(partition_usage.free)}")
+        print_flask(f"  Percentage: {partition_usage.percent}%")
+        info[f'Disc{i} Percentage Usage'] = partition_usage.percent
+    return info
+
+def get_docker_container_info():
+    print_flask('Docker stats')
+    info = {}
+    for containers in client.containers.list():
+        if not containers.name in ['timescaledb','grafana','tracker-server','tracker-deployer',
+        'tracker-deployer-worker','redis_deployer','tracker-parser','tracker-parser-worker','redis']:
+            stream1 = containers.stats(decode=None, stream = False)
+            stream2 = containers.stats(decode=None, stream = False)
+            print_flask(stream1)
+            print_flask(stream2)
+            info[containers.name] = parse_docker_stats(stream1,stream2)
+    return info
+
+def parse_docker_stats(info_dict,info_dict2):
+    try:
+        formated_info = {}
+
+        svmem = psutil.virtual_memory()
+        cpu_usage1 = info_dict['cpu_stats']['cpu_usage']['total_usage']
+        sys_cpu_usage1 = info_dict['cpu_stats']['system_cpu_usage']
+        cpu_count = info_dict['cpu_stats']['online_cpus']
+
+        cpu_usage2 = info_dict2['cpu_stats']['cpu_usage']['total_usage']
+        sys_cpu_usage2 = info_dict2['cpu_stats']['system_cpu_usage']
+
+        cpuPercent = 0.0
+        cpuDelta = cpu_usage2 - cpu_usage1
+        systemDelta = sys_cpu_usage2 - sys_cpu_usage1
+        print_flask(cpuDelta)
+        print_flask(systemDelta)
+        if systemDelta > 0.0 and cpuDelta > 0.0:
+            cpuPercent = (cpuDelta / systemDelta) * cpu_count * 100
+        print_flask(cpuPercent)
+
+        memory_usage_bytes = info_dict['memory_stats']['usage']
+        memory_max_bytes = info_dict['memory_stats']['max_usage']
+        print_flask('memory bytes')
+        print_flask(memory_usage_bytes)
+        print_flask(memory_max_bytes)
+        print_flask(svmem.total)
+        memory_usage_percentage = memory_usage_bytes/memory_max_bytes
+
+        cpuPercent = cpuPercent / cpu_count
+        formated_info['CPU Percentage Usage'] = cpuPercent
+        formated_info['Memory Percentage Usage'] = memory_usage_percentage
+        return formated_info
+    except Exception as e:
+        print_flask('ERROR:'+str(e))
+    return {}
+    
 def print_flask(input):
     print(input, file=sys.stderr)
 
