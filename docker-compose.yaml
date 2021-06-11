@@ -43,6 +43,8 @@ services:
         # build: ./server
         ports: 
          - "8000:8000"
+        environment: 
+            - ALLOWED_HOSTS=localhost,127.0.0.1,10.0.12.67
         volumes:
             - ./datasetstore:/all_datasets
             # - ./server:/app
