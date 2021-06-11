@@ -198,6 +198,8 @@ def main(model_json,conf_json):
         print('config pre parse:')
         print(config)
         for key in config.keys():
+            if not type(config[key]) is str:
+                continue
             value = config[key].lower()
             if 'true' in value:
                 config[key] = True
