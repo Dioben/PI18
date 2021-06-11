@@ -388,7 +388,7 @@
                         }
                         let error_text = data.simulation.error_text;
                         if (error_text !== "") {
-                            $('#errorNotification').text(error_text);
+                            $('#errorNotification').html(error_text);
                             $('#errorNotificationModal').modal('show');
                         }
                     },

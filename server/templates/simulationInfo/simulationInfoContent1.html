@@ -105,7 +105,7 @@
 {% if notification != None %}
     <script type="text/javascript">
         window.addEventListener('load', function () {
-            $('#notification').text('{{ notification }}'.replaceAll('&quot;', '\"'));
+            $('#notification').html('{{ notification }}');
             $('#notificationModal').modal('show');
         }, false);
     </script>
