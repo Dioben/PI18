@@ -1,5 +1,4 @@
 import json
-
 from flask import Flask, request
 from celery import Celery
 import psycopg2
@@ -14,13 +13,17 @@ psycopg2.extras.register_uuid()
 
 conn = None
 if "celery" in sys.argv[0]:
+
+    HOST = "timescaledb"
+    PORT = "5432"
+
     try:
         conn = psycopg2.connect(
-            host="timescaledb",
+            host=HOST,
             database="nntracker",
             user="root",
             password="postgres",
-            port="5432",
+            port=PORT,
             connect_timeout=4
         )
     except Exception as error:
@@ -34,6 +37,7 @@ from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 
+
 @app.route('/update', methods=['POST'])
 def update_simulation():
     logger.info("/update called")
@@ -43,6 +47,7 @@ def update_simulation():
     result = update_data_sent.delay(simulation_data)
     return 'All good'
 
+
 @app.route('/finish', methods=['POST'])
 def finish_simulation():
     simulation_data = request.get_json()
@@ -51,15 +56,16 @@ def finish_simulation():
     result = finish_data_sent.delay(simulation_data)
     return 'All good'
 
+
 @app.route('/send_error', methods=['POST'])
 def send_error_simulation():
     logger.info("/send_error called")
     print("/send_error called", file=sys.stderr)
     simulation_data = request.get_json(force=True)
 
-
     result = send_error.delay(simulation_data)
     return 'All good'
+
 
 def make_celery(app):
     celery = Celery(
@@ -92,16 +98,40 @@ def check_connection():
         print("Reconnecting... ", file=sys.stderr)
         try:
             conn = psycopg2.connect(
-                host="timescaledb",
+                host=HOST,
                 database="nntracker",
                 user="root",
                 password="postgres",
-                port="5432",
+                port=PORT,
                 connect_timeout=4
             )
         except Exception as error:
             print("Error connecting to db: ", error, file=sys.stderr)
             print("Error type: ", type(error), file=sys.stderr)
+
+
+def process_data(data_dict):
+    for i in range(len(data_dict['weights'])):
+        layer_data = data_dict['weights'][i]
+
+    weights = {str(i): data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
+    model = json.loads(data_dict["model"])
+    layernames = {str(i): model["config"]['layers'][i]["class_name"] + str(i) for i in range(len(model["config"]['layers']))}
+
+    loss = data_dict['logs']['loss']
+    accuracy = data_dict['logs']['accuracy']
+    val_loss = data_dict['logs']["val_loss"]
+    val_accuracy = data_dict['logs']["val_accuracy"]
+
+    metrics = {}
+    for metric in data_dict['logs'].keys():
+        if metric not in ['loss','accuracy','val_accuracy','val_loss']:
+            metrics[metric] = data_dict['logs'][metric]
+
+    epoch = data_dict['epoch']
+    simid = uuid.UUID(int=int(data_dict['sim_id']))
+
+    return simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics, layernames
 
 
 @celery.task()
@@ -137,30 +167,6 @@ def update_data_sent(json_file):
     return None
 
 
-def process_data(data_dict):
-    for i in range(len(data_dict['weights'])):
-        layer_data = data_dict['weights'][i]
-
-    weights = {str(i): data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
-    model = json.loads(data_dict["model"])
-    layernames = {str(i): model["config"]['layers'][i]["class_name"] + str(i) for i in range(len(model["config"]['layers']))}
-
-    loss = data_dict['logs']['loss']
-    accuracy = data_dict['logs']['accuracy']
-    val_loss = data_dict['logs']["val_loss"]
-    val_accuracy = data_dict['logs']["val_accuracy"]
-
-    metrics = {}
-    for metric in data_dict['logs'].keys():
-        if metric not in ['loss','accuracy','val_accuracy','val_loss']:
-            metrics[metric] = data_dict['logs'][metric]
-
-    epoch = data_dict['epoch']
-    simid = uuid.UUID(int=int(data_dict['sim_id']))
-
-    return simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics, layernames
-
-
 @celery.task()
 def finish_data_sent(json_file):
     for _ in range(2):
@@ -191,6 +197,7 @@ def finish_data_sent(json_file):
             print("Error type: ", type(error), file=sys.stderr)
 
     return None
+
 
 @celery.task()
 def send_error(json_file):
