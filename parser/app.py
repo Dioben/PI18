@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, request
 from celery import Celery
 import psycopg2
@@ -110,7 +112,7 @@ def update_data_sent(json_file):
         try:
             curr = conn.cursor()
             logger.info('update starting')
-            simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics = process_data(json_file)
+            simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics, layernames = process_data(json_file)
 
             sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
             sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss, val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
@@ -118,7 +120,7 @@ def update_data_sent(json_file):
 
             for w in weights.keys():
                 index = w
-                curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
+                curr.execute(sqlWeights, (str(epoch), index, layernames[w], simid, weights[w], datetime.datetime.now()))
 
             for metric in metrics.keys():
                 curr.execute(sqlExtraMetrics, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
@@ -136,11 +138,12 @@ def update_data_sent(json_file):
 
 
 def process_data(data_dict):
-    logger.info(type(data_dict['weights']))
     for i in range(len(data_dict['weights'])):
         layer_data = data_dict['weights'][i]
 
-    weights = {str(i) : data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
+    weights = {str(i): data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
+    model = json.loads(data_dict["model"])
+    layernames = {str(i): model["config"]['layers'][i]["class_name"] + str(i) for i in range(len(model["config"]['layers']))}
 
     loss = data_dict['logs']['loss']
     accuracy = data_dict['logs']['accuracy']
@@ -155,7 +158,7 @@ def process_data(data_dict):
     epoch = data_dict['epoch']
     simid = uuid.UUID(int=int(data_dict['sim_id']))
 
-    return simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics
+    return simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics, layernames
 
 
 @celery.task()
@@ -165,7 +168,7 @@ def finish_data_sent(json_file):
 
         try:
             curr = conn.cursor()
-            simid, epoch, weights, loss, accuracy,val_loss, val_accuracy, metrics = process_data(json_file)
+            simid, epoch, weights, loss, accuracy,val_loss, val_accuracy, metrics, layernames = process_data(json_file)
             sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
             sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss,val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
             sqlUpdate = "UPDATE simulations SET isdone=TRUE, isrunning=FALSE WHERE id=%s"
@@ -173,7 +176,7 @@ def finish_data_sent(json_file):
 
             for w in weights.keys():
                 index = w
-                curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
+                curr.execute(sqlWeights, (str(epoch), index, layernames[w], simid, weights[w], datetime.datetime.now()))
 
             for metric in metrics.keys():
                 curr.execute(sqlExtraMetrics, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
