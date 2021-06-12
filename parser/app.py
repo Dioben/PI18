@@ -37,7 +37,6 @@ def update_simulation():
     logger.info("/update called")
     print("/update called", file=sys.stderr)
     simulation_data = request.get_json(force=True)
-    print(type(simulation_data), file=sys.stderr)
 
     result = update_data_sent.delay(simulation_data)
     return 'All good'
@@ -46,6 +45,7 @@ def update_simulation():
 def finish_simulation():
     simulation_data = request.get_json()
     print("/finish called", file=sys.stderr)
+
     result = finish_data_sent.delay(simulation_data)
     return 'All good'
 
@@ -54,7 +54,7 @@ def send_error_simulation():
     logger.info("/send_error called")
     print("/send_error called", file=sys.stderr)
     simulation_data = request.get_json(force=True)
-    print(type(simulation_data), file=sys.stderr)
+
 
     result = send_error.delay(simulation_data)
     return 'All good'
@@ -139,7 +139,7 @@ def process_data(data_dict):
     logger.info(type(data_dict['weights']))
     for i in range(len(data_dict['weights'])):
         layer_data = data_dict['weights'][i]
-        print('layer ',i,':',len(layer_data))
+
     weights = {str(i) : data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
 
     loss = data_dict['logs']['loss']
@@ -154,7 +154,7 @@ def process_data(data_dict):
 
     epoch = data_dict['epoch']
     simid = uuid.UUID(int=int(data_dict['sim_id']))
-    print(simid)
+
     return simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics
 
 
