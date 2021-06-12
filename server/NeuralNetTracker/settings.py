@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,7 +27,6 @@ SECRET_KEY = '!og!1a3%qkr8wss2rg-h$z*$$6n7&z(l4r=+b$_m-kkk-!5urn'
 DEBUG = True
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
-
 
 # Application definition
 
@@ -83,12 +83,11 @@ WSGI_APPLICATION = 'NeuralNetTracker.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'timescale.db.backends.postgresql',
-        'NAME': 'nntracker',
-        'USER': 'root',
-        'PASSWORD': 'postgres',
-        #'HOST': '127.0.0.1',
-        'HOST': 'timescaledb',
-        'PORT': '5432',
+        'NAME': os.environ.get('DATABASE_NAME'),
+        'USER': os.environ.get('DATABASE_USER'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+        'HOST': os.environ.get('DATABASE_HOST'),
+        'PORT': os.environ.get('DATABASE_PORT'),
     }
 }
 
