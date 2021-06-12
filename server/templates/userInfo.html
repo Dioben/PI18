@@ -34,7 +34,7 @@
     </div>
         <div class="row my-3">
         <h5 style="margin-bottom: 0; font-weight: bold">User Stats</h5>
-            <div class="col-12 col-md-6 pe-md-0">
+            <div id="simulationStatsContainer" class="col-12 col-md-6 pe-md-0">
                 <ul style="margin-top: 5px; padding-left: 0">
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>Total Simulations:</span>
@@ -50,18 +50,40 @@
                     </li>
                 </ul>
             </div>
-            <div class="col-12 col-md-6 ps-md-0">
+            <div id="systemStatsContainer" class="col-12 col-md-6 ps-md-0">
                 <ul style="margin-top: 5px; padding-left: 0">
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>CPU Usage:</span>
+                        <span id="cpuUsageValue"></span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>RAM Usage:</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>Storage Usage:</span>
+                        <span id="ramUsageValue"></span>
                     </li>
                 </ul>
+                <script>
+                    docReady(function () {
+                        let simulations = [{% for simulation in simulations %}{{ simulation.id.int }},{% endfor %}];
+                        let stats = {{ stats|safe }};
+                        let totalContainers = 0;
+                        let totalCPU = 0;
+                        let totalRAM = 0;
+                        for (const [key, value] of Object.entries(stats['docker_containers_info'])) {
+                            if (isNaN(parseInt(key)) || !simulations.includes(parseFloat(key)))
+                                break;
+                            totalContainers++;
+                            totalCPU += value['CPU Percentage Usage'];
+                            totalRAM += value['Memory Percentage Usage'];
+                        }
+                        if (totalContainers === 0) {
+                            $("#systemStatsContainer").hide();
+                            $("#simulationStatsContainer").removeClass("col-md-6 pe-md-0");
+                        } else {
+                            $('#cpuUsageValue').text((totalCPU/totalContainers).toPrecision(2).toString()+'%')
+                            $('#ramUsageValue').text((totalRAM/totalContainers).toPrecision(2).toString()+'%')
+                        }
+                    });
+                </script>
             </div>
         </div>
     <div class="row my-3">
@@ -94,7 +116,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row"  style="border: 1px solid #DCDCDE; min-height: 50vh; margin-top: 5px; background-color: white; padding: 8px">
+            <div class="row"  style="border: 1px solid #DCDCDE; {% if simulations|length == 0 %}min-height: 50vh;{% endif %} margin-top: 5px; background-color: white; padding: 8px">
             {% for simulation in simulations %}
                 <div class="simulationCard col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 p-1">
                     <div class="p-0 card">
@@ -161,7 +183,7 @@
                                 <script>
                                     docReady(function () {
                                         $('#deleteButton{{ simulation.pk }}').click(function() {
-                                            $('#deleteModalSimName').text('{{ simulation.name }}');
+                                            $('#deleteModalSimName').text('Are you sure you want to delete the simulation "{{ simulation.name }}"?');
                                             $('#deleteModalForm').prop('action', "/simulations/command/{{ simulation.pk.int }}/STOP");
                                             $('#deleteModal').modal('show');
                                         });
@@ -188,6 +210,24 @@
                     </div>
                 </div>
             {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body d-flex justify-content-center my-3">
+                    <span id="deleteModalSimName"></span>
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <form id="deleteModalForm" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="method" value="delete">
+                        <button type="submit" class="btn btn-primary">Yes</button>
+                    </form>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">No</button>
+                </div>
             </div>
         </div>
     </div>

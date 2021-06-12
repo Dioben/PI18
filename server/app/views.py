@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 import sys
 import zipfile
 from datetime import datetime
@@ -20,6 +21,10 @@ from app.models import *
 from app.serializers import SimulationSerializer, UpdateSerializer
 
 
+DEPLOYER_BASE_URL = os.environ.get('DEPLOYER_BASE_URL')
+GRAFANA_BASE_URL = os.environ.get('GRAFANA_BASE_URL')
+
+
 def index(request):
     return render(request, 'index.html')
 
@@ -35,7 +40,7 @@ def signup(request):
             raw_password = form.cleaned_data.get('password1')
             user = auth.authenticate(username=username, password=raw_password)
             auth.login(request, user)
-            return redirect('/simulations/')
+            return redirect('/')
     else:
         form = CustomUserCreationForm()
     return render(request, 'signup.html', {'form': form})
@@ -43,10 +48,14 @@ def signup(request):
 
 @csrf_exempt
 def users(request):
-    if request.user.is_authenticated and request.user.is_staff:
+    if request.user.is_authenticated:
+        if not request.user.is_staff:
+            return HttpResponse("Forbidden", status=403)
         if 'give' in request.POST:
             id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
+            if not u.exists():
+                return HttpResponse("Not found", status=404)
             user = u[0]
             user.is_staff = True
             user.save()
@@ -54,6 +63,8 @@ def users(request):
         elif 'remove' in request.POST:
             id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
+            if not u.exists():
+                return HttpResponse("Not found", status=404)
             user = u[0]
             user.is_staff = False
             user.save()
@@ -61,6 +72,8 @@ def users(request):
         elif 'enable' in request.POST:
             id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
+            if not u.exists():
+                return HttpResponse("Not found", status=404)
             user = u[0]
             user.is_active = True
             user.save()
@@ -68,6 +81,8 @@ def users(request):
         elif 'disable' in request.POST:
             id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
+            if not u.exists():
+                return HttpResponse("Not found", status=404)
             user = u[0]
             user.is_active = False
             user.save()
@@ -75,6 +90,8 @@ def users(request):
         elif 'delete' in request.POST:
             id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
+            if not u.exists():
+                return HttpResponse("Not found", status=404)
             user = u[0]
             user.delete()
             return HttpResponseRedirect(request.path)
@@ -84,78 +101,84 @@ def users(request):
                 'users': users
             }
             return render(request, 'users.html', t_parms)
-
-    return render(request, 'login.html')
+    return redirect('/accounts/login/')
 
 
 @csrf_exempt
 def userinfo(request, id):
-    if request.user.is_authenticated and request.user.is_staff:
+    if request.user.is_authenticated:
+        if not request.user.is_staff:
+            return HttpResponse("Forbidden", status=403)
+        if not User.objects.filter(id=id).exists():
+            return HttpResponse("Not found", status=404)
         if 'give' in request.POST:
-            id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
             user = u[0]
             user.is_staff = True
             user.save()
             return HttpResponseRedirect(request.path)
         elif 'remove' in request.POST:
-            id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
             user = u[0]
             user.is_staff = False
             user.save()
             return HttpResponseRedirect(request.path)
         elif 'enable' in request.POST:
-            id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
             user = u[0]
             user.is_active = True
             user.save()
             return HttpResponseRedirect(request.path)
         elif 'disable' in request.POST:
-            id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
             user = u[0]
             user.is_active = False
             user.save()
             return HttpResponseRedirect(request.path)
         elif 'delete' in request.POST:
-            id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
             user = u[0]
             user.delete()
             return HttpResponseRedirect(request.path)
         else:
             usera = User.objects.filter(id=id)
-            print(Simulation.objects.filter(owner=usera[0]).count())
-            print(len(Simulation.objects.filter(owner=usera[0])))
+            stats = requests.get(DEPLOYER_BASE_URL+'/simulations_statistics', timeout=100)
+            if stats.ok:
+                stats = json.loads(stats.content)
+            else:
+                stats = dict()
             t_parms = {
                 'usera': usera[0],
                 'simulations': Simulation.objects.filter(owner=usera[0]),
                 'simulations_total': Simulation.objects.filter(owner=usera[0]).count(),
                 'simulations_run': Simulation.objects.filter(owner=usera[0], isrunning=True).count(),
                 'simulations_done': Simulation.objects.filter(owner=usera[0], isdone=True).count(),
+                'tags': Tagged.objects.filter(tagger=usera[0]),
+                'stats': stats,
             }
             return render(request, 'userInfo.html', t_parms)
-    return render(request, 'login.html')
+    return redirect('/accounts/login/')
 
 
 def simulation_list(request):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", status=403)
+        return redirect('/accounts/login/')
     if 'deleteError' in request.POST:
-        sim = Simulation.objects.filter(id=request.POST.get('deleteErrorSimId')).get()
-        sim.error_text = ""
-        sim.save()
+        sim = Simulation.objects.filter(id=request.POST.get('deleteErrorSimId'))
+        if sim.exists():
+            sim = sim.get()
+            if sim.owner == request.user or request.user.is_staff:
+                sim.error_text = ""
+                sim.save()
         request.method = 'GET'
+    response = simulations(request)
+    if type(response) == HttpResponse:
+        return response
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
         del request.session['notification']
         request.session.modified = True
-    response = simulations(request)
-    if type(response) == HttpResponse:
-        return response
     t_parms = {
         'simulations': response,
         'notification': notification,
@@ -166,15 +189,15 @@ def simulation_list(request):
 
 def simulation_list_content(request):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", status=403)
+        return redirect('/accounts/login/')
+    response = simulations(request)
+    if type(response) == HttpResponse:
+        return response
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
         del request.session['notification']
         request.session.modified = True
-    response = simulations(request)
-    if type(response) == HttpResponse:
-        return response
     t_parms = {
         'simulations': response,
         'notification': notification,
@@ -184,8 +207,8 @@ def simulation_list_content(request):
 
 
 def simulation_create(request):
-    if not request.user.is_authenticated:  # you could use is_active here for email verification i think
-        return HttpResponse("Please Log In", status=403)
+    if not request.user.is_authenticated:
+        return redirect('/accounts/login/')
     if request.method == 'POST':
         response = simulations(request)
         if type(response) is HttpResponse:
@@ -199,90 +222,96 @@ def simulation_create(request):
 
 def simulation_info(request, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", status=403)
+        return redirect('/accounts/login/')
     if 'downloadData' in request.POST:
         HEADER = []
         id = request.POST.get('simulationIdInput')
         general = request.POST.get('optiongeneralInfo')
         weight = request.POST.get('optionWeight')
-        sim = Simulation.objects.get(id=id)
+        sim = Simulation.objects.filter(id=id)
 
-        if general:
-            HEADER.append('GeneralInfo')
-            extra_metrics = ExtraMetrics.objects.filter(sim=sim)
+        if not sim.exists():
+            return HttpResponse("Not found", status=404)
 
-        if weight:
-            HEADER.append('Weights')
-            weights = Weights.objects.filter(sim=sim)
+        sim = sim.get()
+        if sim.owner == request.user or request.user.is_staff:
+            if general:
+                HEADER.append('GeneralInfo')
+                extra_metrics = ExtraMetrics.objects.filter(sim=sim)
 
-        zipped_file = BytesIO()
-        # Construir File
-        with zipfile.ZipFile(zipped_file, 'a', zipfile.ZIP_DEFLATED) as zipped:
-            for h in HEADER:  # determines which csv file to write
-                rs = StringIO()
-                csv_data = StringIO()
-                if h == 'Weights':
-                    fieldnames = ['Epoch',
-                                  'Layer Index',
-                                  'Layer Name',
-                                  'Weight',
-                                  ]
-                    writer = csv.DictWriter(csv_data, fieldnames=fieldnames)
-                    writer.writeheader()
-                    for w in weights:
-                        writer.writerow({'Epoch': w.epoch,
-                                         'Layer Index': w.layer_index,
-                                         'Layer Name': w.layer_name,
-                                         'Weight': w.weight})
-                    for r in rs:
-                        writer.writerow(r)
-                    csv_data.seek(0)
-                    zipped.writestr("{}.csv".format(h), csv_data.read())
+            if weight:
+                HEADER.append('Weights')
+                weights = Weights.objects.filter(sim=sim)
 
-                if h == 'GeneralInfo':
-                    fieldnames = ['Name',
-                                  'Owner',
-                                  'Learning Rate',
-                                  'Model',
-                                  'Layers',
-                                  'Epoch Interval',
-                                  'Goal Epoch',
-                                  'Metrics',
-                                  'Error Text',
-                                  ]
-                    dic={'Name': sim.name,
-                         'Owner': sim.owner,
-                         'Learning Rate': sim.learning_rate,
-                         'Model': sim.model,
-                         'Layers': sim.layers,
-                         'Epoch Interval': sim.epoch_interval,
-                         'Goal Epoch': sim.goal_epochs,
-                         'Metrics': sim.metrics,
-                         'Error Text': sim.error_text,
-                         }
-                    for metric in extra_metrics:
-                        fieldnames.append("Extra Metric - " + metric.metric)
-                        dic["Extra Metric - " + metric.metric]=metric.value
-                    writer = csv.DictWriter(csv_data, fieldnames=fieldnames)
-                    writer.writeheader()
-                    writer.writerow(dic)
-                    for r in rs:
-                        writer.writerow(r)
-                    csv_data.seek(0)
-                    zipped.writestr("{}.csv".format(h), csv_data.read())
+            zipped_file = BytesIO()
+            # Construir File
+            with zipfile.ZipFile(zipped_file, 'a', zipfile.ZIP_DEFLATED) as zipped:
+                for h in HEADER:  # determines which csv file to write
+                    rs = StringIO()
+                    csv_data = StringIO()
+                    if h == 'Weights':
+                        fieldnames = ['Epoch',
+                                      'Layer Index',
+                                      'Layer Name',
+                                      'Weight',
+                                      ]
+                        writer = csv.DictWriter(csv_data, fieldnames=fieldnames)
+                        writer.writeheader()
+                        for w in weights:
+                            writer.writerow({'Epoch': w.epoch,
+                                             'Layer Index': w.layer_index,
+                                             'Layer Name': w.layer_name,
+                                             'Weight': w.weight})
+                        for r in rs:
+                            writer.writerow(r)
+                        csv_data.seek(0)
+                        zipped.writestr("{}.csv".format(h), csv_data.read())
 
-        zipped_file.seek(0)
-        response = HttpResponse(zipped_file, content_type='application/octet-stream')
-        response['Content-Disposition'] = 'attachment; filename=' + sim.name + 'Data.zip'
+                    if h == 'GeneralInfo':
+                        fieldnames = ['Name',
+                                      'Owner',
+                                      'Learning Rate',
+                                      'Model',
+                                      'Layers',
+                                      'Epoch Interval',
+                                      'Goal Epoch',
+                                      'Metrics',
+                                      'Error Text',
+                                      ]
+                        dic={'Name': sim.name,
+                             'Owner': sim.owner,
+                             'Learning Rate': sim.learning_rate,
+                             'Model': sim.model,
+                             'Layers': sim.layers,
+                             'Epoch Interval': sim.epoch_interval,
+                             'Goal Epoch': sim.goal_epochs,
+                             'Metrics': sim.metrics,
+                             'Error Text': sim.error_text,
+                             }
+                        for metric in extra_metrics:
+                            fieldnames.append("Extra Metric - " + metric.metric)
+                            dic["Extra Metric - " + metric.metric]=metric.value
+                        writer = csv.DictWriter(csv_data, fieldnames=fieldnames)
+                        writer.writeheader()
+                        writer.writerow(dic)
+                        for r in rs:
+                            writer.writerow(r)
+                        csv_data.seek(0)
+                        zipped.writestr("{}.csv".format(h), csv_data.read())
+
+            zipped_file.seek(0)
+            response = HttpResponse(zipped_file, content_type='application/octet-stream')
+            response['Content-Disposition'] = 'attachment; filename=' + sim.name + 'Data.zip'
+            return response
+        return HttpResponse("Forbidden", status=403)
+    response = get_simulation(request, id)
+    if type(response) == HttpResponse:
         return response
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
         del request.session['notification']
         request.session.modified = True
-    response = get_simulation(request, id)
-    if type(response) == HttpResponse:
-        return response
     if 'deleteError' in request.POST:
         response.error_text = ""
         response.save()
@@ -305,33 +334,41 @@ def simulation_info(request, id):
         'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)],
         'tags': Tagged.objects.filter(sim=response),
         'simulationList': responseList,
-        'extra_metrics': extraMetricsDict
+        'extra_metrics': extraMetricsDict,
+        'grafana_base_url': GRAFANA_BASE_URL
     }
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
 
 
 def simulation_info_content1(request, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", status=403)
+        return redirect('/accounts/login/')
     if 'deleteTag' in request.POST:
         tag_id = request.POST.get('tag_id')
-        t = Tagged.objects.get(id=tag_id)
-        t.delete()
+        t = Tagged.objects.filter(id=tag_id)
+        if t.exists():
+            t = t.get()
+            if t.tagger == request.user or request.user.is_staff:
+                t.delete()
         return HttpResponseRedirect(request.path)
     if 'addTag' in request.POST:
         sim_id = request.POST.get('simulation_id')
-        tag_name = request.POST.get('tagname')
-        tag = Tagged(tag=tag_name, sim=Simulation.objects.get(id=sim_id), tagger=request.user, iskfold=False)
-        tag.save()
+        sim = Simulation.objects.filter(id=sim_id)
+        if sim.exists():
+            sim = sim.get()
+            if sim is not None and (sim.owner == request.user or request.user.is_staff):
+                tag_name = request.POST.get('tagname')
+                tag = Tagged(tag=tag_name, sim=sim, tagger=request.user, iskfold=False)
+                tag.save()
         return HttpResponseRedirect(request.path)
+    response = get_simulation(request, id)
+    if type(response) == HttpResponse:
+        return response
     notification = None
     if 'notification' in request.session:
         notification = request.session['notification']
         del request.session['notification']
         request.session.modified = True
-    response = get_simulation(request, id)
-    if type(response) == HttpResponse:
-        return response
     t_params = {
         'simulation': response,
         'notification': notification,
@@ -343,7 +380,7 @@ def simulation_info_content1(request, id):
 
 def simulation_info_content2(request, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", status=403)
+        return redirect('/accounts/login/')
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
@@ -378,10 +415,13 @@ def simulation_info_context(request, id):
 
 
 def simulation_command(request, id, command):
-    simName = Simulation.objects.get(id__exact=id).name
+    sim = Simulation.objects.filter(id__exact=id)
+    if not sim.exists():
+        return HttpResponse("Not found", status=404)
+    simName = sim.get().name
     response = command_simulation(request, command, id)
     if response.status_code == 200:
-        sim = Simulation.objects.filter(id__exact=id, owner=request.user)
+        sim = Simulation.objects.filter(id__exact=id)
         if sim.exists():
             sim = sim.get()
             if not sim.isrunning:
@@ -393,6 +433,8 @@ def simulation_command(request, id, command):
             return redirect(request.META.get('HTTP_REFERER'))
         request.session['notification'] = "Simulation \"" + simName + "\" has been deleted."
         request.session.modified = True
+        if 'user' in request.META.get('HTTP_REFERER'):
+            return redirect(request.META.get('HTTP_REFERER'))
         return redirect('/simulations/')
     return response
 
@@ -566,7 +608,7 @@ def post_sim(request):
                         },
                         "model": modeljson
                     }
-                    resp = requests.post("http://tracker-deployer:7000/simulations", json=postdata)
+                    resp = requests.post(DEPLOYER_BASE_URL+"/simulations", json=postdata)
                     if not resp.ok:
                         allRespOk = False
                     firstPass = False
@@ -738,7 +780,7 @@ def post_sim(request):
                         },
                         "model": modeljson
                     }
-                    resp = requests.post("http://tracker-deployer:7000/simulations", json=postdata)
+                    resp = requests.post(DEPLOYER_BASE_URL+"/simulations", json=postdata)
                     if not resp.ok:
                         allRespOk = False
                     firstPass = False
@@ -751,9 +793,8 @@ def post_sim(request):
         return HttpResponse("Bad request", status=400)
 
 
-@csrf_exempt
 def simulations(request):
-    if not request.user.is_authenticated:  # you could use is_active here for email verification i think
+    if not request.user.is_authenticated:
         return HttpResponse("Please Log In", status=403)
     if request.method == 'POST':
         return post_sim(request)
@@ -762,13 +803,16 @@ def simulations(request):
     return HttpResponse("Bad request", status=400)
 
 
-@csrf_exempt
 def get_simulation(request, id):
-    if not request.user.is_authenticated:  # you could use is_active here for email verification i think
+    if not request.user.is_authenticated:
         return HttpResponse("Please Log In", status=403)
 
-    sim = Simulation.objects.get(pk=id)
+    sim = Simulation.objects.filter(pk=id)
 
+    if not sim.exists():
+        return HttpResponse("Not found", status=404)
+
+    sim = sim.get()
     if sim.owner == request.user or request.user.is_staff:
         if request.method == "DELETE":
             sim.delete()
@@ -779,34 +823,42 @@ def get_simulation(request, id):
 
 
 def command_start(request, id):  # return the objects you're acting on in these
-    sim = Simulation.objects.get(id=id)
-    requests.post(f'http://tracker-deployer:7000/simulations/{id}/START')
+    sim = Simulation.objects.filter(id=id)
+    if not sim.exists():
+        return HttpResponse('Not found', status=404)
+    requests.post(DEPLOYER_BASE_URL+'/simulations/{id}/START')
     sim.isrunning = True
     sim.save()
     return HttpResponse(sim, status=200)
 
 
 def command_stop(request, id):
-    sim = Simulation.objects.get(id=id)
-    requests.delete(f'http://tracker-deployer:7000/simulations/{id}')
+    sim = Simulation.objects.filter(id=id)
+    if not sim.exists():
+        return HttpResponse('Not found', status=404)
+    requests.delete(DEPLOYER_BASE_URL+'/simulations/{id}')
     sim.delete()
     return HttpResponse(sim, status=200)
 
 
 def command_pause(request, id):
-    sim = Simulation.objects.get(id=id)
-    requests.post(f'http://tracker-deployer:7000/simulations/{id}/PAUSE')
+    sim = Simulation.objects.filter(id=id)
+    if not sim.exists():
+        return HttpResponse('Not found', status=404)
+    requests.post(DEPLOYER_BASE_URL+'/simulations/{id}/PAUSE')
     sim.isrunning = False
     sim.save()
     return HttpResponse(sim, status=200)
 
 
-@csrf_exempt
 def command_simulation(request, command, id):
     if not request.user.is_authenticated:
         return HttpResponse("Please log in", status=403)
-    if not Simulation.objects.filter(id__exact=id, owner=request.user).exists():
-        return HttpResponse("You do not own this simulation", status=403)
+    sim = Simulation.objects.filter(id__exact=id)
+    if not sim.exists():
+        return HttpResponse("Not found", status=404)
+    if not sim.get().owner == request.user and not request.user.is_staff:
+        return HttpResponse("Forbidden", status=403)
     if command == "START":
         return command_start(request, id)
     elif command == "STOP":

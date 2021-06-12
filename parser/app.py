@@ -198,7 +198,7 @@ def send_error(json_file):
             curr = conn.cursor()
             simid = uuid.UUID(int=int(json_file["id"]))
             error_text = json_file["error"]
-            sqlUpdate = "UPDATE simulations SET error_text=%s WHERE id=%s"
+            sqlUpdate = "UPDATE simulations SET isrunning=False, error_text=%s WHERE id=%s"
             curr.execute(sqlUpdate,(error_text, simid))
             conn.commit()
             curr.close()

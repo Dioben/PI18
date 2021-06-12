@@ -97,7 +97,7 @@
     docReady(function() {
         let error_text = '{{ simulation.error_text }}';
         if (error_text !== "") {
-            $('#errorNotification').text(error_text);
+            $('#errorNotification').html(error_text);
             $('#errorNotificationForm').prop('action', '{% url "SimulationList" %}');
             $('#errorNotificationSimId').val('{{ simulation.id }}');
             let modal = new bootstrap.Modal(document.getElementById("errorNotificationModal"), {});
@@ -111,7 +111,7 @@
 {% if notification != None %}
     <script type="text/javascript">
         window.addEventListener('load', function () {
-            $('#notification').text('{{ notification }}'.replaceAll('&quot;', '\"'));
+            $('#notification').html('{{ notification }}');
             $('#notificationModal').modal('show');
         }, false);
     </script>
