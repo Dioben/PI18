@@ -401,9 +401,9 @@
             function reloadGrafanaEpochValues() {
                 let grafanaUrl;
                 if (firstUpdate !== undefined)
-                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                    grafanaUrl = "{{ grafana_base_url }}/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                 else
-                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
+                    grafanaUrl = "{{ grafana_base_url }}/d-solo/oZOstZ3Gz/epoch-values-dash?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
                 if ($("#grafanaEpochValuesAccuracySwitch").prop("checked")) {
                     grafanaUrl += "&var-values=1";
                 }
@@ -429,9 +429,9 @@
             function reloadGrafanaWeightsGraphing() {
                 let grafanaURL
                 if (firstUpdate !== undefined)
-                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                    grafanaUrl = "{{ grafana_base_url }}/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                 else
-                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
+                    grafanaUrl = "{{ grafana_base_url }}/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
                 grafanaUrl += "&var-layer=" + $('#grafanaWeightsGraphingLayerInput').val();
                 $("#grafanaWeightsGraphingIFrame").prop("src", grafanaUrl);
                 $("#grafanaWeightsGraphingLayerNumber").text($('#grafanaWeightsGraphingLayerInput').val());
@@ -445,9 +445,9 @@
                 function reloadGrafanaExtraMetricsDashGraphing() {
                     let grafanaUrl;
                     if (firstUpdate !== undefined)
-                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&refresh=30s&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                        grafanaUrl = "{{ grafana_base_url }}/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&refresh=30s&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                     else
-                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&refresh=30s&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
+                        grafanaUrl = "{{ grafana_base_url }}/d-solo/8Fu66GeMz/extra_metrics-dash?orgId=1&refresh=30s&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
                     grafanaUrl += "&var-metric=" + $("#grafanaExtraMetricsDashMetricSelect").val();
                     $("#grafanaExtraMetricsDashIFrame").prop("src", grafanaUrl);
                 }
@@ -460,9 +460,9 @@
                 function reloadGrafanaGroupComp() {
                     let grafanaUrl;
                     if (firstUpdate !== undefined)
-                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/KH6gzIeMz/group-comparison-dashboard?orgId=1&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                        grafanaUrl = "{{ grafana_base_url }}/d-solo/KH6gzIeMz/group-comparison-dashboard?orgId=1&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                     else
-                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/KH6gzIeMz/group-comparison-dashboard?orgId=1&from="+Date.now()+"&to=now&panelId=2";
+                        grafanaUrl = "{{ grafana_base_url }}/d-solo/KH6gzIeMz/group-comparison-dashboard?orgId=1&from="+Date.now()+"&to=now&panelId=2";
                     grafanaUrl += "&var-tagname=" + $("#grafanaGroupCompTagSelect").val();
                     grafanaUrl += "&var-operation=" + $("#grafanaGroupCompOperationSelect").val();
                     if ($("#grafanaGroupCompAccuracySwitch").prop("checked")) {
@@ -493,9 +493,9 @@
                     function reloadGrafanaGroupCompMetrics() {
                         let grafanaUrl;
                         if (firstUpdate !== undefined)
-                            grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/j_NyND6Gz/group_comp_metrics_dashboard?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                            grafanaUrl = "{{ grafana_base_url }}/d-solo/j_NyND6Gz/group_comp_metrics_dashboard?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                         else
-                            grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/j_NyND6Gz/group_comp_metrics_dashboard?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
+                            grafanaUrl = "{{ grafana_base_url }}/d-solo/j_NyND6Gz/group_comp_metrics_dashboard?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
                         grafanaUrl += "&var-tagname=" + $("#grafanaGroupCompMetricsTagSelect").val();
                         grafanaUrl += "&var-operation=" + $("#grafanaGroupCompMetricsOperationSelect").val();
                         grafanaUrl += "&var-metric=" + $("#grafanaGroupCompMetricsMetricSelect").val();
@@ -513,9 +513,9 @@
             function reloadGrafanaSubComp() {
                 let grafanaUrl;
                 if (firstUpdate !== undefined)
-                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/wTZDdD6Gz/subtract_comp_dashboard?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                    grafanaUrl = "{{ grafana_base_url }}/d-solo/wTZDdD6Gz/subtract_comp_dashboard?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                 else
-                    grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/wTZDdD6Gz/subtract_comp_dashboard?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
+                    grafanaUrl = "{{ grafana_base_url }}/d-solo/wTZDdD6Gz/subtract_comp_dashboard?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
                 grafanaUrl += "&var-sim_id1=" + "{{ simulation.id }}";
                 grafanaUrl += "&var-sim_id2=" + $("#grafanaSubCompSimSelect").val();
                 if ($("#grafanaSubCompAccuracySwitch").prop("checked")) {
@@ -545,9 +545,9 @@
                 function reloadGrafanaSubCompMetrics() {
                     let grafanaUrl;
                     if (firstUpdate !== undefined)
-                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/zAZY1D6Gz/subtract_comp_dashboard_extrametrics?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
+                        grafanaUrl = "{{ grafana_base_url }}/d-solo/zAZY1D6Gz/subtract_comp_dashboard_extrametrics?orgId=1&refresh=1m&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
                     else
-                        grafanaUrl = "http://"+window.location.hostname+":3000/d-solo/zAZY1D6Gz/subtract_comp_dashboard_extrametrics?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
+                        grafanaUrl = "{{ grafana_base_url }}/d-solo/zAZY1D6Gz/subtract_comp_dashboard_extrametrics?orgId=1&refresh=1m&from="+Date.now()+"&to=now&panelId=2";
                     grafanaUrl += "&var-sim_id1=" + "{{ simulation.id }}";
                     grafanaUrl += "&var-sim_id2=" + $("#grafanaSubCompMetricsSimSelect").val();
                     grafanaUrl += "&var-metric=" + $("#grafanaSubCompMetricsMetricSelect").val();

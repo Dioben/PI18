@@ -43,8 +43,19 @@ services:
         # build: ./server
         ports: 
          - "8000:8000"
+        expose:
+         - "8000"
         environment: 
-            - ALLOWED_HOSTS=localhost,127.0.0.1,10.0.12.67
+            - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,10.0.12.67
+            - SELF_PORT=8000
+            - DATABASE_HOST=timescaledb
+            - DATABASE_PORT=5432
+            - DATABASE_NAME=nntracker
+            - DATABASE_USER=root
+            - DATABASE_PASSWORD=postgres
+            - GRAFANA_BASE_URL=http://10.0.12.67:3000
+            # - GRAFANA_BASE_URL=http://localhost:3000
+            - DEPLOYER_BASE_URL=http://tracker-deployer:7000
         volumes:
             - ./datasetstore:/all_datasets
             # - ./server:/app

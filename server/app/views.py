@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 import sys
 import zipfile
 from datetime import datetime
@@ -18,6 +19,10 @@ import requests
 from app.forms import SimCreationForm, CustomUserCreationForm, ConfigFileSimCreationForm
 from app.models import *
 from app.serializers import SimulationSerializer, UpdateSerializer
+
+
+DEPLOYER_BASE_URL = os.environ.get('DEPLOYER_BASE_URL')
+GRAFANA_BASE_URL = os.environ.get('GRAFANA_BASE_URL')
 
 
 def index(request):
@@ -43,7 +48,9 @@ def signup(request):
 
 @csrf_exempt
 def users(request):
-    if request.user.is_authenticated and request.user.is_staff:
+    if request.user.is_authenticated:
+        if not request.user.is_staff:
+            return HttpResponse("Forbidden", status=403)
         if 'give' in request.POST:
             id = request.POST.get('user_id')
             u = User.objects.filter(id=id)
@@ -99,7 +106,9 @@ def users(request):
 
 @csrf_exempt
 def userinfo(request, id):
-    if request.user.is_authenticated and request.user.is_staff:
+    if request.user.is_authenticated:
+        if not request.user.is_staff:
+            return HttpResponse("Forbidden", status=403)
         if not User.objects.filter(id=id).exists():
             return HttpResponse("Not found", status=404)
         if 'give' in request.POST:
@@ -133,7 +142,7 @@ def userinfo(request, id):
             return HttpResponseRedirect(request.path)
         else:
             usera = User.objects.filter(id=id)
-            stats = requests.get(f'http://tracker-deployer:7000/simulations_statistics', timeout=100)
+            stats = requests.get(DEPLOYER_BASE_URL+'/simulations_statistics', timeout=100)
             if stats.ok:
                 stats = json.loads(stats.content)
             else:
@@ -153,7 +162,7 @@ def userinfo(request, id):
 
 def simulation_list(request):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", status=403)
+        return redirect('/accounts/login/')
     if 'deleteError' in request.POST:
         sim = Simulation.objects.filter(id=request.POST.get('deleteErrorSimId'))
         if sim.exists():
@@ -180,7 +189,7 @@ def simulation_list(request):
 
 def simulation_list_content(request):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", status=403)
+        return redirect('/accounts/login/')
     response = simulations(request)
     if type(response) == HttpResponse:
         return response
@@ -198,8 +207,8 @@ def simulation_list_content(request):
 
 
 def simulation_create(request):
-    if not request.user.is_authenticated:  # you could use is_active here for email verification i think
-        return HttpResponse("Please Log In", status=403)
+    if not request.user.is_authenticated:
+        return redirect('/accounts/login/')
     if request.method == 'POST':
         response = simulations(request)
         if type(response) is HttpResponse:
@@ -213,7 +222,7 @@ def simulation_create(request):
 
 def simulation_info(request, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", status=403)
+        return redirect('/accounts/login/')
     if 'downloadData' in request.POST:
         HEADER = []
         id = request.POST.get('simulationIdInput')
@@ -325,14 +334,15 @@ def simulation_info(request, id):
         'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)],
         'tags': Tagged.objects.filter(sim=response),
         'simulationList': responseList,
-        'extra_metrics': extraMetricsDict
+        'extra_metrics': extraMetricsDict,
+        'grafana_base_url': GRAFANA_BASE_URL
     }
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
 
 
 def simulation_info_content1(request, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", status=403)
+        return redirect('/accounts/login/')
     if 'deleteTag' in request.POST:
         tag_id = request.POST.get('tag_id')
         t = Tagged.objects.filter(id=tag_id)
@@ -370,7 +380,7 @@ def simulation_info_content1(request, id):
 
 def simulation_info_content2(request, id):
     if not request.user.is_authenticated:
-        return HttpResponse("Please Log In", status=403)
+        return redirect('/accounts/login/')
     response = get_simulation(request, id)
     if type(response) == HttpResponse:
         return response
@@ -598,7 +608,7 @@ def post_sim(request):
                         },
                         "model": modeljson
                     }
-                    resp = requests.post("http://tracker-deployer:7000/simulations", json=postdata)
+                    resp = requests.post(DEPLOYER_BASE_URL+"/simulations", json=postdata)
                     if not resp.ok:
                         allRespOk = False
                     firstPass = False
@@ -770,7 +780,7 @@ def post_sim(request):
                         },
                         "model": modeljson
                     }
-                    resp = requests.post("http://tracker-deployer:7000/simulations", json=postdata)
+                    resp = requests.post(DEPLOYER_BASE_URL+"/simulations", json=postdata)
                     if not resp.ok:
                         allRespOk = False
                     firstPass = False
@@ -783,9 +793,8 @@ def post_sim(request):
         return HttpResponse("Bad request", status=400)
 
 
-@csrf_exempt
 def simulations(request):
-    if not request.user.is_authenticated:  # you could use is_active here for email verification i think
+    if not request.user.is_authenticated:
         return HttpResponse("Please Log In", status=403)
     if request.method == 'POST':
         return post_sim(request)
@@ -794,9 +803,8 @@ def simulations(request):
     return HttpResponse("Bad request", status=400)
 
 
-@csrf_exempt
 def get_simulation(request, id):
-    if not request.user.is_authenticated:  # you could use is_active here for email verification i think
+    if not request.user.is_authenticated:
         return HttpResponse("Please Log In", status=403)
 
     sim = Simulation.objects.filter(pk=id)
@@ -818,7 +826,7 @@ def command_start(request, id):  # return the objects you're acting on in these
     sim = Simulation.objects.filter(id=id)
     if not sim.exists():
         return HttpResponse('Not found', status=404)
-    requests.post(f'http://tracker-deployer:7000/simulations/{id}/START')
+    requests.post(DEPLOYER_BASE_URL+'/simulations/{id}/START')
     sim.isrunning = True
     sim.save()
     return HttpResponse(sim, status=200)
@@ -828,7 +836,7 @@ def command_stop(request, id):
     sim = Simulation.objects.filter(id=id)
     if not sim.exists():
         return HttpResponse('Not found', status=404)
-    requests.delete(f'http://tracker-deployer:7000/simulations/{id}')
+    requests.delete(DEPLOYER_BASE_URL+'/simulations/{id}')
     sim.delete()
     return HttpResponse(sim, status=200)
 
@@ -837,13 +845,12 @@ def command_pause(request, id):
     sim = Simulation.objects.filter(id=id)
     if not sim.exists():
         return HttpResponse('Not found', status=404)
-    requests.post(f'http://tracker-deployer:7000/simulations/{id}/PAUSE')
+    requests.post(DEPLOYER_BASE_URL+'/simulations/{id}/PAUSE')
     sim.isrunning = False
     sim.save()
     return HttpResponse(sim, status=200)
 
 
-@csrf_exempt
 def command_simulation(request, command, id):
     if not request.user.is_authenticated:
         return HttpResponse("Please log in", status=403)
