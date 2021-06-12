@@ -6,6 +6,7 @@ import sys
 import uuid
 import psycopg2.extras
 import datetime
+import os
 
 # call it in any place of your program
 # before working with UUID objects in PostgreSQL
@@ -14,16 +15,19 @@ psycopg2.extras.register_uuid()
 conn = None
 if "celery" in sys.argv[0]:
 
-    HOST = "timescaledb"
-    PORT = "5432"
+    DATABASE_HOST = os.environ.get('DATABASE_HOST')
+    DATABASE_PORT = os.environ.get('DATABASE_PORT')
+    DATABASE_NAME = os.environ.get('DATABASE_NAME')
+    DATABASE_USER = os.environ.get('DATABASE_USER')
+    DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD')
 
     try:
         conn = psycopg2.connect(
-            host=HOST,
-            database="nntracker",
-            user="root",
-            password="postgres",
-            port=PORT,
+            host=DATABASE_HOST,
+            database=DATABASE_NAME,
+            user=DATABASE_USER,
+            password=DATABASE_PASSWORD,
+            port=DATABASE_PORT,
             connect_timeout=4
         )
     except Exception as error:
@@ -98,11 +102,11 @@ def check_connection():
         print("Reconnecting... ", file=sys.stderr)
         try:
             conn = psycopg2.connect(
-                host=HOST,
-                database="nntracker",
-                user="root",
-                password="postgres",
-                port=PORT,
+                host=DATABASE_HOST,
+                database=DATABASE_NAME,
+                user=DATABASE_USER,
+                password=DATABASE_PASSWORD,
+                port=DATABASE_PORT,
                 connect_timeout=4
             )
         except Exception as error:
