@@ -21,8 +21,8 @@ from app.models import *
 from app.serializers import SimulationSerializer, UpdateSerializer
 
 
-DEPLOYER_BASE_URL = os.environ.get('DEPLOYER_BASE_URL')
-GRAFANA_BASE_URL = os.environ.get('GRAFANA_BASE_URL')
+DEPLOYER_BASE_URL = 'http://tracker-deployer:7000' if 'DEPLOYER_BASE_URL' not in os.environ else os.environ.get('DEPLOYER_BASE_URL')
+GRAFANA_BASE_URL = 'http://localhost:3000' if 'GRAFANA_BASE_URL' not in os.environ else os.environ.get('GRAFANA_BASE_URL')
 
 
 def index(request):
@@ -646,6 +646,14 @@ def post_sim(request):
             if trainext != testext or testext != valext or trainext != valext:
                 return HttpResponse("Bad request", status=400)
             if trainext == 'csv' and 'label_column' not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'pickle' and 'label_column' not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'zip' and 'label_column' not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'arff' and 'label_column' not in configjson:
+                return HttpResponse("Bad request", status=400)
+            if trainext == 'json' and 'label_column' not in configjson:
                 return HttpResponse("Bad request", status=400)
             if trainext == 'npz' and "train_feature_name" not in configjson:
                 return HttpResponse("Bad request", status=400)

@@ -302,6 +302,7 @@ class SimCreationForm(forms.Form):
             ('pickle', '.pickle (pandas)'),
             ('zip', '.zip (pandas)'),
             ('arff', '.arff'),
+            ('json', '.json'),
         )
     )
     label_column = forms.CharField(
