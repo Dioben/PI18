@@ -26,7 +26,7 @@ SECRET_KEY = '!og!1a3%qkr8wss2rg-h$z*$$6n7&z(l4r=+b$_m-kkk-!5urn'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
+ALLOWED_HOSTS = [] if 'ALLOWED_HOSTS' not in os.environ else os.environ.get('ALLOWED_HOSTS').split(',')
 
 # Application definition
 
@@ -83,11 +83,11 @@ WSGI_APPLICATION = 'NeuralNetTracker.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'timescale.db.backends.postgresql',
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
-        'PORT': os.environ.get('DATABASE_PORT'),
+        'NAME': 'nntracker' if 'DATABASE_NAME' not in os.environ else os.environ.get('DATABASE_NAME'),
+        'USER': 'root' if 'DATABASE_USER' not in os.environ else os.environ.get('DATABASE_USER'),
+        'PASSWORD': 'postgres' if 'DATABASE_PASSWORD' not in os.environ else os.environ.get('DATABASE_PASSWORD'),
+        'HOST': 'timescaledb' if 'DATABASE_HOST' not in os.environ else os.environ.get('DATABASE_HOST'),
+        'PORT': '5432' if 'DATABASE_PORT' not in os.environ else os.environ.get('DATABASE_PORT'),
     }
 }
 

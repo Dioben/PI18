@@ -20,7 +20,6 @@
     ],
     "learning_rates" : [0.01, 0.1],
     "k-fold_validation" : 2,
-    "k-fold_ids" : [112312225459790, 112312225459797],
     "k-fold_tag" : "File",
     "extra-metrics" : [
         {"metric":"KLDivergence", "conf":{}},

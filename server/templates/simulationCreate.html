@@ -1040,7 +1040,7 @@
             let Select = $('#{{ fieldForm.dataset_format.id_for_label }}');
             let CSVCollapse = $('#fieldCSVCollapse');
             let NPZCollapse = $('#fieldNPZCollapse');
-            if (Select.val() === 'csv' || Select.val() === 'pickle' || Select.val() === 'zip' || Select.val() === 'arff') {
+            if (Select.val() === 'csv' || Select.val() === 'pickle' || Select.val() === 'zip' || Select.val() === 'arff' || Select.val() === 'json') {
                 NPZCollapse.hide()
                 CSVCollapse.show()
             } else if (Select.val() === 'npz') {
@@ -1048,7 +1048,7 @@
                 NPZCollapse.show()
             }
             Select.change(function () {
-                if (Select.val() === 'csv' || Select.val() === 'pickle' || Select.val() === 'zip' || Select.val() === 'arff') {
+                if (Select.val() === 'csv' || Select.val() === 'pickle' || Select.val() === 'zip' || Select.val() === 'arff' || Select.val() === 'json') {
                     NPZCollapse.hide()
                     CSVCollapse.show()
                 } else if (Select.val() === 'npz') {
