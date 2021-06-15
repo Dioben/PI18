@@ -82,17 +82,9 @@ def main(model_json,conf_json):
         elif 'json' in file_arr[1]:
             print('File is json')
             with open(path_given,'rb') as file_read:
-                if type_file == "train":
-                    feature_name = conf_json['train_feature_name']
-                    label_name = conf_json['train_label_name']
-                elif type_file == 'test':
-                    feature_name = conf_json['test_feature_name']
-                    label_name = conf_json['test_label_name']
-                elif type_file == 'validation':
-                    feature_name = conf_json['val_feature_name']
-                    label_name = conf_json['val_label_name']
                 df = pd.read_json(file_read)
                 #If it's a json file it's expect of conf to have this extra
+                label_name = conf_json['label_column']
                 target = df.pop(label_name)
                 features = df.values.tolist()
                 labels =  target.values.tolist()
