@@ -1,3 +1,4 @@
+import json
 from flask import Flask, request
 from celery import Celery
 import psycopg2
@@ -5,6 +6,7 @@ import sys
 import uuid
 import psycopg2.extras
 import datetime
+import os
 
 # call it in any place of your program
 # before working with UUID objects in PostgreSQL
@@ -12,13 +14,35 @@ psycopg2.extras.register_uuid()
 
 conn = None
 if "celery" in sys.argv[0]:
+
+    if 'DATABASE_HOST' in os.environ:
+        DATABASE_HOST = os.environ.get('DATABASE_HOST')
+    else:
+        DATABASE_HOST = "timescaledb"
+    if 'DATABASE_PORT' in os.environ:
+        DATABASE_PORT = os.environ.get('DATABASE_PORT')
+    else:
+        DATABASE_PORT = 5432
+    if 'DATABASE_NAME' in os.environ:
+        DATABASE_NAME = os.environ.get('DATABASE_NAME')
+    else:
+        DATABASE_NAME = "nntracker"
+    if 'DATABASE_USER' in os.environ:
+        DATABASE_USER = os.environ.get('DATABASE_USER')
+    else:
+        DATABASE_USER = "root"
+    if 'DATABASE_PASSWORD' in os.environ:
+        DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD')
+    else:
+        DATABASE_PASSWORD = "postgres"
+
     try:
         conn = psycopg2.connect(
-            host="timescaledb",
-            database="nntracker",
-            user="root",
-            password="postgres",
-            port="5432",
+            host=DATABASE_HOST,
+            database=DATABASE_NAME,
+            user=DATABASE_USER,
+            password=DATABASE_PASSWORD,
+            port=DATABASE_PORT,
             connect_timeout=4
         )
     except Exception as error:
@@ -32,32 +56,35 @@ from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 
+
 @app.route('/update', methods=['POST'])
 def update_simulation():
     logger.info("/update called")
     print("/update called", file=sys.stderr)
     simulation_data = request.get_json(force=True)
-    print(type(simulation_data), file=sys.stderr)
 
     result = update_data_sent.delay(simulation_data)
     return 'All good'
+
 
 @app.route('/finish', methods=['POST'])
 def finish_simulation():
     simulation_data = request.get_json()
     print("/finish called", file=sys.stderr)
+
     result = finish_data_sent.delay(simulation_data)
     return 'All good'
+
 
 @app.route('/send_error', methods=['POST'])
 def send_error_simulation():
     logger.info("/send_error called")
     print("/send_error called", file=sys.stderr)
     simulation_data = request.get_json(force=True)
-    print(type(simulation_data), file=sys.stderr)
 
     result = send_error.delay(simulation_data)
     return 'All good'
+
 
 def make_celery(app):
     celery = Celery(
@@ -90,16 +117,40 @@ def check_connection():
         print("Reconnecting... ", file=sys.stderr)
         try:
             conn = psycopg2.connect(
-                host="timescaledb",
-                database="nntracker",
-                user="root",
-                password="postgres",
-                port="5432",
+                host=DATABASE_HOST,
+                database=DATABASE_NAME,
+                user=DATABASE_USER,
+                password=DATABASE_PASSWORD,
+                port=DATABASE_PORT,
                 connect_timeout=4
             )
         except Exception as error:
             print("Error connecting to db: ", error, file=sys.stderr)
             print("Error type: ", type(error), file=sys.stderr)
+
+
+def process_data(data_dict):
+    for i in range(len(data_dict['weights'])):
+        layer_data = data_dict['weights'][i]
+
+    weights = {str(i): data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
+    model = json.loads(data_dict["model"])
+    layernames = {str(i): model["config"]['layers'][i]["class_name"] + str(i) for i in range(len(model["config"]['layers']))}
+
+    loss = data_dict['logs']['loss']
+    accuracy = data_dict['logs']['accuracy']
+    val_loss = data_dict['logs']["val_loss"]
+    val_accuracy = data_dict['logs']["val_accuracy"]
+
+    metrics = {}
+    for metric in data_dict['logs'].keys():
+        if metric not in ['loss','accuracy','val_accuracy','val_loss']:
+            metrics[metric] = data_dict['logs'][metric]
+
+    epoch = data_dict['epoch']
+    simid = uuid.UUID(int=int(data_dict['sim_id']))
+
+    return simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics, layernames
 
 
 @celery.task()
@@ -110,7 +161,7 @@ def update_data_sent(json_file):
         try:
             curr = conn.cursor()
             logger.info('update starting')
-            simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics = process_data(json_file)
+            simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics, layernames = process_data(json_file)
 
             sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
             sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss, val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
@@ -118,7 +169,7 @@ def update_data_sent(json_file):
 
             for w in weights.keys():
                 index = w
-                curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
+                curr.execute(sqlWeights, (str(epoch), index, layernames[w], simid, weights[w], datetime.datetime.now()))
 
             for metric in metrics.keys():
                 curr.execute(sqlExtraMetrics, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
@@ -135,29 +186,6 @@ def update_data_sent(json_file):
     return None
 
 
-def process_data(data_dict):
-    logger.info(type(data_dict['weights']))
-    for i in range(len(data_dict['weights'])):
-        layer_data = data_dict['weights'][i]
-        print('layer ',i,':',len(layer_data))
-    weights = {str(i) : data_dict['weights'][i][0] if data_dict['weights'][i] != [] else [] for i in range(len(data_dict['weights'])) }
-
-    loss = data_dict['logs']['loss']
-    accuracy = data_dict['logs']['accuracy']
-    val_loss = data_dict['logs']["val_loss"]
-    val_accuracy = data_dict['logs']["val_accuracy"]
-
-    metrics = {}
-    for metric in data_dict['logs'].keys():
-        if metric not in ['loss','accuracy','val_accuracy','val_loss']:
-            metrics[metric] = data_dict['logs'][metric]
-
-    epoch = data_dict['epoch']
-    simid = uuid.UUID(int=int(data_dict['sim_id']))
-    print(simid)
-    return simid, epoch, weights, loss, accuracy, val_loss, val_accuracy, metrics
-
-
 @celery.task()
 def finish_data_sent(json_file):
     for _ in range(2):
@@ -165,7 +193,7 @@ def finish_data_sent(json_file):
 
         try:
             curr = conn.cursor()
-            simid, epoch, weights, loss, accuracy,val_loss, val_accuracy, metrics = process_data(json_file)
+            simid, epoch, weights, loss, accuracy,val_loss, val_accuracy, metrics, layernames = process_data(json_file)
             sqlWeights = "INSERT INTO Weights(epoch,layer_index,layer_name,sim_id,weight,time) VALUES(%s,%s,%s,%s,%s,%s)"
             sqlEpoch = "INSERT INTO Epoch_values(epoch,sim_id,loss,accuracy,time,val_loss,val_accuracy) VALUES(%s,%s,%s,%s,%s,%s,%s)"
             sqlUpdate = "UPDATE simulations SET isdone=TRUE, isrunning=FALSE WHERE id=%s"
@@ -173,7 +201,7 @@ def finish_data_sent(json_file):
 
             for w in weights.keys():
                 index = w
-                curr.execute(sqlWeights, (str(epoch), index, "0", simid, weights[w], datetime.datetime.now()))
+                curr.execute(sqlWeights, (str(epoch), index, layernames[w], simid, weights[w], datetime.datetime.now()))
 
             for metric in metrics.keys():
                 curr.execute(sqlExtraMetrics, (str(epoch), simid, metrics[metric], metric, datetime.datetime.now()))
@@ -188,6 +216,7 @@ def finish_data_sent(json_file):
             print("Error type: ", type(error), file=sys.stderr)
 
     return None
+
 
 @celery.task()
 def send_error(json_file):
