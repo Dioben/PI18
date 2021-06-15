@@ -65,14 +65,14 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    {% for epoch,metrics in extra_metrics.items %}
+                {% for epoch, metrics in extra_metrics.items %}
+                    <tr>
                         <th scope="col">{{ epoch }}</th>
                         {% for metric in metrics %}
                             <td>{{ metric.value|floatformat:"3" }}</td>
                         {% endfor %}
-                    {% endfor %}
-                </tr>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
