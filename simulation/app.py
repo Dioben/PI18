@@ -19,6 +19,9 @@ import sys
 import pickle
 
 
+#Env variables
+parser_url = 'http://parser:6000' if "PARSER_URL" not in os.environ else os.environ['PARSER_URL']
+
 def main(model_json,conf_json):
 
     #Get configuration paramteres
@@ -165,7 +168,7 @@ def main(model_json,conf_json):
     dataset_val = dataset_val.shuffle(len(dataset_val)).batch(BATCH_SIZE)
     dataset_test = dataset_test.shuffle(len(dataset_test)).batch(BATCH_SIZE)
     #Get URL to aggregator
-    url = 'http://parser:6000/update'
+    url = parser_url
 
     def get_optimizer_tensorflow(conf_json,base_learning_rate):
         config = conf_json['optimizer_conf']
@@ -293,9 +296,9 @@ def main(model_json,conf_json):
                 data = res_dic
                 print('Here after json')
                 print(len(data),file=sys.stderr)
-                url = 'http://parser:6000/update'
+                url = parser_url+'/update'
                 if epoch == EPOCHS-1:
-                    url = 'http://parser:6000/finish'
+                    url = parser_url+'/finish'
                 try:
                     headers = {'Content-type': 'application/json'}
                     res = requests.post(url, json = data,headers=headers,timeout=50)
@@ -334,7 +337,7 @@ except Exception as error:
 
     data['id'] = conf_json["id"]
     data['error'] = error_sent
-    url = 'http://parser:6000/send_error'
+    url = parser_url+'/send_error'
     headers = {'Content-type': 'application/json'}
     res = requests.post(url, json = data,headers=headers,timeout=50)
 
