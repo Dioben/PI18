@@ -15,11 +15,26 @@ psycopg2.extras.register_uuid()
 conn = None
 if "celery" in sys.argv[0]:
 
-    DATABASE_HOST = os.environ.get('DATABASE_HOST')
-    DATABASE_PORT = os.environ.get('DATABASE_PORT')
-    DATABASE_NAME = os.environ.get('DATABASE_NAME')
-    DATABASE_USER = os.environ.get('DATABASE_USER')
-    DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD')
+    if 'DATABASE_HOST' in os.environ:
+        DATABASE_HOST = os.environ.get('DATABASE_HOST')
+    else:
+        DATABASE_HOST = "timescaledb"
+    if 'DATABASE_PORT' in os.environ:
+        DATABASE_PORT = os.environ.get('DATABASE_PORT')
+    else:
+        DATABASE_PORT = 5432
+    if 'DATABASE_NAME' in os.environ:
+        DATABASE_NAME = os.environ.get('DATABASE_NAME')
+    else:
+        DATABASE_NAME = "nntracker"
+    if 'DATABASE_USER' in os.environ:
+        DATABASE_USER = os.environ.get('DATABASE_USER')
+    else:
+        DATABASE_USER = "root"
+    if 'DATABASE_PASSWORD' in os.environ:
+        DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD')
+    else:
+        DATABASE_PASSWORD = "postgres"
 
     try:
         conn = psycopg2.connect(
