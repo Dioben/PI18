@@ -12,6 +12,16 @@ import os
 # before working with UUID objects in PostgreSQL
 psycopg2.extras.register_uuid()
 
+if 'BROKER_URL' in os.environ:
+    BROKER_URL = os.environ.get('BROKER_URL')
+else:
+    BROKER_URL = 'redis://redis:6379'
+
+if 'RESULT_BACKEND_URL' in os.environ:
+    RESULT_BACKEND_URL = os.environ.get('RESULT_BACKEND_URL')
+else:
+    RESULT_BACKEND_URL = 'redis://redis:6379'
+
 conn = None
 if "celery" in sys.argv[0]:
 
@@ -98,8 +108,8 @@ def make_celery(app):
 
 
 app.config.update(
-    broker_url = 'redis://redis:6379',
-    result_backend = 'redis://redis:6379',
+    broker_url = BROKER_URL,
+    result_backend = RESULT_BACKEND_URL,
 
     task_serializer = 'json',
     result_serializer = 'json',
