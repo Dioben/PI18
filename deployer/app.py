@@ -17,6 +17,16 @@ import psutil
 app = Flask(__name__)
 client = docker.from_env()
 
+#ENV variables
+broker_url = 'redis://celery_deployer:6380' if "BROKER_URL" not in os.environ else os.environ['BROKER_URL']
+result_backend = 'redis://celery_deployer:6380' if "RESULT_BACKEND" not in os.environ else os.environ['RESULT_BACKEND']
+sim_image_name = 'dioben/nntrackerua-simulation' if "DEPLOYABLE_NAME" not in os.environ else os.environ['DEPLOYABLE_NAME']
+
+parser_url = 'http://parser:6000' if "PARSER_URL" not in os.environ else os.environ['PARSER_URL']
+
+docker_components = ['timescaledb','grafana','tracker-server','tracker-deployer',
+        'tracker-deployer-worker','redis_deployer','tracker-parser','tracker-parser-worker','redis'] if "COMPONENTS" not in os.environ else os.environ['COMPONENTS'].split(',')
+
 @app.route('/simulations', methods=['POST'])
 def make_simulation():
     print_flask('here')
@@ -109,8 +119,7 @@ def get_docker_container_info():
     print_flask('Docker stats')
     info = {}
     for containers in client.containers.list():
-        if not containers.name in ['timescaledb','grafana','tracker-server','tracker-deployer',
-        'tracker-deployer-worker','redis_deployer','tracker-parser','tracker-parser-worker','redis']:
+        if not containers.name in docker_components:
             stream1 = containers.stats(decode=None, stream = False)
             stream2 = containers.stats(decode=None, stream = False)
             print_flask(stream1)
@@ -169,8 +178,8 @@ def make_celery(app):
     return celery
 
 app.config.update(
-    broker_url = 'redis://celery_deployer:6380',
-    result_backend = 'redis://celery_deployer:6380',
+    broker_url = broker_url,
+    result_backend = result_backend,
 
     task_serializer = 'json',
     result_serializer = 'json',
@@ -276,7 +285,8 @@ def start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test,k
     tar_conf = get_tarstream(json.dumps(conf_data).encode('utf8'),"conf.json")
     print_flask('Conversion to tar for both jsons')
 
-    container_made = client.containers.create("dioben/nntrackerua-simulation",name=str(sim_id),detach=True)
+    env_dict = {'PARSER_URL' : parser_url}
+    container_made = client.containers.create(sim_image_name,name=str(sim_id),detach=True,environment=env_dict)
     print_flask('Containner with id:'+container_made.id + " was made")
 
     #Copy dataset files from path given to containner
