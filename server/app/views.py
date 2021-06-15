@@ -328,13 +328,14 @@ def simulation_info(request, id):
             extraMetricsDict.get(epoch.get('epoch')).append(
                 {"metric": metric.get('metric'),
                  "value": extraMetrics.filter(epoch=epoch.get('epoch'), metric=metric.get('metric')).values("value").get().get('value')})
+    extraMetricsDict = {key: sorted(value, key=lambda x: x['metric']) for key, value in extraMetricsDict.items()}
     t_params = {
         'simulation': response,
         'notification': notification,
         'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)],
         'tags': Tagged.objects.filter(sim=response),
         'simulationList': responseList,
-        'extra_metrics': extraMetricsDict,
+        'extra_metrics': dict(sorted(extraMetricsDict.items())),
         'grafana_base_url': GRAFANA_BASE_URL
     }
     return render(request, 'simulationInfo/simulationInfo.html', t_params)
@@ -393,10 +394,11 @@ def simulation_info_content2(request, id):
             extraMetricsDict.get(epoch.get('epoch')).append(
                 {"metric": metric.get('metric'),
                  "value": extraMetrics.filter(epoch=epoch.get('epoch'), metric=metric.get('metric')).values("value").get().get('value')})
+    extraMetricsDict = {key: sorted(value, key=lambda x: x['metric']) for key, value in extraMetricsDict.items()}
     t_params = {
         'simulation': response,
         'updates': [UpdateSerializer(update).data for update in Update.objects.filter(sim_id=id)],
-        'extra_metrics': extraMetricsDict
+        'extra_metrics': dict(sorted(extraMetricsDict.items()))
     }
     return render(request, 'simulationInfo/simulationInfoContent2.html', t_params)
 

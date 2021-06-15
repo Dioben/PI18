@@ -65,14 +65,14 @@
                                 </div>
                                 <iframe style="height: 50vh; width: 100%;" frameborder="0" id="grafanaWeightsGraphingIFrame"></iframe>
 
-                                {% if simulation.metrics|length != 0 %}
+                                {% if extra_metrics|length != 0 %}
                                     <h6 style="margin-top: 8px">Extra Metrics Dash:</h6>
                                     <div class="input-group">
                                         <button id="grafanaExtraMetricsDashRefreshButton" class="btn btn-primary" type="button">Refresh</button>
                                         <label for="grafanaExtraMetricsDashMetricSelect" class="input-group-text">Metric:</label>
                                         <select id="grafanaExtraMetricsDashMetricSelect" class="form-select">
-                                            {% for metric in simulation.metrics %}
-                                                <option value="{{ metric }}">{{ metric }}</option>
+                                            {% for metric in extra_metrics.0 %}
+                                                <option value="{{ metric.metric }}">{{ metric.metric }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -120,7 +120,7 @@
                                     </div>
                                     <iframe style="height: 50vh; width: 100%;" frameborder="0" id="grafanaGroupCompIFrame"></iframe>
 
-                                    {% if simulation.metrics|length != 0 %}
+                                    {% if extra_metrics|length != 0 %}
                                         <h6 style="margin-top: 8px">Extra Metrics for Tag Group:</h6>
                                         <div class="input-group">
                                             <button id="grafanaGroupCompMetricsRefreshButton" class="btn btn-primary" type="button">Refresh</button>
@@ -138,8 +138,8 @@
                                             </select>
                                             <label for="grafanaGroupCompMetricsMetricSelect" class="input-group-text">Metric:</label>
                                             <select id="grafanaGroupCompMetricsMetricSelect" class="form-select">
-                                                {% for metric in simulation.metrics %}
-                                                    <option value="{{ metric }}">{{ metric }}</option>
+                                                {% for metric in extra_metrics.0 %}
+                                                    <option value="{{ metric.metric }}">{{ metric.metric }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
@@ -178,7 +178,7 @@
                                 </div>
                                 <iframe style="height: 50vh; width: 100%;" frameborder="0" id="grafanaSubCompIFrame"></iframe>
 
-                                {% if simulation.metrics|length != 0 %}
+                                {% if extra_metrics|length != 0 %}
                                     <h6 style="margin-top: 8px">Sutraction of Extra Metrics with another Simulation:</h6>
                                     <div class="input-group">
                                         <button id="grafanaSubCompMetricsRefreshButton" class="btn btn-primary" type="button">Refresh</button>
@@ -192,8 +192,8 @@
                                         </select>
                                         <label for="grafanaSubCompMetricsMetricSelect" class="input-group-text">Metric:</label>
                                         <select id="grafanaSubCompMetricsMetricSelect" class="form-select">
-                                            {% for metric in simulation.metrics %}
-                                                <option value="{{ metric }}">{{ metric }}</option>
+                                            {% for metric in extra_metrics.0 %}
+                                                <option value="{{ metric.metric }}">{{ metric.metric }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -441,7 +441,7 @@
             reloadGrafanaWeightsGraphing();
 
 
-            {% if simulation.metrics|length != 0 %}
+            {% if extra_metrics|length != 0 %}
                 function reloadGrafanaExtraMetricsDashGraphing() {
                     let grafanaUrl;
                     if (firstUpdate !== undefined)
@@ -489,7 +489,7 @@
                 $("#grafanaGroupCompValidationLossSwitch").change(reloadGrafanaGroupComp);
 
 
-                {% if simulation.metrics|length != 0 %}
+                {% if extra_metrics|length != 0 %}
                     function reloadGrafanaGroupCompMetrics() {
                         let grafanaUrl;
                         if (firstUpdate !== undefined)
@@ -541,7 +541,7 @@
             $("#grafanaSubCompValidationLossSwitch").change(reloadGrafanaSubComp);
 
 
-            {% if simulation.metrics|length != 0 %}
+            {% if extra_metrics|length != 0 %}
                 function reloadGrafanaSubCompMetrics() {
                     let grafanaUrl;
                     if (firstUpdate !== undefined)
