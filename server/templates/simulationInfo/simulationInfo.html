@@ -427,11 +427,7 @@
 
 
             function reloadGrafanaWeightsGraphing() {
-                let grafanaURL
-                if (firstUpdate !== undefined)
-                    grafanaUrl = "{{ grafana_base_url }}/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+(firstUpdate.time-30)+"&to=now&panelId=2";
-                else
-                    grafanaUrl = "{{ grafana_base_url }}/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&from="+Date.now()+"&to=now&panelId=2";
+                let grafanaUrl = "{{ grafana_base_url }}/d-solo/kbM_Fx3Mz/weights-graphing?orgId=1&var-sim_id={{ simulation.id }}&to=now&panelId=2";
                 grafanaUrl += "&var-layer=" + $('#grafanaWeightsGraphingLayerInput').val();
                 $("#grafanaWeightsGraphingIFrame").prop("src", grafanaUrl);
                 $("#grafanaWeightsGraphingLayerNumber").text($('#grafanaWeightsGraphingLayerInput').val());
