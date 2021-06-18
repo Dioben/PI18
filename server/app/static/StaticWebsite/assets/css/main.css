@@ -9,20 +9,20 @@
 	--instagram-color: #2E5E86;
 	--google-plus-color: #DA2713;
 
-	--color-4: rgb(54, 57, 63); /* Above background + banner title + header active tab text */
-	--color-1: rgb(32, 34, 37); /* Under background + footer */
-	--color-2: rgb(114, 118, 125); /* Separators + footer's footer background */
-	--color-22: rgba(32, 34, 37, 0.95); /* Header background */
-	--color-23: rgba(0, 0, 0, 0.1); /* Header dropdown shadow */
+	--color-4: rgb(255, 255, 255); /*rgb(54, 57, 63); /* Above background + banner title + header active tab text */
+	--color-1: rgb(242, 245, 243); /*rgb(32, 34, 37); /* Under background + footer */
+	--color-2: rgb(231, 234, 232); /*rgb(114, 118, 125); /* Separators + footer's footer background */
+	--color-22: rgba(240, 241, 240, 0.95); /*rgba(32, 34, 37, 0.95); /* Header background */
+	--color-23: rgba(107, 119, 125, 0.1); /*rgba(0, 0, 0, 0.1); /* Header dropdown shadow */
 	--color-21: rgb(41, 43, 47); /* Mobile side menu background */
 	--color-32: rgb(185, 187, 190, 0.15); /* Mobile side menu separators */
 	--color-27: rgba(21, 26, 38, 0.8); /* Mobile header color */
 
-	--color-3: rgb(185, 187, 190); /* Main text */
-	--color-6: rgb(114, 118, 125); /* Secondary buttons and text + footer separator */
-	--color-13: rgb(172, 171, 171); /* Terciary text */
-	--color-20: rgb(185, 187, 190); /* Footer's footer text */
-	--color-16: rgb(64, 68, 75); /* Banner subtext */
+	--color-3: rgb(107, 119, 125); /*rgb(185, 187, 190); /* Main text */
+	--color-6: rgb(194, 197, 202); /*rgb(114, 118, 125); /* Secondary buttons and text + footer separator */
+	--color-13: rgb(161, 166, 170); /*rgb(172, 171, 171); /* Terciary text */
+	--color-20: rgb(139, 146, 151); /*rgb(185, 187, 190); /* Footer's footer text */
+	--color-16: rgb(180, 182, 190); /*rgb(64, 68, 75); /* Banner subtext */
 	--color-5: rgb(77, 118, 218); /* Hyperlinks */
 	--color-31: rgb(185, 187, 190); /* Mobile side menu text */
 
@@ -35,8 +35,7 @@
 	--color-11: rgb(177, 180, 186);
 	--color-12: rgb(185, 191, 210);
 	--color-14: rgb(85, 85, 85);
-	--color-15: rgb(215, 216, 218);
-	--color-15: rgb(123, 126, 135);
+	--color-15: hsl(220, 4%, 80%); /* Header dropdown text */
 	--color-17: rgb(180, 181, 183);
 	--color-18: rgb(228, 229, 231);
 	--color-19: rgb(97, 99, 103);
@@ -47,8 +46,8 @@
 	--color-30: rgba(0, 0, 0, 0.25);
 
 	
-	--color-c1: rgba(32, 34, 37, 0.2); /* Header background */
-	--github-color: #ffffff;
+	--color-c1: rgba(240, 241, 240, 0.4); /*rgba(32, 34, 37, 0.2); /* Header background */
+	--github-color: #000000;
 }
 
 a {
