@@ -26,7 +26,6 @@ docker pull dioben/nntrackerua-simulation:latest
 docker-compose up
 ```
 <br>
-If the user wants to run the system in detached mode they should use this instead.
 
 The components are connected as follows <br><br>
 ![deployment diagram](http://xcoa.av.it.pt/~pi202021g08/images/deploymentDiagram.png "Deployment Diagram")
