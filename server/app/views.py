@@ -836,6 +836,7 @@ def command_start(request, id):  # return the objects you're acting on in these
     sim = Simulation.objects.filter(id=id)
     if not sim.exists():
         return HttpResponse('Not found', status=404)
+    sim = sim.get()
     requests.post(DEPLOYER_BASE_URL+'/simulations/{id}/START')
     sim.isrunning = True
     sim.save()
@@ -846,6 +847,7 @@ def command_stop(request, id):
     sim = Simulation.objects.filter(id=id)
     if not sim.exists():
         return HttpResponse('Not found', status=404)
+    sim = sim.get()
     requests.delete(DEPLOYER_BASE_URL+'/simulations/{id}')
     sim.delete()
     return HttpResponse(sim, status=200)
@@ -855,6 +857,7 @@ def command_pause(request, id):
     sim = Simulation.objects.filter(id=id)
     if not sim.exists():
         return HttpResponse('Not found', status=404)
+    sim = sim.get()
     requests.post(DEPLOYER_BASE_URL+'/simulations/{id}/PAUSE')
     sim.isrunning = False
     sim.save()
