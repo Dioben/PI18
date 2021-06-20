@@ -4,4 +4,6 @@
 
 
 ## Important Note
-when instancing one of these simulations the environment variable $datasrc is expected so it can find where the dataset is
+PROBABLY NOT TRUE: when instancing one of these simulations the environment variable $datasrc is expected so it can find where the dataset is
+
+This component's target data parser can be configured by setting the PARSER_URL environment variable, which defaults to http://parser:6000
