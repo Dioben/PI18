@@ -343,8 +343,7 @@ except Exception as error:
 
     print('Post ERROR status:',res,file=sys.stderr)
 
-#Delete task after running
-#TODO:Activate this
-# urlDelete = 'http://deployer:7000/simulations/' + conf_json["id"]
-# res = requests.delete(urlDelete)
-# print('Delete status:', res, file=sys.stderr)
+#Delete sim after running
+urlDelete = 'http://deployer:7000/simulations/' + conf_json["id"]
+res = requests.delete(urlDelete)
+print('Delete status:', res, file=sys.stderr)

@@ -254,8 +254,7 @@ def make_simualtion(sim_id,model_data,conf_data):
     else:
         start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test)
     
-    #Disabled for testing purposes, but its tested
-    #cleanup_data(path_train,path_val,path_test)
+    cleanup_data(path_train,path_val,path_test)
     return None
 
 def cleanup_data(path_train,path_val,path_test):
