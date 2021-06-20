@@ -25,7 +25,17 @@
 		<img class="modal-content" id="modal-img" />
 		<!-- Modal Caption (Image Text) -->
 		<div id="caption"></div>
-	  </div>
+	</div>
+
+	<!-- A modal for the iframe expansion -->
+	<div id="iframe-modal" class="modal">
+		<!-- The Close Button -->
+		<span class="modal-close">&times;</span>
+		<!-- Modal Content (The Image) -->
+		<iframe class="modal-content" id="iframe-modal-img"></iframe>
+		<!-- Modal Caption (Image Text) -->
+		<div id="caption"></div>
+	</div>
 
 	<!-- Added manual mobile panel because events dont work well with dynamically added elements -->
 	<div>
@@ -38,25 +48,41 @@
 					<span class="indent-0"></span>
 					Home
 				</a>
+				<a class="promotional-nav-a link depth-0" href="#navPanel">
+					<span class="indent-1"></span>
+					Promotional video
+				</a>
 				<a class="features-nav-a link depth-0" href="#navPanel">
 					<span class="indent-0"></span>
 					Features
 				</a>
 				<a class="feature1-nav-a link depth-1" href="#navPanel">
 					<span class="indent-1"></span>
-					Neural network data storage
+					Create a Simulation
 				</a>
 				<a class="feature2-nav-a link depth-1" href="#navPanel">
 					<span class="indent-1"></span>
-					Neural network analysis
+					Neural Network Data Storage
 				</a>
 				<a class="feature3-nav-a link depth-1" href="#navPanel">
 					<span class="indent-1"></span>
-					Service layer REST API
+					Simulation Result Analysis
 				</a>
 				<a class="feature4-nav-a link depth-1" href="#navPanel">
 					<span class="indent-1"></span>
-					Web application
+					Manage the Simulation Life-Cycle
+				</a>
+				<a class="feature5-nav-a link depth-1" href="#navPanel">
+					<span class="indent-1"></span>
+					Download Simulation Data
+				</a>
+				<a class="feature6-nav-a link depth-1" href="#navPanel">
+					<span class="indent-1"></span>
+					Web Interface
+				</a>
+				<a class="feature7-nav-a link depth-1" href="#navPanel">
+					<span class="indent-1"></span>
+					Manage Users
 				</a>
 				<a class="work-nav-a link depth-0" href="#navPanel">
 					<span class="indent-0"></span>
@@ -65,6 +91,10 @@
 				<a class="documentation-nav-a link depth-0" href="#navPanel">
 					<span class="indent-0"></span>
 					Documentation
+				</a>
+				<a class="demos-nav-a link depth-0" href="#navPanel">
+					<span class="indent-0"></span>
+					Demos
 				</a>
 				<a class="team-nav-a link depth-0" href="#navPanel">
 					<span class="indent-0"></span>
@@ -79,18 +109,27 @@
 		<!-- Nav -->
 		<nav id="nav">
 			<ul>
-				<li id="home-nav-li" class="current"><a class="home-nav-a">Home</a></li>
+				<li id="home-nav-li" class="current">
+					<a class="home-nav-a">Home</a>
+					<ul>
+						<li><a class="promotional-nav-a">Promotional video</a></li>
+					</ul>
+				</li>
 				<li id="features-nav-li">
 					<a class="features-nav-a">Features</a>
 					<ul>
-						<li><a class="feature1-nav-a">Neural network data storage</a></li>
-						<li><a class="feature2-nav-a">Neural network analysis</a></li>
-						<li><a class="feature3-nav-a">Service layer REST API</a></li>
-						<li><a class="feature4-nav-a">Web application</a></li>
+						<li><a class="feature1-nav-a">Create a Simulation</a></li>
+						<li><a class="feature2-nav-a">Neural Network Data Storage</a></li>
+						<li><a class="feature3-nav-a">Simulation Result Analysis</a></li>
+						<li><a class="feature4-nav-a">Manage the Simulation Life-Cycle</a></li>
+						<li><a class="feature5-nav-a">Download Simulation Data</a></li>
+						<li><a class="feature6-nav-a">Web Interface</a></li>
+						<li><a class="feature7-nav-a">Manage Users</a></li>
 					</ul>
 				</li>
 				<li id="work-nav-li"><a class="work-nav-a">Work</a></li>
 				<li id="documentation-nav-li"><a class="documentation-nav-a">Documentation</a></li>
+				<li id="demos-nav-li"><a class="demos-nav-a">Demos</a></li>
 				<li id="team-nav-li"><a class="team-nav-a">Team</a></li>
 			</ul>
 		</nav>
@@ -99,7 +138,7 @@
 		<section id="banner">
 			<div class="content">
 				<h2>Neural Net Tracker</h2>
-				<h3>NEURAL NETWORK BEHAVIOR ANALYSIS TOOL DURING TRAINING</h3>
+				<h3 style="color: var(--color-4);">NEURAL NETWORK BEHAVIOR ANALYSIS TOOL DURING TRAINING</h3>
 				<p>Easily monitor and experiment with neural networks</p>
 			</div>
 		</section>
@@ -108,6 +147,25 @@
 		<section id="main">
 			<div class="container">
 				<div class="row gtr-200">
+
+
+					<div class="col-12">
+						<section class="box">
+							<div class="box highlight">
+								<header id="promotional-nav-location">
+									<h2 class="major"><span>Promotional video</span></h2>
+								</header>
+							</div>
+
+							<section class="row">
+								<div class="col-12">
+									<div class="reactive-iframe-container">
+										<iframe src="https://www.youtube.com/embed/lI-U-HIU9iY" class="reactive-iframe"></iframe>
+									</div>
+								</div>
+							</section>
+						</section>
+					</div>
 
 
 					<div class="col-12">
@@ -122,7 +180,15 @@
 							<section class="row">
 								<div class="col-6 col-6-medium col-12-small">
 									<h3 id="feature1-nav-location">
-										Neural network data storage
+										Create a Simulation
+									</h3>
+									<p>
+										Deploy a containerized Neural Network in the system using different formats like JSON or npz.
+									</p>
+								</div>
+								<div class="col-6 col-6-medium col-12-small">
+									<h3 id="feature2-nav-location">
+										Neural Network Data Storage
 									</h3>
 									<p>
 										The internal parameters of the neural networks run with our project are periodically
@@ -130,31 +196,44 @@
 									</p>
 								</div>
 								<div class="col-6 col-6-medium col-12-small">
-									<h3 id="feature2-nav-location">
-										Neural Network Analysis
+									<h3 id="feature3-nav-location">
+										Simulation Result Analysis
 									</h3>
 									<p>
 										The previously stored internal parameters can be accessed in an easily comprehensible
-										format for ease of analysis.
-									</p>
-								</div>
-								<div class="col-6 col-6-medium col-12-small">
-									<h3 id="feature3-nav-location">
-										Service Layer REST API
-									</h3>
-									<p>
-										Our service layer is made with REST API for ease of use and integration with any other
-										interfaces.
+										format for ease of analysis and using a variety of graphics.
 									</p>
 								</div>
 								<div class="col-6 col-6-medium col-12-small">
 									<h3 id="feature4-nav-location">
-										Web Application
+										Manage the Simulation Life-Cycle
 									</h3>
 									<p>
-										We developed a web application in order to facilitate the use of our other features.
-										It contains an easy way to deploy neural networks and a graph viewer to better analyse
-										the progress of the deployed neural networks.
+										Hability to pause or resume the Simulation process
+									</p>
+								</div>
+								<div class="col-6 col-6-medium col-12-small">
+									<h3 id="feature5-nav-location">
+										Download the Simulation Data
+									</h3>
+									<p>
+										Download the Simulation Data stored in csv format.
+									</p>
+								</div>
+								<div class="col-6 col-6-medium col-12-small">
+									<h3 id="feature6-nav-location">
+										Web Interface
+									</h3>
+									<p>
+										Web application in order to facilitate the use of the features.
+									</p>
+								</div>
+								<div class="col-6 col-6-medium col-12-small">
+									<h3 id="feature7-nav-location">
+										Manage Users
+									</h3>
+									<p>
+										A simple way for Administrators to manage users of the system
 									</p>
 								</div>
 							</section>
@@ -177,7 +256,7 @@
 											<a href="https://github.com/buckaroo69/PI18/tree/main/server" class="image featured"><img class="tall-img" src="images/server.png" alt="" /></a>
 											<h3><a>Server</a></h3>
 											<p>
-												Rest API and Web Server
+												Web Server
 											</p>
 										</section>
 									</div>
@@ -321,6 +400,63 @@
 							</div>
 						</section>
 					</div>
+
+					<div class="col-12">
+						<!-- Features -->
+						<section class="box features">
+							<div class="box highlight">
+								<header id="demos-nav-location">
+									<h2 class="major"><span>Demos</span></h2>
+									<p></p>
+								</header>
+							</div>
+							<div>
+								<div class="row">
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature img-feature">
+											<a class="image featured">
+												<iframe class="wide-img" src="https://www.youtube.com/embed/ZVeoNSoR2n4"></iframe>
+											</a>
+											<h3><a>Simulation Lifecycle Management</a></h3>
+											<p></p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature img-feature">
+											<a class="image featured">
+												<iframe class="wide-img" src="https://www.youtube.com/embed/bXPE1up_HBo"></iframe>
+											</a>
+											<h3><a>Administrator Functionalities</a></h3>
+											<p></p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature img-feature">
+											<a class="image featured">
+												<iframe class="wide-img" src="https://www.youtube.com/embed/Oq4d7vZt0H0"></iframe>
+											</a>
+											<h3><a>Analysis Simulation Parameters</a></h3>
+											<p></p>
+										</section>
+									</div>
+									<div class="col-3 col-6-medium col-12-small">
+										<!-- Feature -->
+										<section class="box feature img-feature">
+											<a class="image featured">
+												<iframe class="wide-img" src="https://www.youtube.com/embed/roG0Bc_B50E"></iframe>
+											</a>
+											<h3><a>Create Simulation</a></h3>
+											<p></p>
+										</section>
+									</div>
+								</div>
+							</div>
+						</section>
+					</div>
+
 					<div class="col-12">
 						<section class="box highlight">
 							<header id="team-nav-location">
@@ -429,8 +565,7 @@
 				<!-- Copyright -->
 				<div id="copyright">
 					<ul class="menu">
-						<li>&copy; Neural Tracker. All rights reserved</li>
-						<li>Design based on TXT from <a href="http://html5up.net">HTML5 UP</a></li>
+						<li>2021 &copy; Neural Net Tracker</li>
 					</ul>
 				</div>
 
