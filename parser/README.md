@@ -9,6 +9,6 @@ The following environment variables can be set to configure this component:
 - DATABASE_NAME: Defaults to nntracker
 - DATABASE_USER: Defaults to root
 - DATABASE_PASSWORD: Defaults to postgres
-- BROKER_URL: link to a redis instance that celery depends on, defaults to redis://redis:6379
-- RESULT_BACKEND_URL: link to where data transfred from host to worker for it to be used, defaults to redis://redis:6379
+- BROKER_URL: Link to a redis instance that celery depends on, defaults to redis://redis:6379
+- RESULT_BACKEND_URL: Link to where data transfred from host to worker for it to be used, defaults to redis://redis:6379
 - DATABASE_HOST: Defaults to timescaledb
