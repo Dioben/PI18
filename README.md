@@ -17,9 +17,10 @@ All custom-made components are available as docker images at the following repos
 [Simulation Output Parser](https://hub.docker.com/repository/docker/dioben/nntrackerua-parser)
 
 <br>
+
 ## Instalation:
-docker and docker-compose are necessary to run the system with our default configurations
-[Install Docker](https://docs.docker.com/get-docker/)
+docker and docker-compose are necessary to run the system with our default configurations<br>
+[Install Docker](https://docs.docker.com/get-docker/)<br>
 [Install Docker-Compose](https://docs.docker.com/compose/install/)
 
 ## How to run:
