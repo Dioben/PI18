@@ -45,3 +45,7 @@ The components are connected as follows: <br><br>
 ![deployment diagram](http://xcoa.av.it.pt/~pi202021g08/images/deploymentDiagram.png "Deployment Diagram")
 
 Components have environment variables that allow for network customization, for more information read the README file associated with the component
+
+## Persistence
+By default data is persisted via a TimescaleDB database, following the schema below with the addition of some Django-related tables related to user sessions.
+![alt text](https://drive.google.com/uc?export=view&id=1vS_gxdiUgR-utmgHp0C3hA1puDBeicjG)
