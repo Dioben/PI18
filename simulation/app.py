@@ -31,7 +31,6 @@ def main(model_json,conf_json):
     LEARNING_RATE = float(conf_json['learning_rate'])
 
     #Search directory for files dataset_test dataset_train
-    print(os.listdir())
     for file_name in os.listdir():
         if 'dataset_test' in file_name:
             test_path = file_name
@@ -40,9 +39,6 @@ def main(model_json,conf_json):
         if 'dataset_val' in file_name:
             val_path = file_name
 
-    print('test:',test_path)
-    print('train:',train_path)
-    print('val:',val_path)
 
     def load_database(path_given,conf_json,type_file='train'):
         #File path given to file in VFS
@@ -56,11 +52,11 @@ def main(model_json,conf_json):
             target = df.pop(label_name)
             features = df.values.tolist()
             labels = target.values.tolist()
-            print('dataset make')
+
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
             #If it's a csv it's expect of conf to have this extra
         elif 'arff' in file_arr[1]:
-            print('File is arff')
+
             label_name = conf_json['label_column']
             out = arff.load(open('dataset_val.arff', 'r'))
             attrs = [label for label,data_type in out['attributes']]
@@ -68,22 +64,21 @@ def main(model_json,conf_json):
             target = df.pop(label_name)
             features = df.values.tolist()
             labels = target.values.tolist()
-            print('dataset make')
+
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
         elif 'pickle' in file_arr[1] or 'zip' in file_arr[1]:
             #If pandas.Dataframe serialized as pickle
-            print('File is pickled Dataframe')
-            print('File is of extension:',file_arr[1])
+
             df = pd.read_pickle(path_given)
             label_name = conf_json['label_column']
 
             target = df.pop(label_name)
             features = df.values.tolist()
             labels = target.values.tolist()
-            print('dataset make')
+
             dataset = tf.data.Dataset.from_tensor_slices((features, labels))
         elif 'json' in file_arr[1]:
-            print('File is json')
+
             with open(path_given,'rb') as file_read:
                 df = pd.read_json(file_read)
                 #If it's a json file it's expect of conf to have this extra
@@ -91,14 +86,10 @@ def main(model_json,conf_json):
                 target = df.pop(label_name)
                 features = df.values.tolist()
                 labels =  target.values.tolist()
-                print(labels[0])
-                print(features[0])
-                print(type(features))
-                print(type(labels))
-                print('dataset make')
+
                 dataset = tf.data.Dataset.from_tensor_slices((features, labels))
         elif 'npz' in file_arr[1]:
-            print('File is npz')
+
             with np.load(path_given) as numpy_data:
                 if type_file == "train":
                     feature_name = conf_json['train_feature_name']
@@ -109,7 +100,7 @@ def main(model_json,conf_json):
                 elif type_file == 'validation':
                     feature_name = conf_json['val_feature_name']
                     label_name = conf_json['val_label_name']
-                print(type_file)
+
                 features = numpy_data[feature_name]
                 labels = numpy_data[label_name]
                 dataset = tf.data.Dataset.from_tensor_slices((features, labels))
@@ -120,21 +111,17 @@ def main(model_json,conf_json):
         return dataset
 
     def get_chunk_k_fold(dataset_train,dataset_test,k_fold_number,k_fold_index):
-        print('K-fold for ',k_fold_number,' and index ',k_fold_index)
+
         dataset_train_x = np.array([x for x,y in dataset_train.as_numpy_iterator()])
         dataset_train_y = np.array([y for x,y in dataset_train.as_numpy_iterator()])
         
         dataset_test_x = np.array([x for x,y in dataset_test.as_numpy_iterator()])
         dataset_test_y = np.array([y for x,y in dataset_test.as_numpy_iterator()])
-        print(len(dataset_train_x))
-        print(len(dataset_test_x))
         
         dataset_train_test_features = np.append(dataset_train_x,dataset_test_x, axis=0)
         dataset_train_test_labels = np.append(dataset_train_y,dataset_test_y, axis=0)
 
-        print('Starting up K-fold')
-        print(len(dataset_train_test_features))
-        print(len(dataset_train_test_labels))
+
         kfold = KFold(n_splits=k_fold_number, shuffle=True, random_state=1048596)
         idx = 0
         for train_index, val_index in kfold.split(dataset_train_test_features):
@@ -151,16 +138,11 @@ def main(model_json,conf_json):
     dataset_train = load_database(train_path,conf_json)
     dataset_test = load_database(test_path,conf_json,type_file="test")
     dataset_val = load_database(val_path,conf_json,type_file="validation")
-    print(type(dataset_test),file=sys.stderr)
-    print(len(dataset_test))
-    print(type(dataset_train))
-    print(len(dataset_train))
-    print(type(dataset_val))
-    print(len(dataset_train))
+
 
 
     if 'k-fold_index' in conf_json:
-        print('K-fold product simulation')
+
         dataset_train,dataset_val = get_chunk_k_fold(dataset_train,dataset_test,int(conf_json['k-fold_validation']),int(conf_json['k-fold_index']))
 
     #After k-chunk only
@@ -172,7 +154,7 @@ def main(model_json,conf_json):
 
     def get_optimizer_tensorflow(conf_json,base_learning_rate):
         config = conf_json['optimizer_conf']
-        print('optimizer_config',config)
+
         config = parse_conf_dictionary(config)
         identifier = {"class_name": conf_json['optimizer'].lower(),
                                "config": config}
@@ -180,9 +162,9 @@ def main(model_json,conf_json):
         return optimizer
 
     def get_loss_func_tensorflow(conf_json):
-        #config = {"from_logits": conf_json['from_logits']}
+
         config = conf_json['loss_function_conf']
-        print('loss_config',config)
+
         config = parse_conf_dictionary(config)
         identifier = {"class_name": conf_json['loss_function'],
                 "config": config}
@@ -190,8 +172,7 @@ def main(model_json,conf_json):
         return loss
 
     def parse_conf_dictionary(config):
-        print('config pre parse:')
-        print(config)
+
         for key in config.keys():
             if not type(config[key]) is str:
                 continue
@@ -202,26 +183,19 @@ def main(model_json,conf_json):
                 config[key] = False
             elif value.isnumeric():
                 config[key] = float(value)
-        print('config pos parse:')
-        print(config)
+
         return config
 
     def get_metrics_tensorflow(conf_json):
-        print('metrics')
-        print(conf_json['metrics'])
+
         metrics_lst_json = conf_json['metrics']
         metrics_lst_class = []
         for metrics_json in metrics_lst_json:
-            #{"metric":"KLDivergence", "conf":{}},
             metric_name = metrics_json['metric']
             conf_metric = metrics_json['conf']
             #We already add accuracy and leave which one to be decided by framework
             if metric_name in ['BinaryAccuracy', 'Accuracy', 'TopKCategoricalAccuracy' 'CategoricalAccuracy', 'SparseCategoricalAccuracy']:
-                print('skipped a acc metric')
                 continue
-            print('metric_conf')
-            print(metric_name)
-            print(conf_metric)
             conf_metric = parse_conf_dictionary(conf_metric)
             identifier = {"class_name": metric_name,
                 "config": conf_metric}
@@ -243,7 +217,7 @@ def main(model_json,conf_json):
                 metrics=metrics)
     json_model = model_json
 
-    #Used because keras seems to use both lists and numpy arrays in toweights
+    #Used because keras seems to use both lists and numpy arrays in weights
     def listify_numpy_arr(lst):
         if not isinstance(lst,list) and 'numpy.ndarray' not in str(type(lst)):
             return lst
@@ -257,25 +231,17 @@ def main(model_json,conf_json):
     class DataAggregateCallback(tf.keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs=None):
             if epoch % EPOCH_PERIOD == 0 or epoch == EPOCHS-1:
-                print('Post to aggregator',file=sys.stderr)
 
                 logs = {i : logs[i] for i in logs.keys()}
 
-                print(f"Logs for epoch {epoch} are: {logs}")
 
                 weigths = []
-                #get_weights already gives you two arrays, first is actual weights, the rest are bias(non-treinable weights)
+                #get_weights already gives two arrays, first is actual weights, the rest are bias(non-treinable weights)
                 for i in range(len(model.layers)):
                     if model.layers[i].weights != None:
                         out = listify_numpy_arr(model.layers[i].get_weights())
-                        #print(f'For Layer {i} got weights {out}')
                         weigths.append(out)
-                print('Here after wigths')
-                #print(f'For Layer {i} got output {np.array(features[i]).shape}')
 
-                #weigths = [model.layers[i].get_weigths() for i in range(len(model.layers)) if model.layers[i].weights != []] 
-
-                #print(f"middle_layer_for_real:{middle_layers_outputs}")
 
                 res_dic = {}
                 
@@ -294,8 +260,7 @@ def main(model_json,conf_json):
                 res_dic["weights"] = weigths
 
                 data = res_dic
-                print('Here after json')
-                print(len(data),file=sys.stderr)
+
                 url = parser_url+'/update'
                 if epoch == EPOCHS-1:
                     url = parser_url+'/finish'
@@ -303,19 +268,14 @@ def main(model_json,conf_json):
                     headers = {'Content-type': 'application/json'}
                     res = requests.post(url, json = data,headers=headers,timeout=50)
 
-                    print('Post status:',res,file=sys.stderr)
                 except Exception as error:
                     print(error)
-                    print("Exception during post")
                     raise error
-                print('Here after post')
 
-    print('Learning rate:',LEARNING_RATE)
     model.fit(dataset_train, batch_size=BATCH_SIZE, epochs=EPOCHS
             , callbacks= [DataAggregateCallback()], validation_data=dataset_val)
     model.evaluate(dataset_test, batch_size=BATCH_SIZE, verbose=0)
 
-print("Simulation start",file=sys.stderr)
 #Read files from pre-defined directory
 DIR_FILES = "."
 with open(os.path.join(DIR_FILES,"model.json"),"r") as model_file:
@@ -330,9 +290,7 @@ try:
     main(model_json,conf_json)
 except Exception as error:
     print('ERROR during simulation')
-    print('Sending following log to DB')
     error_sent = str(error)[-LIMIT_ERROR:]
-    print(error_sent)
     data = {}
 
     data['id'] = conf_json["id"]
@@ -341,7 +299,6 @@ except Exception as error:
     headers = {'Content-type': 'application/json'}
     res = requests.post(url, json = data,headers=headers,timeout=50)
 
-    print('Post ERROR status:',res,file=sys.stderr)
 
 #Delete sim after running
 urlDelete = 'http://deployer:7000/simulations/' + conf_json["id"]
