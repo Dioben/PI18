@@ -20,7 +20,6 @@ from django.contrib.auth import views as auth_views
 from app.forms import CustomAuthenticationForm
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', views.index, name="Frontpage"),
     path('simulations/', views.simulation_list, name="SimulationList"),
     path('simulations/content/', views.simulation_list_content, name="SimulationListContent"),
@@ -35,5 +34,4 @@ urlpatterns = [
     path("accounts/logout/", auth_views.LogoutView.as_view(next_page="/"), name="Logout"),
     path('users/', views.users, name="Users"),
     path('users/<str:id>/', views.userinfo, name="UserInfo"),
-
 ]
