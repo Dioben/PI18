@@ -28,7 +28,7 @@ corresponding, it's required that the user remembers which names were
 used as keys but there isnt any requirement on what these names should be \
 Example: \
 *train_dt.npz*
-    ```json
+    ```
         {
         'train_feature' : [feature list]
         'train_label' : [label list]
@@ -44,7 +44,7 @@ The name determined of the label column should be taken into account for,
 but there aren't any requirements on what that name should be. \
 Example: \
 *train_dt.csv*
-    ```json
+    ```
     f1 | f2 | label
     58   20     1
     12   60     0
@@ -59,7 +59,7 @@ describing each collumn attriute by it's name and type.
 The name determined of the label column should be taken into account for,
 but there aren't any requirements on what that name should be. \
 Example: 
-    ```json
+    ```
     @RELATION EXAMPLE
     @ATTRIBUTE label NUMERIC
     @ATTRIBUTE f1 NUMERIC
@@ -95,7 +95,7 @@ object that corresponds to the label vector, here aren't any requirements
 on what that name should be. \
 Example: \
 *Pandas Dataframe Instance - train_df*
-    ```json
+    ```
     f1 | f2 | label
     58   20     1
     12   60     0
