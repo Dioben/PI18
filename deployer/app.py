@@ -29,13 +29,10 @@ docker_components = ['timescaledb','grafana','tracker-server','tracker-deployer'
 
 @app.route('/simulations', methods=['POST'])
 def make_simulation():
-    print_flask('here')
-    print_flask(request.data)
     data = request.get_json(force=True)
-    print_flask('data'+str(len(data)))
+
     if data['conf']['id'] is not None:
         sim_id = int(data['conf']['id'])
-        print_flask('Using id given by server')
     else:
         id_gen = uuid.uuid4()
         sim_id = id_gen.int
@@ -58,17 +55,10 @@ def simulation_stats():
     sys_info = get_system_info()
     docker_info = get_docker_container_info()
     info = {'system_information': sys_info, 'docker_containers_info' : docker_info}
-    print_flask('Final')
-    print_flask(str(info))
+
     resp = jsonify(info)
     return resp
 
-def get_size(bytes, suffix="B"):
-    factor = 1024
-    for unit in ["", "K", "M", "G", "T", "P"]:
-        if bytes < factor:
-            return f"{bytes:.2f}{unit}{suffix}"
-        bytes /= factor
 
 def get_system_info():
     svmem = psutil.virtual_memory()
@@ -191,7 +181,6 @@ def download_dataset(url,filename,simid):
 
 @celery.task()
 def make_simualtion(sim_id,model_data,conf_data):
-    print_flask('Making new sim of id:'+str(sim_id))
     #Check config for k-fold validation, get data -> numpy and then use stratifield k-fold
     #Get data -> numpy
     if conf_data["dataset_url"]:
@@ -272,7 +261,7 @@ def start_simulation(sim_id,model_data,conf_data,path_train,path_val,path_test,k
     network = networks_available[0]
     network.connect(container_made)
     container_made.start()
-    print_flask('Started script')
+
 
 
 @celery.task()
