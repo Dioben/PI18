@@ -21,6 +21,7 @@ import pickle
 
 #Env variables
 parser_url = 'http://parser:6000' if "PARSER_URL" not in os.environ else os.environ['PARSER_URL']
+deployer_url = 'http://deployer:7000/simulations/' if "DEPLOYER_DELETE_URL" not in os.environ else os.environ['DEPLOYER_DELETE_URL']
 
 def main(model_json,conf_json):
 
@@ -301,6 +302,6 @@ except Exception as error:
 
 
 #Delete sim after running
-urlDelete = 'http://deployer:7000/simulations/' + conf_json["id"]
+urlDelete = deployer_url + conf_json["id"]
 res = requests.delete(urlDelete)
 print('Delete status:', res, file=sys.stderr)

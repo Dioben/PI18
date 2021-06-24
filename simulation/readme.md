@@ -5,7 +5,7 @@
 
 ## Important Note
 This component's target data parser can be configured by setting the PARSER_URL environment variable, which defaults to http://parser:6000
-
+This component's deployer deletion endpoint can be configured by setting the DEPLOYER_DELETE_URL environment variable, which defaults to http://deployer:7000/simulations/
 
 
 ### Format necessary for each file format supported ###
