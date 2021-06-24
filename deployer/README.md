@@ -6,7 +6,7 @@ Component responsible for deploying simulations via Docker UNIX socket, also han
 The following can be configured via environment variables:
 
 - BROKER_URL: Link to a redis instance that celery depends on,defaults to redis://celery_deployer:6380
-- RESULT_BACKEND: Link to where data transfred from host to worker for it to be used, defaults to redis://celery_deployer:6380 
+- RESULT_BACKEND: Link to where data is transfered from host to worker for it to be used, defaults to redis://celery_deployer:6380 
 - DEPLOYABLE_NAME: Defaults to dioben/nntrackerua-simulation
 - PARSER_URL: Defaults to http://parser:6000 
 - COMPONENTS: Comma-separated list of docker containers to be monitored for perfor-mance statistics
