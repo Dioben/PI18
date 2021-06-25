@@ -50,8 +50,7 @@ By default data is persisted via a TimescaleDB database, following the schema be
 ![alt text](https://drive.google.com/uc?export=view&id=1vS_gxdiUgR-utmgHp0C3hA1puDBeicjG)
 
 ## Logs
-Both meeting logs for all project reunions and work logs detailing the work done by each member can both be found in the Logs_PI_G8.pdf file
-in the root folder of github project(https://github.com/buckaroo69/PI18/blob/main/Logs_PI_G8.pdf)
+Both meeting logs for all project reunions and work logs detailing the work done by each member can both be found [here](https://github.com/buckaroo69/PI18/blob/main/Logs_PI_G8.pdf)
 
 ## Final Report
-The final report for the project can be found in the root folder of the github project(https://github.com/buckaroo69/PI18/blob/main/Neural_Net_Tracker_Relatorio_Final.pdf)
+The final report for the project can be found [here](https://github.com/buckaroo69/PI18/blob/main/Neural_Net_Tracker_Relatorio_Final.pdf)
